@@ -124,3 +124,52 @@
     font-family: var(--font-gramatika), Arial, Helvetica, sans-serif;
   }
 }
+
+/* Sidebar entrance — staggered by inline animation-delay, runs once per load. */
+@keyframes sidebarFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sidebar-stagger {
+  opacity: 0;
+  animation: sidebarFadeIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Slow infinite spin for the rotating emblem in the sidebar. */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.emblem-spin {
+  animation: spinSlow 28s linear infinite;
+}
+
+/* Tile entrance — applied when IntersectionObserver toggles `.in-view`. */
+@keyframes tileFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tile-enter {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  will-change: opacity, transform;
+}
+
+.tile-enter.in-view {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-stagger { opacity: 1; animation: none; transform: none; }
+  .emblem-spin { animation: none; }
+  .tile-enter, .tile-enter.in-view {
+    opacity: 1; transform: none; transition: none;
+  }
+}

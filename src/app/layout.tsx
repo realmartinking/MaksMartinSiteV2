@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
-import { ThemeToggle } from "@/components/theme/ThemeToggle"
 
 /**
  * Gramatika — primary brand typeface.
@@ -105,7 +104,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <GlobalSvgFilters />
           {children}
-          <ThemeToggle />
         </ThemeProvider>
       </body>
     </html>
