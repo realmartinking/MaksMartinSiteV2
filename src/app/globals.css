@@ -173,3 +173,9 @@
     opacity: 1; transform: none; transition: none;
   }
 }
+
+/* InfiniteCanvas — drag cursor flips while user is dragging the world. */
+.stage { cursor: grab; }
+.stage.dragging { cursor: grabbing; }
+.stage .block { background: transparent; }
+

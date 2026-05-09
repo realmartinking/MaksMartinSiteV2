@@ -100,7 +100,9 @@ function GlobalSvgFilters() {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={gramatika.variable}>
-      <body className="min-h-screen antialiased">
+      {/* `overflow-hidden` keeps the page from scrolling — the canvas
+          handles all panning itself. */}
+      <body className="h-screen overflow-hidden antialiased bg-bg text-fg">
         <ThemeProvider>
           <GlobalSvgFilters />
           {children}
