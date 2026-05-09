@@ -1,61 +1,172 @@
-"use client"
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { useTheme } from 'next-themes';
+
+interface EmblemProps {
+  /** Высота эмблемы в px (ширина = height * 0.8) */
+  height?: number;
+  /** Если true, эмблема растягивается на 100% контейнера */
+  fill?: boolean;
+  className?: string;
+}
 
 /**
- * Emblem — Phase 2 implementation.
- *
- * The two source videos ship with solid backgrounds (white in the light
- * variant, black in the dark variant). To drop those backgrounds without
- * relying on SVG filters (which Chrome handles unevenly when applied
- * directly to a <video>), we use CSS `mix-blend-mode`:
- *
- *   • light video on white page  →  mix-blend-mode: multiply
- *     White × anything = anything → white background disappears,
- *     dark emblem strokes survive.
- *
- *   • dark video on black page   →  mix-blend-mode: screen
- *     0 + anything = anything → black background disappears,
- *     light emblem strokes survive.
- *
- * Phase 3 will replace this with a canvas-backed implementation that
- * copies the video frame through the SVG `kill-white-bg` / `kill-black-bg`
- * filters (already mounted in `app/layout.tsx`) for pixel-accurate
- * compositing and theme crossfades.
- *
- * Sized via CSS custom properties:
- *   `--emblem-w` / `--emblem-h` × `--u`
+ * Cross-browser эмблема через canvas.
+ * 
+ * WebKit известный баг (2018+): SVG feColorMatrix filter не применяется 
+ * к воспроизводимому video. Решение — копировать кадры video в canvas 
+ * через requestAnimationFrame, а filter применять к canvas.
+ * 
+ * https://bugs.webkit.org/show_bug.cgi?id=184601
  */
-export function Emblem() {
+export function Emblem({ height = 200, fill = false, className = '' }: EmblemProps) {
+  const lightVideoRef = useRef<HTMLVideoElement | null>(null);
+  const darkVideoRef = useRef<HTMLVideoElement | null>(null);
+  const lightCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const darkCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
+  // RAF loop: копируем кадры из видео в canvas
+  useEffect(() => {
+    let rafId: number;
+    let crossfadeEndTime = 0;
+    
+    const tick = () => {
+      const now = performance.now();
+      const isCrossfading = now < crossfadeEndTime;
+      
+      const pairs = [
+        { video: lightVideoRef.current, canvas: lightCanvasRef.current, isThisDark: false },
+        { video: darkVideoRef.current,  canvas: darkCanvasRef.current,  isThisDark: true },
+      ];
+      
+      for (const { video, canvas, isThisDark } of pairs) {
+        if (!video || !canvas) continue;
+        
+        const isVisible = isThisDark === isDark;
+        if (!isVisible && !isCrossfading) continue;
+        
+        if (video.readyState < 2 || !video.videoWidth) continue;
+        
+        // Установить canvas internal size = native video size (preserves aspect)
+        if (canvas.width !== video.videoWidth) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+        
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      
+      rafId = requestAnimationFrame(tick);
+    };
+    
+    rafId = requestAnimationFrame(tick);
+    
+    // Сигнал о crossfade при смене темы
+    const onThemeChange = () => {
+      crossfadeEndTime = performance.now() + 500;
+    };
+    
+    window.addEventListener('emblem-theme-change', onThemeChange);
+    
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('emblem-theme-change', onThemeChange);
+    };
+  }, [isDark]);
+  
+  // При смене темы сигналим что нужно crossfade
+  useEffect(() => {
+    window.dispatchEvent(new Event('emblem-theme-change'));
+  }, [isDark]);
+  
+  // Принудительно запускаем play() для autoplay videos (Safari иногда требует)
+  useEffect(() => {
+    const tryPlay = (v: HTMLVideoElement | null) => {
+      if (!v) return;
+      v.play().catch(() => {
+        // Fallback: пробуем ещё раз через 500ms
+        setTimeout(() => v.play().catch(() => {}), 500);
+      });
+    };
+    tryPlay(lightVideoRef.current);
+    tryPlay(darkVideoRef.current);
+  }, []);
+  
+  const containerStyle = fill
+    ? { width: '100%', height: '100%' }
+    : { height, aspectRatio: '4 / 5' };
+  
   return (
     <div
-      aria-hidden
-      className="relative pointer-events-none select-none"
-      style={{
-        width: "calc(var(--emblem-w) * var(--u))",
-        height: "calc(var(--emblem-h) * var(--u))",
-      }}
+      className={`relative inline-block ${className}`}
+      style={containerStyle}
+      aria-hidden="true"
     >
-      {/* Light-theme video — visible in light mode */}
+      {/* Скрытые источники видео (offscreen, не display:none — иначе autoplay ломается в Safari) */}
       <video
-        className="absolute inset-0 h-full w-full object-contain block dark:hidden"
-        style={{ mixBlendMode: "multiply" }}
-        src="/MaksMartinLogo.mp4"
+        ref={lightVideoRef}
+        muted
         autoPlay
         loop
-        muted
         playsInline
         preload="auto"
+        style={{
+          position: 'absolute',
+          left: '-99999px',
+          top: '-99999px',
+          width: '1px',
+          height: '1px',
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
+      >
+        <source src="/MaksMartinLogo.mp4" type="video/mp4" />
+      </video>
+      
+      <video
+        ref={darkVideoRef}
+        muted
+        autoPlay
+        loop
+        playsInline
+        preload="auto"
+        style={{
+          position: 'absolute',
+          left: '-99999px',
+          top: '-99999px',
+          width: '1px',
+          height: '1px',
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
+      >
+        <source src="/MaksMartinLogoBlack.mp4" type="video/mp4" />
+      </video>
+      
+      {/* Видимые canvas — рендерят кадры с применённым SVG-фильтром */}
+      <canvas
+        ref={lightCanvasRef}
+        className="emblem-canvas emblem-light absolute inset-0"
+        style={{
+          opacity: isDark ? 0 : 1,
+          transition: 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
       />
-      {/* Dark-theme video — visible in dark mode */}
-      <video
-        className="absolute inset-0 h-full w-full object-contain hidden dark:block"
-        style={{ mixBlendMode: "screen" }}
-        src="/MaksMartinLogoBlack.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
+      <canvas
+        ref={darkCanvasRef}
+        className="emblem-canvas emblem-dark absolute inset-0"
+        style={{
+          opacity: isDark ? 1 : 0,
+          transition: 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
       />
     </div>
-  )
+  );
 }

@@ -1,22 +1,26 @@
-import { InfiniteCanvas } from "@/components/canvas/InfiniteCanvas"
-import { EmblemOverlay } from "@/components/canvas/EmblemOverlay"
-import { Chrome } from "@/components/chrome/Chrome"
+'use client';
+
+import { InfiniteGrid } from '@/components/canvas/InfiniteGrid';
+import { Preloader } from '@/components/preloader/Preloader';
+import { PROJECTS } from '@/lib/projects';
 
 /**
- * Home — the infinite, drag-and-pan canvas of selected work.
+ * MaksMartin v2 — итерация 1.
  *
- * Three layered components:
- *   1. <InfiniteCanvas/>  — full-viewport stage; 9-block tiling; rAF loop.
- *   2. <EmblemOverlay/>   — fixed emblem video tracking the centre block.
- *   3. <Chrome/>          — top nav + theme toggle; pointer-events:none
- *                            on the wrapper so the canvas stays grabbable.
+ * Сейчас: бесконечная вертикальная лента из 17 проектов в 3 колонки,
+ * с per-card perspective tilt при уходе вверх (emelecollab.com/grid стиль).
+ *
+ * Шапка (Lockup, ViewSwitcher) — добавляется в следующей итерации.
  */
-export default function Home() {
+export default function HomePage() {
   return (
     <>
-      <InfiniteCanvas />
-      <EmblemOverlay />
-      <Chrome />
+      <Preloader />
+
+      {/* Минимальный отступ сверху чтобы первый ряд не вплотную */}
+      <main className="min-h-screen pt-8 md:pt-12 pb-20">
+        <InfiniteGrid projects={PROJECTS} initialPages={4} maxPages={10} />
+      </main>
     </>
-  )
+  );
 }

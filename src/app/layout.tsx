@@ -1,113 +1,109 @@
-import type { Metadata, Viewport } from "next"
-import localFont from "next/font/local"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme/ThemeProvider"
-
-/**
- * Gramatika — primary brand typeface.
- * Bundled locally to avoid runtime CDN dependency on Vercel.
- */
-const gramatika = localFont({
-  src: [
-    { path: "../../public/fonts/GramatikaRegular.woff",      weight: "400", style: "normal" },
-    { path: "../../public/fonts/GramatikaSlanted.woff",      weight: "400", style: "italic" },
-    { path: "../../public/fonts/GramatikaBold.woff",         weight: "700", style: "normal" },
-    { path: "../../public/fonts/GramatikaBoldSlanted.woff",  weight: "700", style: "italic" },
-  ],
-  variable: "--font-gramatika",
-  display: "swap",
-})
-
-const SITE_URL = "https://maksmartin.vercel.app"
-const TITLE = "Maks Martin"
-const DESCRIPTION = "Timeless design, like classical music, love and money."
+import type { Metadata } from 'next';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: TITLE,
-  description: DESCRIPTION,
-  applicationName: TITLE,
-  authors: [{ name: "Maks Martin" }],
-  icons: {
-    icon: [
-      { url: "/favicon/favicon.ico" },
-      { url: "/favicon/favicon-16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon/favicon-48.png", sizes: "48x48", type: "image/png" },
-    ],
-    apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180" }],
-  },
-  manifest: "/favicon/site.webmanifest",
+  title: 'Maks Martin',
+  description: 'Timeless design, like classical music, love and money',
+  metadataBase: new URL('https://maksmartin-v2.vercel.app'),
   openGraph: {
-    type: "website",
-    url: SITE_URL,
-    title: TITLE,
-    description: DESCRIPTION,
-    siteName: TITLE,
+    title: 'Maks Martin',
+    description: 'Timeless design, like classical music, love and money',
+    url: 'https://maksmartin-v2.vercel.app',
+    siteName: 'Maks Martin',
+    type: 'website',
+    images: [
+      {
+        url: '/favicon/icon-512.png',
+        width: 512,
+        height: 512,
+        alt: 'Maks Martin',
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: TITLE,
-    description: DESCRIPTION,
+    card: 'summary_large_image',
+    title: 'Maks Martin',
+    description: 'Timeless design, like classical music, love and money',
   },
-}
+  icons: {
+    icon: [
+      { url: '/favicon/favicon.ico' },
+      { url: '/favicon/icon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: { url: '/favicon/icon-180.png', sizes: '180x180', type: 'image/png' },
+  },
+};
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)",  color: "#000000" },
-  ],
-}
-
-/**
- * SVG color-matrix filters used by the Emblem to drop the source video's
- * solid background and keep only the colored artwork.
- * Matrices are copied verbatim from the legacy index.html.
- */
-function GlobalSvgFilters() {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <svg
-      aria-hidden
-      focusable="false"
-      style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
-    >
-      <defs>
-        <filter id="kill-white-bg" colorInterpolationFilters="sRGB">
-          <feColorMatrix type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0 0 0 1 0" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.333 0.333 0.333 0 0" />
-          <feComposite in2="SourceGraphic" operator="in" />
-        </filter>
-        <filter id="kill-black-bg" colorInterpolationFilters="sRGB">
-          <feColorMatrix
-            in="SourceGraphic"
-            type="matrix"
-            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  2.67 2.67 2.67 0 0"
-            result="mask"
-          />
-          <feComponentTransfer in="mask" result="thresh">
-            <feFuncA type="discrete" tableValues="0 1" />
-          </feComponentTransfer>
-          <feComposite in="SourceGraphic" in2="thresh" operator="in" />
-        </filter>
-      </defs>
-    </svg>
-  )
-}
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" suppressHydrationWarning className={gramatika.variable}>
-      {/* `overflow-hidden` keeps the page from scrolling — the canvas
-          handles all panning itself. */}
-      <body className="h-screen overflow-hidden antialiased bg-bg text-fg">
-        <ThemeProvider>
-          <GlobalSvgFilters />
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          {/* Глобальные SVG-фильтры для эмблемы (cross-browser canvas trick) */}
+          <svg
+            aria-hidden="true"
+            style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
+          >
+            <defs>
+              {/* Убираем белый фон у светлой версии эмблемы */}
+              <filter
+                id="kill-white-bg"
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+                colorInterpolationFilters="sRGB"
+              >
+                <feColorMatrix
+                  type="matrix"
+                  values="
+                    -1 0 0 0 1
+                    0 -1 0 0 1
+                    0 0 -1 0 1
+                    0.299 0.587 0.114 0 0
+                  "
+                />
+                <feComponentTransfer>
+                  <feFuncA type="linear" slope="1" intercept="0" />
+                </feComponentTransfer>
+                <feComposite in2="SourceGraphic" operator="in" />
+              </filter>
+              
+              {/* Убираем чёрный фон у тёмной версии эмблемы */}
+              <filter
+                id="kill-black-bg"
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+                colorInterpolationFilters="sRGB"
+              >
+                <feColorMatrix
+                  type="matrix"
+                  values="
+                    1 0 0 0 0
+                    0 1 0 0 0
+                    0 0 1 0 0
+                    0.299 0.587 0.114 0 0
+                  "
+                />
+                <feComponentTransfer>
+                  <feFuncA type="linear" slope="8" intercept="0" />
+                </feComponentTransfer>
+                <feComposite in2="SourceGraphic" operator="in" />
+              </filter>
+            </defs>
+          </svg>
+          
           {children}
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

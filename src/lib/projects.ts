@@ -1,0 +1,162 @@
+// Данные проектов для MaksMartin Studio
+// 17 проектов с разными aspect ratios для хаотичной сетки
+
+export type ProjectAspect = 'wide' | 'vertical' | 'square'; // 16:9 | 9:16 | 1:1
+
+export interface Project {
+  id: string;
+  name: string;
+  videoSrc?: string;      // путь к видео в /public/projects/
+  imageSrc?: string;      // путь к изображению в /public/projects/ (для PNG проектов)
+  aspect: ProjectAspect;
+  url?: string;           // ссылка на проект (опционально)
+  year?: string;
+  type?: string;          // тип работы
+}
+
+export const PROJECTS: Project[] = [
+  {
+    id: 'p01',
+    name: 'Aurica',
+    videoSrc: '/projects/aurica.mp4',
+    aspect: 'vertical',
+    year: '2024',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p02',
+    name: 'Hight Bay',
+    videoSrc: '/projects/hightbay.mp4',
+    aspect: 'wide',
+    year: '2024',
+    type: 'Identity',
+  },
+  {
+    id: 'p03',
+    name: 'Value',
+    videoSrc: '/projects/value.mp4',
+    aspect: 'wide',
+    year: '2024',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p04',
+    name: 'Muse',
+    imageSrc: '/projects/muse.png',
+    aspect: 'vertical',
+    year: '2024',
+    type: 'Identity',
+  },
+  {
+    id: 'p05',
+    name: 'Humber',
+    imageSrc: '/projects/humber.png',
+    aspect: 'wide',
+    year: '2024',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p06',
+    name: 'Aurix',
+    videoSrc: '/projects/aurix.mp4',
+    aspect: 'wide',
+    year: '2023',
+    type: 'Identity',
+  },
+  {
+    id: 'p07',
+    name: 'Умное Сердце',
+    videoSrc: '/projects/serdtse.mp4',
+    aspect: 'vertical',
+    year: '2023',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p08',
+    name: 'Наследие',
+    videoSrc: '/projects/nasledie.mp4',
+    aspect: 'wide',
+    year: '2023',
+    type: 'Identity',
+  },
+  {
+    id: 'p09',
+    name: 'Saga',
+    videoSrc: '/projects/saga.mp4',
+    aspect: 'vertical',
+    year: '2023',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p10',
+    name: "General Vishnevetsky's Dacha",
+    imageSrc: '/projects/vishnevetsky.png',
+    aspect: 'wide',
+    year: '2023',
+    type: 'Identity',
+  },
+  {
+    id: 'p11',
+    name: 'Lumio',
+    imageSrc: '/projects/lumio.png',
+    aspect: 'square',
+    year: '2022',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p12',
+    name: 'Forma Houseboat',
+    videoSrc: '/projects/forma.mp4',
+    aspect: 'wide',
+    year: '2022',
+    type: 'Identity',
+  },
+  {
+    id: 'p13',
+    name: 'Raif Vision Conference',
+    videoSrc: '/projects/raif.mp4',
+    aspect: 'wide',
+    year: '2022',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p14',
+    name: 'Semya',
+    videoSrc: '/projects/semya.mp4',
+    aspect: 'vertical',
+    year: '2022',
+    type: 'Identity',
+  },
+  {
+    id: 'p15',
+    name: 'Maoundi',
+    videoSrc: '/projects/maoundi.mp4',
+    aspect: 'wide',
+    year: '2022',
+    type: 'Brand identity',
+  },
+  {
+    id: 'p16',
+    name: 'Манеры',
+    videoSrc: '/projects/manery.mp4',
+    aspect: 'vertical',
+    year: '2021',
+    type: 'Identity',
+  },
+  {
+    id: 'p17',
+    name: 'Russia Expo 25',
+    videoSrc: '/projects/russia-expo.mp4',
+    aspect: 'wide',
+    year: '2021',
+    type: 'Brand identity',
+  },
+];
+
+// Slogan и контактные данные
+export const SITE_INFO = {
+  name: 'Maks Martin',
+  slogan: 'Timeless design, like classical music, love and money',
+  telegram: 'https://t.me/martinmuur',
+  email: 'martinmursalimov@gmail.com',
+};
