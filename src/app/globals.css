@@ -30,15 +30,24 @@
   --fg: #000000;
   --tile-bg: #f4f4f4;
 
-  /* Layout */
-  --design-w: 1440px;
+  /* Layout — unitless number, used as `100vw / var(--design-w)` */
+  --design-w: 1440;
 
-  /* Emblem geometry — overridden by JS at runtime if needed */
-  --emblem-w: 220px;
-  --emblem-h: 100px;
-  --emblem-margin: 24px;
-  --emblem-dx: 0px;
-  --emblem-dy: 0px;
+  /* Emblem geometry — unitless design-pixel values, multiplied by var(--u). */
+  --emblem-w: 400;
+  --emblem-h: 400;
+  --emblem-margin: -74;
+  --emblem-dx: -6;
+  --emblem-dy: -5;
+
+  /* Convenience unit: 1u = 1 design-px rendered against the current viewport. */
+  --u: calc(100vw / var(--design-w));
+}
+
+@media (max-width: 768px) {
+  :root {
+    --design-w: 600;
+  }
 }
 
 .dark {
@@ -65,7 +74,7 @@
   /* MaksMartin brand tokens — dark */
   --bg: #000000;
   --fg: #ffffff;
-  --tile-bg: #0a0a0a;
+  --tile-bg: #1a1a1a;
 }
 
 @theme inline {
