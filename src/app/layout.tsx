@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { Chrome } from '@/components/chrome/Chrome';
 
 export const metadata: Metadata = {
   title: 'Maks Martin',
@@ -12,14 +12,7 @@ export const metadata: Metadata = {
     url: 'https://maksmartin-v2.vercel.app',
     siteName: 'Maks Martin',
     type: 'website',
-    images: [
-      {
-        url: '/favicon/icon-512.png',
-        width: 512,
-        height: 512,
-        alt: 'Maks Martin',
-      },
-    ],
+    images: [{ url: '/favicon/icon-512.png', width: 512, height: 512, alt: 'Maks Martin' }],
   },
   twitter: {
     card: 'summary_large_image',
@@ -38,71 +31,31 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          {/* Глобальные SVG-фильтры для эмблемы (cross-browser canvas trick) */}
-          <svg
-            aria-hidden="true"
-            style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
-          >
-            <defs>
-              {/* Убираем белый фон у светлой версии эмблемы */}
-              <filter
-                id="kill-white-bg"
-                x="0"
-                y="0"
-                width="100%"
-                height="100%"
-                colorInterpolationFilters="sRGB"
-              >
-                <feColorMatrix
-                  type="matrix"
-                  values="
-                    -1 0 0 0 1
-                    0 -1 0 0 1
-                    0 0 -1 0 1
-                    0.299 0.587 0.114 0 0
-                  "
-                />
-                <feComponentTransfer>
-                  <feFuncA type="linear" slope="1" intercept="0" />
-                </feComponentTransfer>
-                <feComposite in2="SourceGraphic" operator="in" />
-              </filter>
-              
-              {/* Убираем чёрный фон у тёмной версии эмблемы */}
-              <filter
-                id="kill-black-bg"
-                x="0"
-                y="0"
-                width="100%"
-                height="100%"
-                colorInterpolationFilters="sRGB"
-              >
-                <feColorMatrix
-                  type="matrix"
-                  values="
-                    1 0 0 0 0
-                    0 1 0 0 0
-                    0 0 1 0 0
-                    0.299 0.587 0.114 0 0
-                  "
-                />
-                <feComponentTransfer>
-                  <feFuncA type="linear" slope="8" intercept="0" />
-                </feComponentTransfer>
-                <feComposite in2="SourceGraphic" operator="in" />
-              </filter>
-            </defs>
-          </svg>
-          
-          {children}
-        </ThemeProvider>
+    <html lang="en">
+      <body className="font-sans text-[15px] select-none cursor-crosshair antialiased bg-white text-black">
+        {/* SVG filters для Emblem (Safari canvas workaround) */}
+        <svg
+          aria-hidden="true"
+          style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
+        >
+          <defs>
+            <filter id="kill-white-bg" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+              <feColorMatrix type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0.299 0.587 0.114 0 0" />
+              <feComponentTransfer><feFuncA type="linear" slope="1" intercept="0" /></feComponentTransfer>
+              <feComposite in2="SourceGraphic" operator="in" />
+            </filter>
+            <filter id="kill-black-bg" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+              <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0.299 0.587 0.114 0 0" />
+              <feComponentTransfer><feFuncA type="linear" slope="8" intercept="0" /></feComponentTransfer>
+              <feComposite in2="SourceGraphic" operator="in" />
+            </filter>
+          </defs>
+        </svg>
+
+        <Chrome />
+        {children}
       </body>
     </html>
   );
