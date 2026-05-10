@@ -45,10 +45,8 @@ export default function ListPage() {
       <div className="flex flex-col items-center">
         {Array.from({ length: cycles }).flatMap((_, c) =>
           PROJECTS.map((p, idx) => (
-            <motion.a
+            <motion.div
               key={`${c}-${p.id}`}
-              href={p.url || '#'}
-              onClick={(e) => { if (!p.url) e.preventDefault(); }}
               onMouseEnter={() => setHoveredId(p.id)}
               onMouseLeave={() => setHoveredId(null)}
               initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
@@ -59,7 +57,7 @@ export default function ListPage() {
                 delay: c === 0 ? Math.min(idx * 0.08, 1.2) : 0,
               }}
               className={[
-                'block w-full font-bold uppercase text-center overflow-hidden',
+                'w-full font-bold uppercase text-center overflow-hidden',
                 'text-[calc(1rem+6vw)]',
                 'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
                 'md:-mb-2',
@@ -70,7 +68,7 @@ export default function ListPage() {
               ].join(' ')}
             >
               {p.name}
-            </motion.a>
+            </motion.div>
           ))
         )}
       </div>

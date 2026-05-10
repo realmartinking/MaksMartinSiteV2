@@ -34,10 +34,8 @@ export default function GalleryPage() {
         style={{ gap: 'var(--grid-gap)', paddingLeft: 'var(--grid-padding-x)', paddingRight: 'var(--grid-padding-x)' }}
       >
         {tiles.map(({ key, ...p }, idx) => (
-          <motion.a
+          <motion.div
             key={key}
-            href={p.url || '#'}
-            onClick={(e) => { if (!p.url) e.preventDefault(); }}
             initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={prefersReduced ? { duration: 0 } : {
@@ -45,14 +43,14 @@ export default function GalleryPage() {
               ease: [0.16, 1, 0.3, 1],
               delay: idx < PROJECTS.length ? Math.min(idx * 0.08, 1.2) : 0,
             }}
-            className="group block aspect-square overflow-hidden"
+            className="group aspect-square overflow-hidden"
           >
             <GridTile
               project={p}
               sizing="fill"
               className="will-change-transform w-full h-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
             />
-          </motion.a>
+          </motion.div>
         ))}
 
         {/* Infinite scroll sentinel */}

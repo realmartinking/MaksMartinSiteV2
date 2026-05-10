@@ -64,11 +64,7 @@ export default function GridPage() {
             className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
             <PerspectiveCard className="w-full">
-              <a
-                href={p.url || '#'}
-                onClick={(e) => { if (!p.url) e.preventDefault(); }}
-                className="flex flex-col items-center gap-y-[10px] group"
-              >
+              <div className="flex flex-col items-center gap-y-[10px] group">
                 <GridTile
                   project={p}
                   sizing="natural"
@@ -83,7 +79,7 @@ export default function GridPage() {
                 >
                   {p.name}&nbsp;&nbsp;/&nbsp;&nbsp;{p.type ?? ''}
                 </p>
-              </a>
+              </div>
             </PerspectiveCard>
           </motion.div>
         ))}
