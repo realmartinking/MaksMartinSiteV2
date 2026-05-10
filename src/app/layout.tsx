@@ -3,6 +3,7 @@ import './globals.css';
 import { Chrome } from '@/components/chrome/Chrome';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { Preloader } from '@/components/preloader/Preloader';
+import { DebugPanel } from '@/components/debug/DebugPanel';
 
 export const metadata: Metadata = {
   title: 'Maks Martin',
@@ -60,6 +61,7 @@ export default function RootLayout({
           <Preloader />
           <Chrome />
           {children}
+          <DebugPanel />
         </ThemeProvider>
       </body>
     </html>

@@ -175,3 +175,45 @@
 .emblem-canvas.emblem-dark {
   filter: url(#kill-black-bg);
 }
+
+/* ═══════════════════════════════════════════════
+   COSMETIC TOKENS — могут переопределяться debug panel
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --lockup-emblem-size: 60px;
+  --lockup-name-size: 15px;
+  --lockup-name-weight: 700;
+  --lockup-tagline-size: 13px;
+  --lockup-tagline-max-width: 260px;
+  --lockup-gap: 12px;
+  --lockup-padding: 24px;
+
+  --grid-columns: 12;
+  --grid-gap: 10px;
+  --grid-padding-x: 10px;
+  --grid-padding-top: 18vh;
+
+  --tile-radius: 0px;
+  --tile-hover-scale: 0.95;
+
+  --perspective-distance: 1500px;
+  --perspective-tilt-max: 60deg;
+  --perspective-translate-z: -200px;
+
+  --view-switcher-font-size: 15px;
+  --view-switcher-radius: 0px;
+
+  --font-tile-name-size: 15px;
+  --font-tile-name-weight: 700;
+  --font-tile-meta-size: 15px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --lockup-emblem-size: 48px;
+    --lockup-name-size: 13px;
+    --lockup-padding: 16px;
+    --grid-padding-x: 8px;
+  }
+}

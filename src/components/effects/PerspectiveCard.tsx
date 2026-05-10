@@ -89,7 +89,7 @@ export function PerspectiveCard({
       ref={ref}
       className={className}
       style={{
-        perspective: '1500px',
+        perspective: 'var(--perspective-distance)',
         perspectiveOrigin: 'center 30%',
         // perspective-origin: где находится "глаз зрителя"
         // 30% сверху значит зритель смотрит сверху-сверху, карточки наверху загибаются от него

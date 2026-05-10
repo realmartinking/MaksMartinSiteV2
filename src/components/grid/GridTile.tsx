@@ -43,7 +43,7 @@ export function GridTile({ project, sizing = 'natural', className = '' }: GridTi
       : 'w-full h-auto';
 
   return (
-    <div ref={containerRef} className={className}>
+    <div ref={containerRef} className={`overflow-hidden ${className}`} style={{ borderRadius: 'var(--tile-radius)' }}>
       {project.imageSrc ? (
         <img
           src={project.imageSrc}

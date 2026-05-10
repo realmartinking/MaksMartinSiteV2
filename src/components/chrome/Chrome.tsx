@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeSwitch } from '@/components/theme/ThemeSwitch';
@@ -37,13 +38,22 @@ export function Chrome() {
             loop
             muted
             playsInline
-            className="h-[60px] w-auto"
+            style={{ height: 'var(--lockup-emblem-size)' }}
+            className="w-auto"
           />
-          <span className="font-bold text-[15px] leading-tight">Maks Martin</span>
+          <span
+            className="leading-tight"
+            style={{
+              fontSize: 'var(--lockup-name-size)',
+              fontWeight: 'var(--lockup-name-weight)' as React.CSSProperties['fontWeight'],
+            }}
+          >
+            Maks Martin
+          </span>
         </Link>
 
         {/* Top-center: slogan + Contacts → /studio */}
-        <div className="pointer-events-auto flex items-start justify-center gap-6 text-[15px] leading-tight">
+        <div className="pointer-events-auto flex items-start justify-center gap-6 leading-tight" style={{ fontSize: 'var(--lockup-tagline-size)' }}>
           <p className="font-bold max-w-[22ch] text-center">
             Timeless design,<br />like classical music,<br />love and money
           </p>
@@ -56,12 +66,15 @@ export function Chrome() {
         </div>
 
         {/* Top-right: List · Grid · Gallery — no slashes, bold */}
-        <nav className="
-          pointer-events-auto justify-self-end
-          flex items-center gap-7 text-[15px] font-bold
-          [&:has(a:hover)_a:not(:hover)]:blur-[2px]
-          [&:has(a:hover)_a:not(:hover)]:opacity-50
-        ">
+        <nav
+          className="
+            pointer-events-auto justify-self-end
+            flex items-center gap-7 font-bold
+            [&:has(a:hover)_a:not(:hover)]:blur-[2px]
+            [&:has(a:hover)_a:not(:hover)]:opacity-50
+          "
+          style={{ fontSize: 'var(--view-switcher-font-size)' }}
+        >
           {NAV.map((l) => (
             <Link
               key={l.href}

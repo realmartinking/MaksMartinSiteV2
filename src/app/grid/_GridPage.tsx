@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PROJECTS } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
@@ -35,13 +35,19 @@ export default function GridPage() {
       */}
       <div
         className="
-          grid grid-cols-12 gap-x-[10px] gap-y-[50px]
-          px-[10px] pt-[18vh] pb-20
+          grid grid-cols-12 gap-y-[50px]
+          pb-20
           [&:has(a:hover)_a:not(:hover)_video]:grayscale
           [&:has(a:hover)_a:not(:hover)_img]:grayscale
           [&_a_video]:[transition:filter_300ms_ease,transform_300ms_ease]
           [&_a_img]:[transition:filter_300ms_ease,transform_300ms_ease]
         "
+        style={{
+          columnGap: 'var(--grid-gap)',
+          paddingLeft: 'var(--grid-padding-x)',
+          paddingRight: 'var(--grid-padding-x)',
+          paddingTop: 'var(--grid-padding-top)',
+        }}
       >
         {tiles.map(({ key, ...p }) => (
           <PerspectiveCard
@@ -55,9 +61,15 @@ export default function GridPage() {
               <GridTile
                 project={p}
                 sizing="natural"
-                className="w-full group-hover:scale-95 transition-transform duration-300 ease-in-out"
+                className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-in-out"
               />
-              <p className="text-[15px] leading-tight text-center">
+              <p
+                className="leading-tight text-center"
+                style={{
+                  fontSize: 'var(--font-tile-name-size)',
+                  fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
+                }}
+              >
                 {p.name}&nbsp;&nbsp;/&nbsp;&nbsp;{p.type ?? ''}
               </p>
             </a>
