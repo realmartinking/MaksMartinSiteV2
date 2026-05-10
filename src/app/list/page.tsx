@@ -45,32 +45,47 @@ export default function ListPage() {
       <div
         className={[
           'flex flex-col items-center',
-          '[&:has(.list-item:hover)_.list-item:not(:hover)]:blur-[2px]',
-          '[&:has(.list-item:hover)_.list-item:not(:hover)]:opacity-30',
+          '[&:has(.list-item:hover)_.list-item:not(:hover)]:!blur-[2px]',
+          '[&:has(.list-item:hover)_.list-item:not(:hover)]:!opacity-30',
         ].join(' ')}
       >
         {Array.from({ length: cycles }).flatMap((_, c) =>
           PROJECTS.map((p, idx) => {
             const isFirstCycle = c === 0;
+            const sharedClass = [
+              'list-item w-full font-bold uppercase text-center overflow-hidden',
+              'text-[calc(1rem+6vw)]',
+              'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
+              'md:-mb-2',
+              'transition-[filter,opacity] duration-300 ease-out',
+            ].join(' ');
+
+            if (!isFirstCycle || prefersReduced) {
+              return (
+                <div
+                  key={`${c}-${p.id}`}
+                  onMouseEnter={() => setHoveredId(p.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  className={sharedClass}
+                >
+                  {p.name}
+                </div>
+              );
+            }
+
             return (
               <motion.div
                 key={`${c}-${p.id}`}
                 onMouseEnter={() => setHoveredId(p.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                initial={prefersReduced || !isFirstCycle ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
-                animate={isFirstCycle ? { opacity: 1, y: 0, filter: 'blur(0px)' } : undefined}
-                transition={prefersReduced || !isFirstCycle ? { duration: 0 } : {
+                initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{
                   duration: 1.0,
                   ease: [0.16, 1, 0.3, 1],
                   delay: Math.min(idx * 0.08, 1.2),
                 }}
-                className={[
-                  'list-item w-full font-bold uppercase text-center overflow-hidden',
-                  'text-[calc(1rem+6vw)]',
-                  'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
-                  'md:-mb-2',
-                  'transition-[filter,opacity] duration-300 ease-out',
-                ].join(' ')}
+                className={sharedClass}
               >
                 {p.name}
               </motion.div>
