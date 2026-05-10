@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 
 export default function ListPage() {
+  const prefersReduced = useReducedMotion();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -50,9 +51,9 @@ export default function ListPage() {
               onClick={(e) => { if (!p.url) e.preventDefault(); }}
               onMouseEnter={() => setHoveredId(p.id)}
               onMouseLeave={() => setHoveredId(null)}
-              initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
+              initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{
+              transition={prefersReduced ? { duration: 0 } : {
                 duration: 1.0,
                 ease: [0.16, 1, 0.3, 1],
                 delay: c === 0 ? Math.min(idx * 0.08, 1.2) : 0,

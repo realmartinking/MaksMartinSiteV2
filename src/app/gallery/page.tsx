@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 import { GridTile } from '@/components/grid/GridTile';
 
 export default function GalleryPage() {
+  const prefersReduced = useReducedMotion();
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -37,9 +38,9 @@ export default function GalleryPage() {
             key={key}
             href={p.url || '#'}
             onClick={(e) => { if (!p.url) e.preventDefault(); }}
-            initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
+            initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{
+            transition={prefersReduced ? { duration: 0 } : {
               duration: 1.0,
               ease: [0.16, 1, 0.3, 1],
               delay: idx < PROJECTS.length ? Math.min(idx * 0.08, 1.2) : 0,

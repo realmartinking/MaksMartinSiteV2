@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
 
 export default function GridPage() {
+  const prefersReduced = useReducedMotion();
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -53,9 +54,9 @@ export default function GridPage() {
         {tiles.map(({ key, ...p }, idx) => (
           <motion.div
             key={key}
-            initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
+            initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{
+            transition={prefersReduced ? { duration: 0 } : {
               duration: 1.0,
               ease: [0.16, 1, 0.3, 1],
               delay: idx < PROJECTS.length ? Math.min(idx * 0.08, 1.2) : 0,
