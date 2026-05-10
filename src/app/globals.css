@@ -156,9 +156,11 @@
 
 /* ═══════════════════════════════════════════════
    COSMETIC TOKENS — могут переопределяться debug panel
+   Baked from localStorage on 2026-05-10
    ═══════════════════════════════════════════════ */
 
 :root {
+  /* Global tokens */
   --lockup-emblem-size: 60px;
   --lockup-name-size: 15px;
   --lockup-name-weight: 700;
@@ -175,7 +177,7 @@
   --tile-radius: 0px;
   --tile-hover-scale: 0.95;
 
-  --perspective-distance: 1500px;
+  --perspective-distance: 500px;
   --perspective-tilt-max: 60deg;
   --perspective-translate-z: -200px;
 
@@ -186,9 +188,26 @@
   --font-tile-name-weight: 700;
   --font-tile-meta-size: 15px;
 
-  /* Унифицированный размер малых текстов: слоган, view switcher, contacts */
   --unified-text-size: 15px;
   --unified-text-weight: 700;
+
+  /* Per-element overrides — lockup-tagline */
+  --el-lockup-tagline-text-align: left;
+  --el-lockup-tagline-translate-x: -90px;
+  --el-lockup-tagline-translate-y: 0px;
+  --el-lockup-tagline-line-height: 1;
+
+  /* Per-element overrides — lockup-emblem */
+  --el-lockup-emblem-height: 156px;
+  --el-lockup-emblem-margin-top: -18px;
+  --el-lockup-emblem-margin-bottom: -24px;
+  --el-lockup-emblem-translate-x: -36px;
+
+  /* Per-element overrides — lockup-name */
+  --el-lockup-name-font-size: 25px;
+  --el-lockup-name-letter-spacing: -0.03em;
+  --el-lockup-name-translate-x: -69px;
+  --el-lockup-name-translate-y: -53px;
 }
 
 @media (max-width: 768px) {
