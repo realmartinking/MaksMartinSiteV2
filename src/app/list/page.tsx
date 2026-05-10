@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 
 export default function ListPage() {
@@ -25,13 +26,20 @@ export default function ListPage() {
       {/* Project name stack */}
       <div className="flex flex-col items-center">
         {Array.from({ length: cycles }).flatMap((_, c) =>
-          PROJECTS.map((p) => (
-            <a
+          PROJECTS.map((p, idx) => (
+            <motion.a
               key={`${c}-${p.id}`}
               href={p.url || '#'}
               onClick={(e) => { if (!p.url) e.preventDefault(); }}
               onMouseEnter={() => setHoveredId(p.id)}
               onMouseLeave={() => setHoveredId(null)}
+              initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{
+                duration: 1.0,
+                ease: [0.16, 1, 0.3, 1],
+                delay: c === 0 ? Math.min(idx * 0.08, 1.2) : 0,
+              }}
               className={[
                 'block w-full font-bold uppercase text-center overflow-hidden',
                 'text-[calc(1rem+6vw)]',
@@ -44,7 +52,7 @@ export default function ListPage() {
               ].join(' ')}
             >
               {p.name}
-            </a>
+            </motion.a>
           ))
         )}
       </div>
