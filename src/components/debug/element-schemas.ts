@@ -65,8 +65,7 @@ const SIZE_BLOCK: ElementSchema['groups'][0] = {
 const EMBLEM_SIZE: ElementSchema['groups'][0] = {
   title: 'Size',
   properties: [
-    { key: 'width', label: 'Width', type: 'slider', unit: 'px', min: 30, max: 400, step: 2, defaultValue: '60px' },
-    { key: 'height', label: 'Height', type: 'slider', unit: 'px', min: 30, max: 400, step: 2, defaultValue: '60px' },
+    { key: 'height', label: 'Height', type: 'slider', unit: 'px', min: 30, max: 400, step: 2, defaultValue: '60px', help: 'Width auto-calculated 4:5 ratio' },
   ],
 };
 

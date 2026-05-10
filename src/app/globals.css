@@ -56,10 +56,6 @@
   --foreground: #000000;
   --tile-bg: #e8e8e8;
   
-  /* Дизайн-метрики */
-  --emblem-size: 200px; /* высота эмблемы в лок-апе */
-  --lockup-padding: 40px;
-  
   /* Tailwind shadcn vars (oklch для совместимости) */
   --radius: 0.75rem;
   --card: #ffffff;

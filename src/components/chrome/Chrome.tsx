@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeSwitch } from '@/components/theme/ThemeSwitch';
+import { Emblem } from '@/components/lockup/Emblem';
 
 const NAV = [
   { href: '/list',    label: 'List'    },
@@ -35,8 +36,9 @@ export function Chrome() {
           <div
             data-edit-id="lockup-emblem"
             style={{
-              width: 'var(--el-lockup-emblem-width, var(--lockup-emblem-size))',
               height: 'var(--el-lockup-emblem-height, var(--lockup-emblem-size))',
+              aspectRatio: '4 / 5',
+              flexShrink: 0,
               transform: 'translate(var(--el-lockup-emblem-translate-x, 0px), var(--el-lockup-emblem-translate-y, 0px))',
               paddingTop: 'var(--el-lockup-emblem-padding-top, 0)',
               paddingRight: 'var(--el-lockup-emblem-padding-right, 0)',
@@ -46,15 +48,7 @@ export function Chrome() {
               marginBottom: 'var(--el-lockup-emblem-margin-bottom, 0)',
             }}
           >
-            <video
-              src="/MaksMartinLogo.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-contain"
-              style={{ mixBlendMode: 'multiply' }}
-            />
+            <Emblem fill />
           </div>
           <span
             data-edit-id="lockup-name"
@@ -111,7 +105,7 @@ export function Chrome() {
               overflowWrap: 'normal',
             }}
           >
-            Timeless design,<br />like classical music,<br />love and money
+            Timeless design, like classical<br />music, love, and money
           </p>
           <Link
             href="/studio"
