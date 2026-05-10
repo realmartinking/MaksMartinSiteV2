@@ -42,7 +42,7 @@ export default function ListPage() {
       {/* Project name stack */}
       <div
         className={[
-          'flex flex-col items-center',
+          'flex flex-col items-center pointer-events-none',
           '[&:has(.list-item:hover)_.list-item:not(:hover)]:blur-[2px]',
           '[&:has(.list-item:hover)_.list-item:not(:hover)]:opacity-30',
         ].join(' ')}
@@ -58,7 +58,7 @@ export default function ListPage() {
             >
               <span
                 className={[
-                  'list-item inline-block font-bold uppercase',
+                  'list-item inline-block font-bold uppercase pointer-events-auto',
                   'text-[calc(1rem+6vw)]',
                   'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
                   'transition-[filter,opacity] duration-300 ease-out',
