@@ -32,9 +32,11 @@ export default function GalleryPage() {
           <a
             key={key}
             href={p.url || '#'}
+            onClick={(e) => { if (!p.url) e.preventDefault(); }}
             className={[
               'group block aspect-square overflow-hidden',
-              'w-[calc(100%/2)]   p-[20px]',
+              'w-full p-[20px]',
+              'sm:w-[calc(100%/2)]',
               'md:w-[calc(100%/3)] md:p-[30px]',
               'lg:w-[calc(100%/4)] lg:p-[40px]',
               'xl:w-[calc(100%/5)]',

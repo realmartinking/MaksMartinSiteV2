@@ -29,6 +29,7 @@ export default function ListPage() {
             <a
               key={`${c}-${p.id}`}
               href={p.url || '#'}
+              onClick={(e) => { if (!p.url) e.preventDefault(); }}
               onMouseEnter={() => setHoveredId(p.id)}
               onMouseLeave={() => setHoveredId(null)}
               className={[

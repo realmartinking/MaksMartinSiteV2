@@ -52,10 +52,11 @@ export default function GridPage() {
         {tiles.map(({ key, ...p }) => (
           <PerspectiveCard
             key={key}
-            className="col-span-6 xl:col-span-4 min-[1920px]:col-span-3 self-start"
+            className="col-span-12 sm:col-span-6 xl:col-span-4 min-[1920px]:col-span-3 self-start"
           >
             <a
               href={p.url || '#'}
+              onClick={(e) => { if (!p.url) e.preventDefault(); }}
               className="flex flex-col items-center gap-y-[10px] group block"
             >
               <GridTile
