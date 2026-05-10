@@ -66,12 +66,12 @@ export default function GridPage() {
               <a
                 href={p.url || '#'}
                 onClick={(e) => { if (!p.url) e.preventDefault(); }}
-                className="flex flex-col items-center gap-y-[10px] group block"
+                className="flex flex-col items-center gap-y-[10px] group"
               >
                 <GridTile
                   project={p}
                   sizing="natural"
-                  className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-in-out"
+                  className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
                 />
                 <p
                   className="leading-tight text-center"
