@@ -58,7 +58,7 @@ export default function GridPage() {
             transition={{
               duration: 1.0,
               ease: [0.16, 1, 0.3, 1],
-              delay: Math.min(idx * 0.08, 1.2),
+              delay: idx < PROJECTS.length ? Math.min(idx * 0.08, 1.2) : 0,
             }}
             className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
