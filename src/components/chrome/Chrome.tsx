@@ -77,7 +77,7 @@ export function Chrome() {
               wordBreak: 'normal',
             }}
           >
-            Maks Martin
+            MaksMartin
           </span>
         </Link>
 

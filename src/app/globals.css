@@ -218,16 +218,16 @@
   --el-lockup-tagline-line-height: 1;
 
   /* Per-element overrides — lockup-emblem */
-  --el-lockup-emblem-height: 156px;
+  --el-lockup-emblem-height: 300px;
   --el-lockup-emblem-margin-top: -18px;
-  --el-lockup-emblem-margin-bottom: -24px;
+  --el-lockup-emblem-margin-bottom: -48px;
   --el-lockup-emblem-translate-x: -36px;
 
   /* Per-element overrides — lockup-name */
   --el-lockup-name-font-size: 25px;
   --el-lockup-name-letter-spacing: -0.03em;
   --el-lockup-name-translate-x: -69px;
-  --el-lockup-name-translate-y: -53px;
+  --el-lockup-name-translate-y: -100px;
 }
 
 @media (max-width: 768px) {
@@ -252,18 +252,18 @@
     align-items: center !important;
   }
 
-  /* Эмблема: сбросить per-element overrides из debug panel */
+  /* Эмблема: увеличенная на мобилке (80px) */
   [data-edit-id="lockup-emblem"] {
-    height: 40px !important;
+    height: 80px !important;
     margin: 0 !important;
     transform: none !important;
   }
 
-  /* MaksMartin компактный, без debug overrides */
+  /* MaksMartin рядом с эмблемой */
   [data-edit-id="lockup-name"] {
     font-size: 16px !important;
     transform: none !important;
-    letter-spacing: -0.01em !important;
+    letter-spacing: -0.02em !important;
   }
 
   /* Средняя ячейка — только contacts, выровнено справа */
@@ -282,6 +282,7 @@
     gap: 12px !important;
     font-size: 16px !important;
     transform: none !important;
+    margin-top: 60px !important;
   }
 
   [data-edit-id="view-switcher"] a {

@@ -84,8 +84,8 @@ export default function ListPage() {
                       {isExpanded && (
                         p.videoSrc ? (
                           <video
-                            ref={(el) => setVideoRef(p.id, el)}
                             src={p.videoSrc}
+                            autoPlay
                             loop
                             muted
                             playsInline
