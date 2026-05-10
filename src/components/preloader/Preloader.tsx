@@ -2,43 +2,52 @@
 
 import { useEffect, useRef, useState } from 'react';
 import anime from 'animejs';
+import { Emblem } from '@/components/lockup/Emblem';
 
 /**
- * Прелоадер в стиле emelecollab.com/grid.
+ * Прелоадер: эмблема MaksMartin + счётчик процентов рядом справа.
  *
  * Тайминг (td=600ms):
- *  0ms       фон (var(--background))
- *  +1000ms   текст fade-in (blur 10→0, y 20→0, easeOutCubic)
- *  +1000ms   текст hold
- *  -100ms    текст fade-out (blur 0→10, y 0→-20, easeInCubic)
- *  complete: прелоадер fade-out 300ms (delay 200ms)
- *  +300ms    контент fade-in (blur 10→0, y 20→0, easeOutCubic)
+ *  0ms       фон по теме
+ *  +1000ms   контент fade-in (blur 10→0, y 20→0, easeOutCubic)
+ *  +1000ms   hold (счётчик идёт от 0 до 100)
+ *  +600ms    контент fade-out (blur 0→10, y 0→-20, easeInCubic)
+ *  complete: prldr fade-out 300ms → main контент fade-in
  */
 export function Preloader() {
   const prldrRef = useRef<HTMLDivElement | null>(null);
-  const txtRef = useRef<HTMLDivElement | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!prldrRef.current || !txtRef.current) return;
+    if (!prldrRef.current || !innerRef.current) return;
 
     const prldr = prldrRef.current;
-    const txt = txtRef.current;
+    const inner = innerRef.current;
     const td = 600;
 
-    // Главный контент сайта
     const cnt = document.querySelector('main');
+    if (cnt) (cnt as HTMLElement).style.opacity = '0';
 
-    // Скрываем контент пока идёт прелоадер
-    if (cnt) {
-      (cnt as HTMLElement).style.opacity = '0';
-    }
+    // Анимация счётчика 0 → 100 за 1600ms (1000ms delay + 600ms fade-in overlap)
+    const counterAnim = anime({
+      targets: { value: 0 },
+      value: 100,
+      duration: 1600,
+      delay: 1000,
+      easing: 'linear',
+      update: (a) => {
+        const v = Math.round((a.animations[0].currentValue as unknown) as number);
+        setProgress(v);
+      },
+    });
 
     const tl = anime.timeline({});
 
-    // 1. Текст появляется
+    // 1. Эмблема + счётчик появляются
     tl.add({
-      targets: txt,
+      targets: inner,
       opacity: [0, 1],
       filter: ['blur(10px)', 'blur(0px)'],
       translateY: ['20px', '0'],
@@ -49,13 +58,13 @@ export function Preloader() {
 
     // 2. Hold 1000ms
     tl.add({
-      targets: txt,
+      targets: inner,
       duration: 1000,
     });
 
-    // 3. Текст исчезает
+    // 3. Уезжают вверх с blur
     tl.add({
-      targets: txt,
+      targets: inner,
       opacity: [1, 0],
       filter: ['blur(0px)', 'blur(10px)'],
       translateY: ['0', '-20px'],
@@ -63,19 +72,14 @@ export function Preloader() {
       duration: td,
       delay: 100,
       complete: () => {
-        // Прелоадер уходит
         anime({
           targets: prldr,
           opacity: [1, 0],
           easing: 'easeOutCubic',
           duration: 300,
           delay: 200,
-          complete: () => {
-            setDone(true);
-          },
+          complete: () => setDone(true),
         });
-
-        // Контент появляется
         if (cnt) {
           anime({
             targets: cnt,
@@ -96,6 +100,7 @@ export function Preloader() {
 
     return () => {
       tl.pause();
+      counterAnim.pause();
     };
   }, []);
 
@@ -121,17 +126,33 @@ export function Preloader() {
       }}
     >
       <div
-        ref={txtRef}
+        ref={innerRef}
         style={{
-          fontSize: '15px',
-          color: 'var(--foreground)',
-          letterSpacing: '-0.01em',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '24px',
           opacity: 0,
-          userSelect: 'none',
-          fontFamily: 'inherit',
         }}
       >
-        MaksMartin — Creative Studio
+        {/* Эмблема */}
+        <div style={{ height: '180px', aspectRatio: '4 / 5' }}>
+          <Emblem fill />
+        </div>
+
+        {/* Счётчик процентов */}
+        <span
+          style={{
+            fontSize: '80px',
+            fontWeight: 700,
+            lineHeight: 1,
+            color: 'var(--foreground)',
+            fontVariantNumeric: 'tabular-nums',
+            letterSpacing: '-0.02em',
+            userSelect: 'none',
+          }}
+        >
+          {progress}%
+        </span>
       </div>
     </div>
   );
