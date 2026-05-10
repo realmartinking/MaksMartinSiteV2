@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 
 export default function ListPage() {
-  const prefersReduced = useReducedMotion();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -45,52 +43,33 @@ export default function ListPage() {
       <div
         className={[
           'flex flex-col items-center',
-          '[&:has(.list-item:hover)_.list-item:not(:hover)]:!blur-[2px]',
-          '[&:has(.list-item:hover)_.list-item:not(:hover)]:!opacity-30',
+          '[&:has(.list-item:hover)_.list-item:not(:hover)]:blur-[2px]',
+          '[&:has(.list-item:hover)_.list-item:not(:hover)]:opacity-30',
         ].join(' ')}
       >
         {Array.from({ length: cycles }).flatMap((_, c) =>
-          PROJECTS.map((p, idx) => {
-            const isFirstCycle = c === 0;
-            const sharedClass = [
-              'list-item w-full font-bold uppercase text-center overflow-hidden',
-              'text-[calc(1rem+6vw)]',
-              'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
-              'md:-mb-2',
-              'transition-[filter,opacity] duration-300 ease-out',
-            ].join(' ');
-
-            if (!isFirstCycle || prefersReduced) {
-              return (
-                <div
-                  key={`${c}-${p.id}`}
-                  onMouseEnter={() => setHoveredId(p.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  className={sharedClass}
-                >
-                  {p.name}
-                </div>
-              );
-            }
-
-            return (
-              <motion.div
-                key={`${c}-${p.id}`}
+          PROJECTS.map((p, idx) => (
+            <div
+              key={`${c}-${p.id}`}
+              className="w-full text-center overflow-hidden md:-mb-2"
+              style={{
+                animation: `list-entrance 1s cubic-bezier(0.16, 1, 0.3, 1) ${Math.min((c * PROJECTS.length + idx) * 0.08, 1.2)}s both`,
+              }}
+            >
+              <span
+                className={[
+                  'list-item inline-block font-bold uppercase',
+                  'text-[calc(1rem+6vw)]',
+                  'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
+                  'transition-[filter,opacity] duration-300 ease-out',
+                ].join(' ')}
                 onMouseEnter={() => setHoveredId(p.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{
-                  duration: 1.0,
-                  ease: [0.16, 1, 0.3, 1],
-                  delay: Math.min(idx * 0.08, 1.2),
-                }}
-                className={sharedClass}
               >
                 {p.name}
-              </motion.div>
-            );
-          })
+              </span>
+            </div>
+          ))
         )}
       </div>
 

@@ -153,6 +153,26 @@
   font-family: 'Times New Roman', Times, serif;
 }
 
+@keyframes list-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes list-entrance {
+    from { opacity: 1; transform: none; filter: none; }
+    to { opacity: 1; transform: none; filter: none; }
+  }
+}
+
 
 /* ═══════════════════════════════════════════════
    COSMETIC TOKENS — могут переопределяться debug panel
