@@ -39,7 +39,7 @@ export default function ListPage() {
   }, []);
 
   return (
-    <main className="min-h-screen pt-[20vh] pb-[20vh]">
+    <main className="min-h-screen pb-[20vh]" style={{ paddingTop: 'var(--grid-padding-top)' }}>
       {/* Project name stack */}
       <div className="flex flex-col items-center">
         {Array.from({ length: cycles }).flatMap((_, c) =>

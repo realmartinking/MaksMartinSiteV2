@@ -27,7 +27,7 @@ export default function GalleryPage() {
   );
 
   return (
-    <main className="pt-[18vh]">
+    <main style={{ paddingTop: 'var(--grid-padding-top)' }}>
       <div className="flex flex-wrap">
         {tiles.map(({ key, ...p }, idx) => (
           <motion.a
