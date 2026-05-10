@@ -28,7 +28,10 @@ export default function GalleryPage() {
 
   return (
     <main style={{ paddingTop: 'var(--grid-padding-top)' }}>
-      <div className="flex flex-wrap">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+        style={{ gap: 'var(--grid-gap)', paddingLeft: 'var(--grid-padding-x)', paddingRight: 'var(--grid-padding-x)' }}
+      >
         {tiles.map(({ key, ...p }, idx) => (
           <motion.a
             key={key}
@@ -41,29 +44,18 @@ export default function GalleryPage() {
               ease: [0.16, 1, 0.3, 1],
               delay: idx < PROJECTS.length ? Math.min(idx * 0.08, 1.2) : 0,
             }}
-            className={[
-              'group block aspect-square overflow-hidden',
-              'w-full p-[20px]',
-              'sm:w-[calc(100%/2)]',
-              'md:w-[calc(100%/3)] md:p-[30px]',
-              'lg:w-[calc(100%/4)] lg:p-[40px]',
-              'xl:w-[calc(100%/5)]',
-              '2xl:w-[calc(100%/6)]',
-            ].join(' ')}
+            className="group block aspect-square overflow-hidden"
           >
             <GridTile
               project={p}
               sizing="fill"
-              className="
-                will-change-transform w-full h-full
-                group-hover:scale-90 transition-all duration-300
-              "
+              className="will-change-transform w-full h-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
             />
           </motion.a>
         ))}
 
         {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="w-full h-1" />
+        <div className="col-span-full h-1" ref={sentinelRef} />
       </div>
     </main>
   );
