@@ -26,7 +26,7 @@ export default function GalleryPage() {
   );
 
   return (
-    <main className="pt-10">
+    <main className="pt-[18vh]">
       <div className="flex flex-wrap">
         {tiles.map(({ key, ...p }) => (
           <a

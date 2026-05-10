@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Chrome } from '@/components/chrome/Chrome';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { Preloader } from '@/components/preloader/Preloader';
 
 export const metadata: Metadata = {
   title: 'Maks Martin',
@@ -33,9 +35,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className="font-sans text-[15px] select-none cursor-crosshair antialiased bg-white text-black">
-        {/* SVG filters для Emblem (Safari canvas workaround) */}
+    <html lang="en" suppressHydrationWarning>
+      <body className="font-sans text-[15px] select-none cursor-crosshair antialiased">
+        {/* SVG filters для Emblem */}
         <svg
           aria-hidden="true"
           style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
@@ -54,8 +56,11 @@ export default function RootLayout({
           </defs>
         </svg>
 
-        <Chrome />
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <Preloader />
+          <Chrome />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
