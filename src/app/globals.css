@@ -274,18 +274,18 @@
   }
 
   [data-edit-id="lockup-contacts"] {
-    font-size: 13px !important;
+    font-size: 16px !important;
     transform: none !important;
   }
 
   [data-edit-id="view-switcher"] {
-    gap: 10px !important;
-    font-size: 13px !important;
+    gap: 12px !important;
+    font-size: 16px !important;
     transform: none !important;
   }
 
   [data-edit-id="view-switcher"] a {
-    font-size: 13px !important;
+    font-size: 16px !important;
   }
 }
 

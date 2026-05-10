@@ -30,7 +30,7 @@ export default function GalleryPage() {
   return (
     <main style={{ paddingTop: 'var(--grid-padding-top)' }}>
       <div
-        className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
+        className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
         style={{ gap: 'var(--grid-gap)', paddingLeft: 'var(--grid-padding-x)', paddingRight: 'var(--grid-padding-x)' }}
       >
         {tiles.map(({ key, ...p }, idx) => (

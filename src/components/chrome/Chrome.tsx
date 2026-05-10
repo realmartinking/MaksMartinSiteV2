@@ -21,12 +21,15 @@ export function Chrome() {
   return (
     <>
       {/* ── Top bar: 3-column fixed header ── */}
-      <header className="
-        fixed inset-x-0 top-0 z-30
-        grid grid-cols-3 items-start
-        gap-6 px-6 pt-4 pb-3
-        pointer-events-none
-      ">
+      <header
+        className="
+          fixed inset-x-0 top-0 z-30
+          grid grid-cols-3 items-start
+          gap-6 px-6 pb-3
+          pointer-events-none
+        "
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
+      >
         {/* Top-left: emblem video + wordmark → /grid */}
         <Link
           href="/grid"
@@ -145,7 +148,7 @@ export function Chrome() {
               key={l.href}
               href={l.href}
               className={[
-                'transition-[filter,opacity] duration-200',
+                'transition-[filter,opacity] duration-200 py-3 -my-3',
                 isActive(l.href) ? 'blur-[2px] opacity-50' : '',
               ].join(' ')}
             >

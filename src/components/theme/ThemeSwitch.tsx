@@ -28,8 +28,9 @@ export function ThemeSwitch() {
       aria-checked={isDark}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 inline-flex items-center h-7 w-14 rounded-full transition-colors duration-200"
+      className="fixed left-1/2 -translate-x-1/2 z-30 inline-flex items-center h-11 w-14 justify-center rounded-full transition-colors duration-200"
       style={{
+        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
         background: isDark
           ? 'rgba(255, 255, 255, 0.15)'
           : 'rgba(0, 0, 0, 0.10)',
@@ -38,7 +39,7 @@ export function ThemeSwitch() {
       }}
     >
       <span
-        className="absolute top-0.5 inline-flex items-center justify-center h-6 w-6 rounded-full transition-transform duration-300 ease-out"
+        className="absolute top-[10px] inline-flex items-center justify-center h-6 w-6 rounded-full transition-transform duration-300 ease-out"
         style={{
           background: 'var(--foreground)',
           color: 'var(--background)',

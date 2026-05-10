@@ -117,12 +117,12 @@ export function Preloader() {
   return (
     <div role="status" aria-hidden={done} style={prldrStyle}>
       <div style={innerStyle}>
-        <div style={{ height: '180px', aspectRatio: '4 / 5' }}>
+        <div style={{ height: 'clamp(100px, 30vw, 180px)', aspectRatio: '4 / 5' }}>
           <Emblem fill />
         </div>
         <span
           style={{
-            fontSize: '80px',
+            fontSize: 'clamp(40px, 12vw, 80px)',
             fontWeight: 700,
             lineHeight: 1,
             color: 'var(--foreground)',

@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useReducedMotion, MotionValue } from 'framer-motion';
 
 interface PerspectiveCardProps {
   children: ReactNode;
@@ -31,7 +31,17 @@ export function PerspectiveCard({
   maxTilt = 60,
   triggerStart = 0.3,
 }: PerspectiveCardProps) {
+  const prefersReduced = useReducedMotion();
   const ref = useRef<HTMLDivElement | null>(null);
+
+  // Skip all 3D effects when reduced motion is preferred
+  if (prefersReduced) {
+    return (
+      <div className={className}>
+        {children}
+      </div>
+    );
+  }
 
   // useScroll с offset 'start end' to 'end start' даст progress 0→1
   // когда карточка проходит весь путь от появления снизу до ухода сверху

@@ -37,7 +37,7 @@ export default function GridPage() {
       */}
       <div
         className="
-          grid grid-cols-12 gap-y-[50px]
+          grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[50px]
           pb-20
           [&:has(.group:hover)_.group:not(:hover)_video]:grayscale
           [&:has(.group:hover)_.group:not(:hover)_img]:grayscale

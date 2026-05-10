@@ -5,6 +5,12 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { Preloader } from '@/components/preloader/Preloader';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover' as const,
+};
+
 export const metadata: Metadata = {
   title: 'Maks Martin',
   description: 'Timeless design, like classical music, love and money',
