@@ -21,7 +21,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/aurica.mp4',
     aspect: 'vertical',
     year: '2024',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p02',
@@ -29,7 +29,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/hightbay.mp4',
     aspect: 'wide',
     year: '2024',
-    type: 'Identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p03',
@@ -37,7 +37,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/value.mp4',
     aspect: 'wide',
     year: '2024',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p04',
@@ -45,7 +45,7 @@ export const PROJECTS: Project[] = [
     imageSrc: '/projects/muse.png',
     aspect: 'vertical',
     year: '2024',
-    type: 'Identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p05',
@@ -53,7 +53,7 @@ export const PROJECTS: Project[] = [
     imageSrc: '/projects/humber.png',
     aspect: 'wide',
     year: '2024',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p06',
@@ -61,7 +61,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/aurix.mp4',
     aspect: 'wide',
     year: '2023',
-    type: 'Identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p07',
@@ -69,7 +69,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/serdtse.mp4',
     aspect: 'vertical',
     year: '2023',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p08',
@@ -77,7 +77,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/nasledie.mp4',
     aspect: 'wide',
     year: '2023',
-    type: 'Identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p09',
@@ -85,15 +85,15 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/saga.mp4',
     aspect: 'vertical',
     year: '2023',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p10',
-    name: "General Vishnevetsky's Dacha",
+    name: 'Дача Генерала Вишневецкого',
     imageSrc: '/projects/vishnevetsky.png',
     aspect: 'wide',
     year: '2023',
-    type: 'Identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p11',
@@ -101,7 +101,7 @@ export const PROJECTS: Project[] = [
     imageSrc: '/projects/lumio.png',
     aspect: 'square',
     year: '2022',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p12',
@@ -109,7 +109,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/forma.mp4',
     aspect: 'wide',
     year: '2022',
-    type: 'Identity',
+    type: 'Art Direction',
   },
   {
     id: 'p13',
@@ -117,7 +117,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/raif.mp4',
     aspect: 'wide',
     year: '2022',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p14',
@@ -125,7 +125,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/semya.mp4',
     aspect: 'vertical',
     year: '2022',
-    type: 'Identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p15',
@@ -133,7 +133,7 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/maoundi.mp4',
     aspect: 'wide',
     year: '2022',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p16',
@@ -141,15 +141,15 @@ export const PROJECTS: Project[] = [
     videoSrc: '/projects/manery.mp4',
     aspect: 'vertical',
     year: '2021',
-    type: 'Identity',
+    type: 'Brand Identity / Art Direction',
   },
   {
     id: 'p17',
-    name: 'Russia Expo 25',
+    name: 'Russia Expo 2025',
     videoSrc: '/projects/russia-expo.mp4',
     aspect: 'wide',
     year: '2021',
-    type: 'Brand identity',
+    type: 'Brand Identity / Art Direction',
   },
 ];
 

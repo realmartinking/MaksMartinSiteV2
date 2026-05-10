@@ -217,17 +217,17 @@
   --el-lockup-tagline-translate-y: 0px;
   --el-lockup-tagline-line-height: 1;
 
-  /* Per-element overrides — lockup-emblem */
-  --el-lockup-emblem-height: 300px;
+  /* Per-element overrides — lockup-emblem (DESKTOP ONLY — не трогать) */
+  --el-lockup-emblem-height: 156px;
   --el-lockup-emblem-margin-top: -18px;
-  --el-lockup-emblem-margin-bottom: -48px;
+  --el-lockup-emblem-margin-bottom: -24px;
   --el-lockup-emblem-translate-x: -36px;
 
-  /* Per-element overrides — lockup-name */
+  /* Per-element overrides — lockup-name (DESKTOP ONLY — не трогать) */
   --el-lockup-name-font-size: 25px;
   --el-lockup-name-letter-spacing: -0.03em;
   --el-lockup-name-translate-x: -69px;
-  --el-lockup-name-translate-y: -100px;
+  --el-lockup-name-translate-y: -53px;
 }
 
 @media (max-width: 768px) {
@@ -252,9 +252,9 @@
     align-items: center !important;
   }
 
-  /* Эмблема: увеличенная на мобилке (80px) */
+  /* Эмблема на мобилке */
   [data-edit-id="lockup-emblem"] {
-    height: 80px !important;
+    height: 100px !important;
     margin: 0 !important;
     transform: none !important;
   }
@@ -282,7 +282,7 @@
     gap: 12px !important;
     font-size: 16px !important;
     transform: none !important;
-    margin-top: 60px !important;
+    margin-top: 40px !important;
   }
 
   [data-edit-id="view-switcher"] a {
