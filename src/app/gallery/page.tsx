@@ -13,7 +13,7 @@ export default function GalleryPage() {
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) setCycles((c) => Math.min(c + 1, 8));
+        if (e.isIntersecting) setCycles((c) => c + 1);
       },
       { rootMargin: '1500px' }
     );

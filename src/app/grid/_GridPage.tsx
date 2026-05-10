@@ -16,7 +16,7 @@ export default function GridPage() {
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) setCycles((c) => Math.min(c + 1, 6));
+        if (e.isIntersecting) setCycles((c) => c + 1);
       },
       { rootMargin: '1500px' }
     );
