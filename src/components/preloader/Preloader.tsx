@@ -21,11 +21,26 @@ export function Preloader() {
 
     const interval = setInterval(tick, 80);
 
+    // Минимум 2.5s показа прелоадера для драматического эффекта
+    const startedAt = Date.now();
+    const MIN_DURATION = 2500;
+
+    const finish = () => {
+      if (!mounted) return;
+      const elapsed = Date.now() - startedAt;
+      const remaining = Math.max(0, MIN_DURATION - elapsed);
+
+      setTimeout(() => {
+        if (!mounted) return;
+        setProgress(1);
+        setTimeout(() => mounted && setDone(true), 1200);
+      }, remaining);
+    };
+
     window.addEventListener(
       'load',
       () => {
-        setProgress(1);
-        setTimeout(() => mounted && setDone(true), 600);
+        finish();
         clearInterval(interval);
       },
       { once: true }
@@ -35,7 +50,7 @@ export function Preloader() {
     const safety = setTimeout(() => {
       if (!mounted) return;
       setProgress(1);
-      setTimeout(() => mounted && setDone(true), 600);
+      setTimeout(() => mounted && setDone(true), 1200);
     }, 8000);
 
     return () => {
@@ -55,7 +70,7 @@ export function Preloader() {
         'fixed inset-0 z-50',
         'bg-background',
         'flex items-center justify-center gap-8',
-        'transition-opacity duration-500',
+        'transition-opacity duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
         progress >= 1 ? 'opacity-0 pointer-events-none' : 'opacity-100',
       ].join(' ')}
       aria-hidden={progress >= 1}

@@ -46,7 +46,8 @@ export function PerspectiveCard({
   // smoothing
   const smooth = useSpring(scrollYProgress, {
     stiffness: 80,
-    damping: 25,
+    damping: 22,
+    mass: 1,
     restDelta: 0.001,
   });
 
@@ -59,7 +60,8 @@ export function PerspectiveCard({
   });
   const smoothExit = useSpring(exitProgress, {
     stiffness: 80,
-    damping: 25,
+    damping: 22,
+    mass: 1,
     restDelta: 0.001,
   });
 

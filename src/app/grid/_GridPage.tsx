@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
@@ -49,32 +50,41 @@ export default function GridPage() {
           paddingTop: 'var(--grid-padding-top)',
         }}
       >
-        {tiles.map(({ key, ...p }) => (
-          <PerspectiveCard
+        {tiles.map(({ key, ...p }, idx) => (
+          <motion.div
             key={key}
+            initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{
+              duration: 1.0,
+              ease: [0.16, 1, 0.3, 1],
+              delay: Math.min(idx * 0.08, 1.2),
+            }}
             className="col-span-12 sm:col-span-6 xl:col-span-4 min-[1920px]:col-span-3 self-start"
           >
-            <a
-              href={p.url || '#'}
-              onClick={(e) => { if (!p.url) e.preventDefault(); }}
-              className="flex flex-col items-center gap-y-[10px] group block"
-            >
-              <GridTile
-                project={p}
-                sizing="natural"
-                className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-in-out"
-              />
-              <p
-                className="leading-tight text-center"
-                style={{
-                  fontSize: 'var(--font-tile-name-size)',
-                  fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
-                }}
+            <PerspectiveCard className="w-full">
+              <a
+                href={p.url || '#'}
+                onClick={(e) => { if (!p.url) e.preventDefault(); }}
+                className="flex flex-col items-center gap-y-[10px] group block"
               >
-                {p.name}&nbsp;&nbsp;/&nbsp;&nbsp;{p.type ?? ''}
-              </p>
-            </a>
-          </PerspectiveCard>
+                <GridTile
+                  project={p}
+                  sizing="natural"
+                  className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-in-out"
+                />
+                <p
+                  className="leading-tight text-center"
+                  style={{
+                    fontSize: 'var(--font-tile-name-size)',
+                    fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
+                  }}
+                >
+                  {p.name}&nbsp;&nbsp;/&nbsp;&nbsp;{p.type ?? ''}
+                </p>
+              </a>
+            </PerspectiveCard>
+          </motion.div>
         ))}
 
         {/* Infinite scroll sentinel */}
