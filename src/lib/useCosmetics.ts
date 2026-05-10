@@ -41,7 +41,7 @@ export const DEFAULTS: CosmeticTokens = {
   'grid-columns': '12',
   'grid-gap': '10px',
   'grid-padding-x': '10px',
-  'grid-padding-top': '18vh',
+  'grid-padding-top': '185px',
   'tile-radius': '0px',
   'tile-hover-scale': '0.95',
   'perspective-distance': '1500px',
