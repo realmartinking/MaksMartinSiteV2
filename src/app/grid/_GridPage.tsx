@@ -36,7 +36,7 @@ export default function GridPage() {
       */}
       <div
         className="
-          grid gap-y-[50px]
+          grid grid-cols-12 gap-y-[50px]
           pb-20
           [&:has(a:hover)_a:not(:hover)_video]:grayscale
           [&:has(a:hover)_a:not(:hover)_img]:grayscale
@@ -44,7 +44,6 @@ export default function GridPage() {
           [&_a_img]:[transition:filter_300ms_ease,transform_300ms_ease]
         "
         style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
           columnGap: 'var(--grid-gap)',
           paddingLeft: 'var(--grid-padding-x)',
           paddingRight: 'var(--grid-padding-x)',
@@ -61,7 +60,7 @@ export default function GridPage() {
               ease: [0.16, 1, 0.3, 1],
               delay: Math.min(idx * 0.08, 1.2),
             }}
-            className="self-start"
+            className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
             <PerspectiveCard className="w-full">
               <a
@@ -89,7 +88,7 @@ export default function GridPage() {
         ))}
 
         {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="h-1" style={{ gridColumn: '1 / -1' }} />
+        <div ref={sentinelRef} className="col-span-12 h-1" />
       </div>
     </main>
   );

@@ -1,145 +1,125 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import anime from 'animejs';
 import { Emblem } from '@/components/lockup/Emblem';
 
 /**
- * Прелоадер: эмблема MaksMartin + счётчик процентов рядом справа.
+ * Прелоадер: эмблема + счётчик процентов на белом/чёрном фоне.
  *
  * Тайминг (td=600ms):
- *  0ms       фон по теме
- *  +1000ms   контент fade-in (blur 10→0, y 20→0, easeOutCubic)
- *  +1000ms   hold (счётчик идёт от 0 до 100)
- *  +600ms    контент fade-out (blur 0→10, y 0→-20, easeInCubic)
- *  complete: prldr fade-out 300ms → main контент fade-in
+ *  0ms       прелоадер виден, контент скрыт
+ *  +100ms    inner fade-in (blur+y, 600ms easeOutCubic)
+ *  параллельно — счётчик 0→100 за 1900ms
+ *  +2000ms   inner fade-out (blur+y up, 600ms easeInCubic)
+ *  +2700ms   prldr fade-out (300ms)
+ *  +3000ms   контент fade-in (blur+y, 600ms)
+ *  +3600ms   готово
  */
 export function Preloader() {
-  const prldrRef = useRef<HTMLDivElement | null>(null);
-  const innerRef = useRef<HTMLDivElement | null>(null);
   const [progress, setProgress] = useState(0);
+  const [stage, setStage] = useState<'in' | 'hold' | 'out' | 'gone'>('in');
   const [done, setDone] = useState(false);
+  const startedRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!prldrRef.current || !innerRef.current) return;
+    const cnt = document.querySelector('main') as HTMLElement | null;
+    if (cnt) cnt.style.opacity = '0';
 
-    const prldr = prldrRef.current;
-    const inner = innerRef.current;
-    const td = 600;
+    startedRef.current = performance.now();
 
-    const cnt = document.querySelector('main');
-    if (cnt) (cnt as HTMLElement).style.opacity = '0';
+    let raf = 0;
+    const tick = () => {
+      const elapsed = performance.now() - (startedRef.current || 0);
 
-    // Анимация счётчика 0 → 100 за 1600ms (1000ms delay + 600ms fade-in overlap)
-    const counterAnim = anime({
-      targets: { value: 0 },
-      value: 100,
-      duration: 1600,
-      delay: 1000,
-      easing: 'linear',
-      update: (a) => {
-        const v = Math.round((a.animations[0].currentValue as unknown) as number);
-        setProgress(v);
-      },
-    });
+      // Counter 0→100 over 1900ms (от 100ms до 2000ms)
+      if (elapsed < 100) {
+        setProgress(0);
+      } else if (elapsed < 2000) {
+        const t = (elapsed - 100) / 1900;
+        setProgress(Math.min(100, Math.round(t * 100)));
+      } else {
+        setProgress(100);
+      }
 
-    const tl = anime.timeline({});
+      // Stage transitions
+      if (elapsed < 100) {
+        setStage('in');
+      } else if (elapsed < 2000) {
+        setStage('hold');
+      } else if (elapsed < 2700) {
+        setStage('out');
+      } else if (elapsed >= 2700) {
+        cancelAnimationFrame(raf);
+        setStage('gone');
 
-    // 1. Эмблема + счётчик появляются
-    tl.add({
-      targets: inner,
-      opacity: [0, 1],
-      filter: ['blur(10px)', 'blur(0px)'],
-      translateY: ['20px', '0'],
-      easing: 'easeOutCubic',
-      duration: td,
-      delay: 1000,
-    });
-
-    // 2. Hold 1000ms
-    tl.add({
-      targets: inner,
-      duration: 1000,
-    });
-
-    // 3. Уезжают вверх с blur
-    tl.add({
-      targets: inner,
-      opacity: [1, 0],
-      filter: ['blur(0px)', 'blur(10px)'],
-      translateY: ['0', '-20px'],
-      easing: 'easeInCubic',
-      duration: td,
-      delay: 100,
-      complete: () => {
-        anime({
-          targets: prldr,
-          opacity: [1, 0],
-          easing: 'easeOutCubic',
-          duration: 300,
-          delay: 200,
-          complete: () => setDone(true),
-        });
+        // Контент появляется
         if (cnt) {
-          anime({
-            targets: cnt,
-            opacity: [0, 1],
-            filter: ['blur(10px)', 'blur(0px)'],
-            translateY: ['20px', '0px'],
-            easing: 'easeOutCubic',
-            duration: td,
-            delay: 300,
-            complete: () => {
-              (cnt as HTMLElement).style.transform = '';
-              (cnt as HTMLElement).style.filter = '';
-            },
+          cnt.style.transition = 'opacity 600ms cubic-bezier(0.215, 0.61, 0.355, 1), filter 600ms cubic-bezier(0.215, 0.61, 0.355, 1), transform 600ms cubic-bezier(0.215, 0.61, 0.355, 1)';
+          cnt.style.filter = 'blur(10px)';
+          cnt.style.transform = 'translateY(20px)';
+          cnt.style.opacity = '0';
+
+          requestAnimationFrame(() => {
+            cnt.style.opacity = '1';
+            cnt.style.filter = 'blur(0px)';
+            cnt.style.transform = 'translateY(0)';
           });
+
+          setTimeout(() => {
+            cnt.style.transition = '';
+            cnt.style.filter = '';
+            cnt.style.transform = '';
+          }, 700);
         }
-      },
-    });
+
+        setTimeout(() => setDone(true), 350);
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
 
     return () => {
-      tl.pause();
-      counterAnim.pause();
+      cancelAnimationFrame(raf);
     };
   }, []);
 
   if (done) return null;
 
+  const innerStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '24px',
+    transition: 'opacity 600ms cubic-bezier(0.215, 0.61, 0.355, 1), filter 600ms cubic-bezier(0.215, 0.61, 0.355, 1), transform 600ms cubic-bezier(0.215, 0.61, 0.355, 1)',
+    opacity: stage === 'in' ? 0 : stage === 'out' ? 0 : 1,
+    filter: stage === 'in' ? 'blur(10px)' : stage === 'out' ? 'blur(10px)' : 'blur(0px)',
+    transform:
+      stage === 'in' ? 'translateY(20px)'
+      : stage === 'out' ? 'translateY(-20px)'
+      : 'translateY(0)',
+  };
+
+  const prldrStyle: React.CSSProperties = {
+    position: 'fixed',
+    inset: 0,
+    width: '100%',
+    height: '100dvh',
+    background: 'var(--background)',
+    zIndex: 9999,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transition: 'opacity 300ms cubic-bezier(0.215, 0.61, 0.355, 1)',
+    opacity: stage === 'gone' ? 0 : 1,
+    pointerEvents: stage === 'gone' ? 'none' : 'auto',
+  };
+
   return (
-    <div
-      ref={prldrRef}
-      role="status"
-      aria-hidden={done}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        width: '100%',
-        height: '100dvh',
-        background: 'var(--background)',
-        zIndex: 9999,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        opacity: 1,
-        pointerEvents: done ? 'none' : 'auto',
-      }}
-    >
-      <div
-        ref={innerRef}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '24px',
-          opacity: 0,
-        }}
-      >
-        {/* Эмблема */}
+    <div role="status" aria-hidden={done} style={prldrStyle}>
+      <div style={innerStyle}>
         <div style={{ height: '180px', aspectRatio: '4 / 5' }}>
           <Emblem fill />
         </div>
-
-        {/* Счётчик процентов */}
         <span
           style={{
             fontSize: '80px',
