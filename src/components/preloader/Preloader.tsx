@@ -1,95 +1,138 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import anime from 'animejs';
 
+/**
+ * Прелоадер в стиле emelecollab.com/grid.
+ *
+ * Тайминг (td=600ms):
+ *  0ms       фон (var(--background))
+ *  +1000ms   текст fade-in (blur 10→0, y 20→0, easeOutCubic)
+ *  +1000ms   текст hold
+ *  -100ms    текст fade-out (blur 0→10, y 0→-20, easeInCubic)
+ *  complete: прелоадер fade-out 300ms (delay 200ms)
+ *  +300ms    контент fade-in (blur 10→0, y 20→0, easeOutCubic)
+ */
 export function Preloader() {
-  const [progress, setProgress] = useState(0);
+  const prldrRef = useRef<HTMLDivElement | null>(null);
+  const txtRef = useRef<HTMLDivElement | null>(null);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
+    if (!prldrRef.current || !txtRef.current) return;
 
-    const tick = () => {
-      if (!mounted) return;
-      const videos = document.querySelectorAll<HTMLVideoElement>('video');
-      const ready = [...videos].filter((v) => v.readyState >= 2).length;
-      const total = Math.max(videos.length, 1);
-      const docReady = document.readyState === 'complete' ? 1 : 0.6;
-      const ratio = (ready / total) * 0.7 + docReady * 0.3;
-      setProgress((prev) => Math.max(prev, Math.min(1, ratio)));
-    };
+    const prldr = prldrRef.current;
+    const txt = txtRef.current;
+    const td = 600;
 
-    const interval = setInterval(tick, 80);
+    // Главный контент сайта
+    const cnt = document.querySelector('main');
 
-    // Минимум 2.5s показа прелоадера для драматического эффекта
-    const startedAt = Date.now();
-    const MIN_DURATION = 2500;
+    // Скрываем контент пока идёт прелоадер
+    if (cnt) {
+      (cnt as HTMLElement).style.opacity = '0';
+    }
 
-    const finish = () => {
-      if (!mounted) return;
-      const elapsed = Date.now() - startedAt;
-      const remaining = Math.max(0, MIN_DURATION - elapsed);
+    const tl = anime.timeline({});
 
-      setTimeout(() => {
-        if (!mounted) return;
-        setProgress(1);
-        setTimeout(() => mounted && setDone(true), 1200);
-      }, remaining);
-    };
+    // 1. Текст появляется
+    tl.add({
+      targets: txt,
+      opacity: [0, 1],
+      filter: ['blur(10px)', 'blur(0px)'],
+      translateY: ['20px', '0'],
+      easing: 'easeOutCubic',
+      duration: td,
+      delay: 1000,
+    });
 
-    window.addEventListener(
-      'load',
-      () => {
-        finish();
-        clearInterval(interval);
+    // 2. Hold 1000ms
+    tl.add({
+      targets: txt,
+      duration: 1000,
+    });
+
+    // 3. Текст исчезает
+    tl.add({
+      targets: txt,
+      opacity: [1, 0],
+      filter: ['blur(0px)', 'blur(10px)'],
+      translateY: ['0', '-20px'],
+      easing: 'easeInCubic',
+      duration: td,
+      delay: 100,
+      complete: () => {
+        // Прелоадер уходит
+        anime({
+          targets: prldr,
+          opacity: [1, 0],
+          easing: 'easeOutCubic',
+          duration: 300,
+          delay: 200,
+          complete: () => {
+            setDone(true);
+          },
+        });
+
+        // Контент появляется
+        if (cnt) {
+          anime({
+            targets: cnt,
+            opacity: [0, 1],
+            filter: ['blur(10px)', 'blur(0px)'],
+            translateY: ['20px', '0px'],
+            easing: 'easeOutCubic',
+            duration: td,
+            delay: 300,
+            complete: () => {
+              (cnt as HTMLElement).style.transform = '';
+              (cnt as HTMLElement).style.filter = '';
+            },
+          });
+        }
       },
-      { once: true }
-    );
-
-    // Safety fallback — never block more than 8s
-    const safety = setTimeout(() => {
-      if (!mounted) return;
-      setProgress(1);
-      setTimeout(() => mounted && setDone(true), 1200);
-    }, 8000);
+    });
 
     return () => {
-      mounted = false;
-      clearInterval(interval);
-      clearTimeout(safety);
+      tl.pause();
     };
   }, []);
 
   if (done) return null;
 
-  const pct = Math.round(progress * 100);
-
   return (
     <div
-      className={[
-        'fixed inset-0 z-50',
-        'bg-background',
-        'flex items-center justify-center gap-8',
-        'transition-opacity duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
-        progress >= 1 ? 'opacity-0 pointer-events-none' : 'opacity-100',
-      ].join(' ')}
-      aria-hidden={progress >= 1}
+      ref={prldrRef}
       role="status"
+      aria-hidden={done}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100%',
+        height: '100dvh',
+        background: 'var(--background)',
+        zIndex: 9999,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        opacity: 1,
+        pointerEvents: done ? 'none' : 'auto',
+      }}
     >
-      {/* Bull-mermaid emblem */}
-      <video
-        src="/MaksMartinLogo.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="h-[180px] w-auto"
-      />
-
-      {/* Percentage counter */}
-      <span className="font-bold text-[80px] leading-none tabular-nums select-none">
-        {pct}%
-      </span>
+      <div
+        ref={txtRef}
+        style={{
+          fontSize: '15px',
+          color: 'var(--foreground)',
+          letterSpacing: '-0.01em',
+          opacity: 0,
+          userSelect: 'none',
+          fontFamily: 'inherit',
+        }}
+      >
+        MaksMartin — Creative Studio
+      </div>
     </div>
   );
 }
