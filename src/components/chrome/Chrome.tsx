@@ -117,7 +117,7 @@ export function Chrome() {
               transform: 'translate(var(--el-lockup-contacts-translate-x, 0px), var(--el-lockup-contacts-translate-y, 0px))',
             }}
           >
-            Contacts
+            Info
           </Link>
         </div>
 
@@ -158,14 +158,6 @@ export function Chrome() {
       {/* ── Bottom center: theme switch ── */}
       <ThemeSwitch />
 
-      {/* ── Bottom right: email ── */}
-      <a
-        href="mailto:martinmursalimov@gmail.com?subject=Hi%20Maks"
-        className="fixed bottom-3 right-4 z-30 opacity-50 hover:opacity-100 transition-opacity duration-200"
-        style={{ fontSize: 'var(--unified-text-size)' }}
-      >
-        Email Me
-      </a>
     </>
   );
 }
