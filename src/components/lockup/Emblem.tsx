@@ -40,7 +40,11 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
   return (
     <div
       className={`relative ${className}`}
-      style={containerStyle}
+      style={{
+        ...containerStyle,
+        isolation: 'isolate',
+        background: 'var(--background)',
+      }}
       aria-hidden="true"
     >
       <video

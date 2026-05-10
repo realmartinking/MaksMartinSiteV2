@@ -22,8 +22,9 @@ export function ThemeSwitch() {
         fixed bottom-3 left-1/2 -translate-x-1/2 z-30
         inline-flex items-center
         h-7 w-14 rounded-full
-        bg-foreground/10 hover:bg-foreground/20
+        bg-background hover:bg-foreground/10
         transition-colors duration-200
+        shadow-sm
       "
     >
       <span
