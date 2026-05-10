@@ -128,3 +128,149 @@ export function useCosmetics() {
 
   return { tokens, setToken, reset, exportAsCss, exportAsJson, importFromJson, isLoaded };
 }
+
+// ═══════════════════════════════════════════════
+// PER-ELEMENT TOKENS
+// ═══════════════════════════════════════════════
+
+const ELEMENTS_STORAGE_KEY = 'mm-elements';
+
+export interface ElementToken {
+  // Typography
+  fontSize?: string;
+  fontWeight?: string;
+  letterSpacing?: string;
+  lineHeight?: string;
+  textTransform?: string;
+  fontStyle?: string;
+
+  // Container
+  maxWidth?: string;
+  textAlign?: string;
+
+  // Position (через transform: translate)
+  translateX?: string;
+  translateY?: string;
+
+  // Spacing
+  paddingTop?: string;
+  paddingRight?: string;
+  paddingBottom?: string;
+  paddingLeft?: string;
+  marginTop?: string;
+  marginRight?: string;
+  marginBottom?: string;
+  marginLeft?: string;
+
+  // Color
+  color?: string;
+  opacity?: string;
+
+  // Size
+  width?: string;
+  height?: string;
+}
+
+export type ElementsMap = Record<string, ElementToken>;
+
+const DEFAULT_ELEMENTS: ElementsMap = {};
+
+export function useElements() {
+  const [elements, setElements] = useState<ElementsMap>(DEFAULT_ELEMENTS);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(ELEMENTS_STORAGE_KEY);
+      if (stored) setElements(JSON.parse(stored));
+    } catch (e) {
+      console.warn('[elements] load failed:', e);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Apply: каждый element token превращается в CSS var на :root
+  useEffect(() => {
+    if (!isLoaded) return;
+    const root = document.documentElement;
+
+    // Очистим старые --el-*
+    Array.from(root.style).forEach((prop) => {
+      if (prop.startsWith('--el-')) root.style.removeProperty(prop);
+    });
+
+    // Применим текущие
+    Object.entries(elements).forEach(([elementId, token]) => {
+      Object.entries(token).forEach(([prop, value]) => {
+        if (value === undefined || value === '') return;
+        const cssProp = prop.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
+        root.style.setProperty(`--el-${elementId}-${cssProp}`, String(value));
+      });
+    });
+  }, [elements, isLoaded]);
+
+  const setElementToken = useCallback((elementId: string, token: Partial<ElementToken>) => {
+    setElements((prev) => {
+      const current = prev[elementId] || {};
+      const updated = { ...current, ...token };
+      // Удалим пустые значения
+      Object.keys(updated).forEach((k) => {
+        if (updated[k as keyof ElementToken] === undefined || updated[k as keyof ElementToken] === '') {
+          delete updated[k as keyof ElementToken];
+        }
+      });
+      const next = { ...prev, [elementId]: updated };
+      try {
+        localStorage.setItem(ELEMENTS_STORAGE_KEY, JSON.stringify(next));
+      } catch (e) {
+        console.warn('[elements] save failed:', e);
+      }
+      return next;
+    });
+  }, []);
+
+  const resetElement = useCallback((elementId: string) => {
+    setElements((prev) => {
+      const next = { ...prev };
+      delete next[elementId];
+      try {
+        localStorage.setItem(ELEMENTS_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const resetAllElements = useCallback(() => {
+    setElements({});
+    try {
+      localStorage.removeItem(ELEMENTS_STORAGE_KEY);
+    } catch {}
+    const root = document.documentElement;
+    Array.from(root.style).forEach((prop) => {
+      if (prop.startsWith('--el-')) root.style.removeProperty(prop);
+    });
+  }, []);
+
+  const exportElementsAsCss = useCallback((): string => {
+    const lines = [':root {'];
+    Object.entries(elements).forEach(([elementId, token]) => {
+      Object.entries(token).forEach(([prop, value]) => {
+        if (value === undefined || value === '') return;
+        const cssProp = prop.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
+        lines.push(`  --el-${elementId}-${cssProp}: ${value};`);
+      });
+    });
+    lines.push('}');
+    return lines.length > 2 ? lines.join('\n') : '';
+  }, [elements]);
+
+  return {
+    elements,
+    setElementToken,
+    resetElement,
+    resetAllElements,
+    exportElementsAsCss,
+    isLoaded,
+  };
+}
