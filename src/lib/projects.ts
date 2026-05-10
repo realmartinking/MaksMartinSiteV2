@@ -155,7 +155,7 @@ export const PROJECTS: Project[] = [
 
 // Slogan и контактные данные
 export const SITE_INFO = {
-  name: 'Maks Martin',
+  name: 'MaksMartin',
   slogan: 'Timeless design, like classical music, love and money',
   telegram: 'https://t.me/martinmuur',
   email: 'martinmursalimov@gmail.com',

@@ -212,9 +212,66 @@
 
 @media (max-width: 768px) {
   :root {
-    --lockup-emblem-size: 48px;
-    --lockup-name-size: 13px;
-    --lockup-padding: 16px;
-    --grid-padding-x: 8px;
+    --lockup-emblem-size: 40px;
+    --lockup-name-size: 16px;
+    --lockup-padding: 12px;
+    --grid-padding-x: 12px;
+    --grid-padding-top: 80px;
+  }
+
+  /* Скрываем слоган на мобиле */
+  [data-edit-id="lockup-tagline"] {
+    display: none !important;
+  }
+
+  /* Шапка: 2 колонки [emblem+name] [contacts+nav] */
+  header {
+    grid-template-columns: auto 1fr !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    align-items: center !important;
+  }
+
+  /* Эмблема: сбросить per-element overrides из debug panel */
+  [data-edit-id="lockup-emblem"] {
+    height: 40px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  /* MaksMartin компактный, без debug overrides */
+  [data-edit-id="lockup-name"] {
+    font-size: 16px !important;
+    transform: none !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  /* Средняя ячейка — только contacts, выровнено справа */
+  header > div:has([data-edit-id="lockup-contacts"]) {
+    display: flex !important;
+    gap: 12px !important;
+    justify-content: flex-end !important;
+  }
+
+  [data-edit-id="lockup-contacts"] {
+    font-size: 13px !important;
+    transform: none !important;
+  }
+
+  [data-edit-id="view-switcher"] {
+    gap: 10px !important;
+    font-size: 13px !important;
+    transform: none !important;
+  }
+
+  [data-edit-id="view-switcher"] a {
+    font-size: 13px !important;
+  }
+}
+
+/* Landscape phone: высота меньше 500px и landscape — больший top padding */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --grid-padding-top: 90px !important;
   }
 }
