@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 
@@ -8,6 +8,23 @@ export default function ListPage() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+
+  // Play only the hovered video, pause the rest
+  useEffect(() => {
+    videoRefs.current.forEach((video, id) => {
+      if (id === hoveredId) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, [hoveredId]);
+
+  const setVideoRef = useCallback((id: string, el: HTMLVideoElement | null) => {
+    if (el) videoRefs.current.set(id, el);
+    else videoRefs.current.delete(id);
+  }, []);
 
   // Infinite scroll — no cap
   useEffect(() => {
@@ -59,21 +76,21 @@ export default function ListPage() {
 
       <div ref={sentinelRef} className="h-1" />
 
-      {/* Fixed bottom-right preview panel */}
-      <div className="fixed bottom-2 right-3 z-30 w-full max-w-[24vw] pointer-events-none">
+      {/* Fixed bottom-right preview panel (hidden on mobile) */}
+      <div className="hidden md:block fixed bottom-2 right-3 z-30 w-full max-w-[24vw] pointer-events-none">
         {PROJECTS.map((p) => (
           p.videoSrc ? (
             <video
               key={p.id}
+              ref={(el) => setVideoRef(p.id, el)}
               src={p.videoSrc}
-              autoPlay
               loop
               muted
               playsInline
-              preload="metadata"
+              preload="none"
               className={[
                 'absolute bottom-0 right-0 w-full h-auto',
-                'transition-opacity duration-300',
+                'transition-opacity duration-200 ease-out',
                 hoveredId === p.id ? 'opacity-100' : 'opacity-0',
               ].join(' ')}
             />
@@ -82,9 +99,10 @@ export default function ListPage() {
               key={p.id}
               src={p.imageSrc}
               alt={p.name}
+              loading="lazy"
               className={[
                 'absolute bottom-0 right-0 w-full h-auto',
-                'transition-opacity duration-300',
+                'transition-opacity duration-200 ease-out',
                 hoveredId === p.id ? 'opacity-100' : 'opacity-0',
               ].join(' ')}
             />
