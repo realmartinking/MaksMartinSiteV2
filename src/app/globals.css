@@ -55,8 +55,6 @@
   --background: #ffffff;
   --foreground: #000000;
   --tile-bg: #e8e8e8;
-  --emblem-filter: url(#kill-white-bg);
-  --emblem-source: url('/MaksMartinLogo.mp4');
   
   /* Дизайн-метрики */
   --emblem-size: 200px; /* высота эмблемы в лок-апе */
@@ -87,8 +85,6 @@
   --background: #000000;
   --foreground: #ffffff;
   --tile-bg: #1a1a1a;
-  --emblem-filter: url(#kill-black-bg);
-  --emblem-source: url('/MaksMartinLogoBlack.mp4');
   
   --card: #0a0a0a;
   --card-foreground: #ffffff;
@@ -161,20 +157,6 @@
   font-family: 'Times New Roman', Times, serif;
 }
 
-/* Эмблема использует canvas с фильтром */
-.emblem-canvas {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.emblem-canvas.emblem-light {
-  filter: url(#kill-white-bg);
-}
-.emblem-canvas.emblem-dark {
-  filter: url(#kill-black-bg);
-}
 
 /* ═══════════════════════════════════════════════
    COSMETIC TOKENS — могут переопределяться debug panel
@@ -207,6 +189,10 @@
   --font-tile-name-size: 15px;
   --font-tile-name-weight: 700;
   --font-tile-meta-size: 15px;
+
+  /* Унифицированный размер малых текстов: слоган, view switcher, contacts */
+  --unified-text-size: 15px;
+  --unified-text-weight: 700;
 }
 
 @media (max-width: 768px) {

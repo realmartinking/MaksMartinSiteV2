@@ -216,6 +216,11 @@ export function DebugPanel() {
                         />
                       </Section>
 
+                      <Section title="Typography Global">
+                        <SliderControl label="Unified small text" value={tokens['unified-text-size']} onChange={(v) => setToken('unified-text-size', v)} min={9} max={24} step={1} />
+                        <SliderControl label="Unified text weight" value={tokens['unified-text-weight']} onChange={(v) => setToken('unified-text-weight', v)} min={300} max={900} step={100} unit="" />
+                      </Section>
+
                       <Section title="Header Lockup">
                         <SliderControl label="Emblem size" value={tokens['lockup-emblem-size']} onChange={(v) => setToken('lockup-emblem-size', v)} min={30} max={120} step={2} />
                         <SliderControl label="Padding from edge" value={tokens['lockup-padding']} onChange={(v) => setToken('lockup-padding', v)} min={8} max={80} step={2} />

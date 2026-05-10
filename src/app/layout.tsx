@@ -38,24 +38,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans text-[15px] select-none cursor-crosshair antialiased">
-        {/* SVG filters для Emblem */}
-        <svg
-          aria-hidden="true"
-          style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
-        >
-          <defs>
-            <filter id="kill-white-bg" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-              <feColorMatrix type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0.299 0.587 0.114 0 0" />
-              <feComponentTransfer><feFuncA type="linear" slope="1" intercept="0" /></feComponentTransfer>
-              <feComposite in2="SourceGraphic" operator="in" />
-            </filter>
-            <filter id="kill-black-bg" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-              <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0.299 0.587 0.114 0 0" />
-              <feComponentTransfer><feFuncA type="linear" slope="8" intercept="0" /></feComponentTransfer>
-              <feComposite in2="SourceGraphic" operator="in" />
-            </filter>
-          </defs>
-        </svg>
 
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <Preloader />

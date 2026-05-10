@@ -32,28 +32,35 @@ export function Chrome() {
           className="pointer-events-auto flex items-center gap-3 w-fit"
           aria-label="Maks Martin — home"
         >
-          <video
+          <div
             data-edit-id="lockup-emblem"
-            src="/MaksMartinLogo.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
             style={{
-              height: 'var(--lockup-emblem-size)',
-              width: 'auto',
+              width: 'var(--el-lockup-emblem-width, var(--lockup-emblem-size))',
+              height: 'var(--el-lockup-emblem-height, var(--lockup-emblem-size))',
               transform: 'translate(var(--el-lockup-emblem-translate-x, 0px), var(--el-lockup-emblem-translate-y, 0px))',
+              paddingTop: 'var(--el-lockup-emblem-padding-top, 0)',
+              paddingRight: 'var(--el-lockup-emblem-padding-right, 0)',
+              paddingBottom: 'var(--el-lockup-emblem-padding-bottom, 0)',
+              paddingLeft: 'var(--el-lockup-emblem-padding-left, 0)',
               marginTop: 'var(--el-lockup-emblem-margin-top, 0)',
               marginBottom: 'var(--el-lockup-emblem-margin-bottom, 0)',
             }}
-          />
+          >
+            <video
+              src="/MaksMartinLogo.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-contain"
+              style={{ mixBlendMode: 'multiply' }}
+            />
+          </div>
           <span
             data-edit-id="lockup-name"
-            className="leading-tight"
             style={{
-              fontSize: 'var(--lockup-name-size)',
-              fontWeight: 'var(--lockup-name-weight)' as React.CSSProperties['fontWeight'],
-              // Per-element overrides:
+              fontSize: 'var(--el-lockup-name-font-size, var(--lockup-name-size))',
+              fontWeight: 'var(--el-lockup-name-font-weight, var(--lockup-name-weight))' as React.CSSProperties['fontWeight'],
               letterSpacing: 'var(--el-lockup-name-letter-spacing, normal)',
               lineHeight: 'var(--el-lockup-name-line-height, 1.1)' as React.CSSProperties['lineHeight'],
               fontStyle: 'var(--el-lockup-name-font-style, normal)' as React.CSSProperties['fontStyle'],
@@ -68,6 +75,9 @@ export function Chrome() {
               paddingLeft: 'var(--el-lockup-name-padding-left, 0)',
               marginTop: 'var(--el-lockup-name-margin-top, 0)',
               marginBottom: 'var(--el-lockup-name-margin-bottom, 0)',
+              display: 'block',
+              whiteSpace: 'normal',
+              wordBreak: 'normal',
             }}
           >
             Maks Martin
@@ -75,12 +85,13 @@ export function Chrome() {
         </Link>
 
         {/* Top-center: slogan + Contacts → /studio */}
-        <div className="pointer-events-auto flex items-start justify-center gap-6 leading-tight" style={{ fontSize: 'var(--lockup-tagline-size)' }}>
+        <div className="pointer-events-auto flex items-start justify-center gap-6 leading-tight">
           <p
             data-edit-id="lockup-tagline"
-            className="font-bold text-center"
             style={{
-              maxWidth: 'var(--el-lockup-tagline-max-width, 22ch)',
+              fontSize: 'var(--el-lockup-tagline-font-size, var(--unified-text-size))',
+              fontWeight: 'var(--el-lockup-tagline-font-weight, var(--unified-text-weight))' as React.CSSProperties['fontWeight'],
+              maxWidth: 'var(--el-lockup-tagline-max-width, var(--lockup-tagline-max-width))',
               letterSpacing: 'var(--el-lockup-tagline-letter-spacing, normal)',
               lineHeight: 'var(--el-lockup-tagline-line-height, 1.3)' as React.CSSProperties['lineHeight'],
               fontStyle: 'var(--el-lockup-tagline-font-style, normal)' as React.CSSProperties['fontStyle'],
@@ -94,30 +105,45 @@ export function Chrome() {
               paddingLeft: 'var(--el-lockup-tagline-padding-left, 0)',
               marginTop: 'var(--el-lockup-tagline-margin-top, 0)',
               marginBottom: 'var(--el-lockup-tagline-margin-bottom, 0)',
+              display: 'block',
+              whiteSpace: 'normal',
+              wordBreak: 'normal',
+              overflowWrap: 'normal',
             }}
           >
             Timeless design,<br />like classical music,<br />love and money
           </p>
           <Link
             href="/studio"
-            className="font-bold whitespace-nowrap hover:opacity-60 transition-opacity duration-200"
+            data-edit-id="lockup-contacts"
+            className="whitespace-nowrap hover:opacity-60 transition-opacity duration-200"
+            style={{
+              fontSize: 'var(--el-lockup-contacts-font-size, var(--unified-text-size))',
+              fontWeight: 'var(--el-lockup-contacts-font-weight, var(--unified-text-weight))' as React.CSSProperties['fontWeight'],
+              transform: 'translate(var(--el-lockup-contacts-translate-x, 0px), var(--el-lockup-contacts-translate-y, 0px))',
+            }}
           >
             Contacts
           </Link>
         </div>
 
-        {/* Top-right: List · Grid · Gallery — no slashes, bold */}
+        {/* Top-right: List · Grid · Gallery */}
         <nav
           data-edit-id="view-switcher"
           className="
             pointer-events-auto justify-self-end
-            flex items-center gap-7 font-bold
+            flex items-center gap-7
             [&:has(a:hover)_a:not(:hover)]:blur-[2px]
             [&:has(a:hover)_a:not(:hover)]:opacity-50
           "
           style={{
-            fontSize: 'var(--view-switcher-font-size)',
+            fontSize: 'var(--el-view-switcher-font-size, var(--unified-text-size))',
+            fontWeight: 'var(--el-view-switcher-font-weight, var(--unified-text-weight))' as React.CSSProperties['fontWeight'],
             transform: 'translate(var(--el-view-switcher-translate-x, 0px), var(--el-view-switcher-translate-y, 0px))',
+            paddingTop: 'var(--el-view-switcher-padding-top, 0)',
+            paddingRight: 'var(--el-view-switcher-padding-right, 0)',
+            paddingBottom: 'var(--el-view-switcher-padding-bottom, 0)',
+            paddingLeft: 'var(--el-view-switcher-padding-left, 0)',
           }}
         >
           {NAV.map((l) => (
@@ -141,7 +167,8 @@ export function Chrome() {
       {/* ── Bottom right: email ── */}
       <a
         href="mailto:martinmursalimov@gmail.com?subject=Hi%20Maks"
-        className="fixed bottom-3 right-4 z-30 text-[15px] opacity-50 hover:opacity-100 transition-opacity duration-200"
+        className="fixed bottom-3 right-4 z-30 opacity-50 hover:opacity-100 transition-opacity duration-200"
+        style={{ fontSize: 'var(--unified-text-size)' }}
       >
         Email Me
       </a>

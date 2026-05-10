@@ -26,6 +26,8 @@ export interface CosmeticTokens {
   'font-tile-name-size': string;
   'font-tile-name-weight': string;
   'font-tile-meta-size': string;
+  'unified-text-size': string;
+  'unified-text-weight': string;
 }
 
 export const DEFAULTS: CosmeticTokens = {
@@ -50,6 +52,8 @@ export const DEFAULTS: CosmeticTokens = {
   'font-tile-name-size': '15px',
   'font-tile-name-weight': '700',
   'font-tile-meta-size': '15px',
+  'unified-text-size': '15px',
+  'unified-text-weight': '700',
 };
 
 export function useCosmetics() {

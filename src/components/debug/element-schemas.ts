@@ -62,6 +62,14 @@ const SIZE_BLOCK: ElementSchema['groups'][0] = {
   ],
 };
 
+const EMBLEM_SIZE: ElementSchema['groups'][0] = {
+  title: 'Size',
+  properties: [
+    { key: 'width', label: 'Width', type: 'slider', unit: 'px', min: 30, max: 400, step: 2, defaultValue: '60px' },
+    { key: 'height', label: 'Height', type: 'slider', unit: 'px', min: 30, max: 400, step: 2, defaultValue: '60px' },
+  ],
+};
+
 export const ELEMENT_SCHEMAS: Record<string, ElementSchema> = {
   'lockup-name': {
     groups: [TYPOGRAPHY_FULL, CONTAINER_FULL, SPACING_FULL],
@@ -70,10 +78,13 @@ export const ELEMENT_SCHEMAS: Record<string, ElementSchema> = {
     groups: [TYPOGRAPHY_FULL, CONTAINER_FULL, SPACING_FULL],
   },
   'lockup-emblem': {
-    groups: [SIZE_BLOCK, SPACING_FULL],
+    groups: [EMBLEM_SIZE, SPACING_FULL],
   },
   'lockup-buttons': {
     groups: [SPACING_FULL],
+  },
+  'lockup-contacts': {
+    groups: [TYPOGRAPHY_FULL, CONTAINER_FULL, SPACING_FULL],
   },
   'view-switcher': {
     groups: [TYPOGRAPHY_FULL, SPACING_FULL],
