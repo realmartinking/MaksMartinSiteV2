@@ -70,25 +70,15 @@ export default function GridPage() {
                   sizing="natural"
                   className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
                 />
-                <div className="flex justify-between items-start w-full">
-                  <span
-                    className="leading-tight"
-                    style={{
-                      fontSize: 'var(--font-tile-name-size)',
-                      fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
-                    }}
-                  >
-                    {p.name}
-                  </span>
-                  <span
-                    className="leading-tight text-right shrink-0 ml-3 opacity-50"
-                    style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3' }}
-                  >
-                    {p.type?.split(' / ').map((line, i) => (
-                      <span key={i} className="block">{line}</span>
-                    ))}
-                  </span>
-                </div>
+                <p
+                  className="leading-tight text-center"
+                  style={{
+                    fontSize: 'var(--font-tile-name-size)',
+                    fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
+                  }}
+                >
+                  {p.name}&nbsp;&nbsp;/&nbsp;&nbsp;{p.type ?? ''}
+                </p>
               </div>
             </PerspectiveCard>
           </motion.div>

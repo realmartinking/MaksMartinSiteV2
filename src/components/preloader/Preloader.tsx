@@ -117,18 +117,19 @@ export function Preloader() {
   return (
     <div role="status" aria-hidden={done} style={prldrStyle}>
       <div style={innerStyle}>
-        <div style={{ height: 'clamp(100px, 30vw, 180px)', aspectRatio: '4 / 5' }}>
+        <div style={{ height: 'min(180px, 40vw)', aspectRatio: '4 / 5' }}>
           <Emblem fill />
         </div>
         <span
           style={{
-            fontSize: 'clamp(40px, 12vw, 80px)',
+            fontSize: 'min(80px, 18vw)',
             fontWeight: 700,
             lineHeight: 1,
             color: 'var(--foreground)',
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.02em',
             userSelect: 'none',
+            minWidth: '3ch',
           }}
         >
           {progress}%
