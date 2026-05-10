@@ -216,7 +216,7 @@
     --lockup-name-size: 16px;
     --lockup-padding: 12px;
     --grid-padding-x: 12px;
-    --grid-padding-top: 80px;
+    --grid-padding-top: 185px;
   }
 
   /* Скрываем слоган на мобиле */
@@ -272,6 +272,6 @@
 /* Landscape phone: высота меньше 500px и landscape — больший top padding */
 @media (max-height: 500px) and (orientation: landscape) {
   :root {
-    --grid-padding-top: 90px !important;
+    --grid-padding-top: 185px;
   }
 }
