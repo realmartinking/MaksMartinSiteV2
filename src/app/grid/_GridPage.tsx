@@ -39,10 +39,10 @@ export default function GridPage() {
         className="
           grid grid-cols-12 gap-y-[50px]
           pb-20
-          [&:has(a:hover)_a:not(:hover)_video]:grayscale
-          [&:has(a:hover)_a:not(:hover)_img]:grayscale
-          [&_a_video]:[transition:filter_300ms_ease,transform_300ms_ease]
-          [&_a_img]:[transition:filter_300ms_ease,transform_300ms_ease]
+          [&:has(.group:hover)_.group:not(:hover)_video]:grayscale
+          [&:has(.group:hover)_.group:not(:hover)_img]:grayscale
+          [&_.group_video]:[transition:filter_300ms_ease,transform_300ms_ease]
+          [&_.group_img]:[transition:filter_300ms_ease,transform_300ms_ease]
         "
         style={{
           columnGap: 'var(--grid-gap)',
