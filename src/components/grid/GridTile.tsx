@@ -57,7 +57,7 @@ export function GridTile({ project, sizing = 'natural', className = '' }: GridTi
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="none"
           className={mediaClass}
         />
       )}
