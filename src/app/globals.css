@@ -244,49 +244,51 @@
     display: none !important;
   }
 
-  /* Шапка: 2 колонки [emblem+name] [contacts+nav] */
+  /* Шапка: 2 колонки [emblem+name слева] [nav+info справа] */
   header {
-    grid-template-columns: auto 1fr !important;
-    gap: 12px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0 !important;
     padding: 12px 16px !important;
-    align-items: center !important;
+    align-items: start !important;
   }
 
-  /* Эмблема на мобилке */
+  /* Эмблема — пропорция десктопа (156px desktop → 90px mobile ≈ 58%) */
   [data-edit-id="lockup-emblem"] {
-    height: 80px !important;
-    margin: 0 !important;
-    transform: none !important;
+    height: 90px !important;
+    margin-top: -10px !important;
+    margin-bottom: -14px !important;
+    transform: translateX(-12px) !important;
   }
 
-  /* MaksMartin на мобилке */
+  /* MaksMartin — пропорция десктопа (25px → 15px) */
   [data-edit-id="lockup-name"] {
-    font-size: 16px !important;
-    transform: none !important;
-    letter-spacing: -0.02em !important;
+    font-size: 15px !important;
+    letter-spacing: -0.03em !important;
+    transform: translate(-24px, -30px) !important;
   }
 
-  /* Средняя ячейка — только contacts, выровнено справа */
+  /* Средняя ячейка (tagline+info) — скрываем tagline, info вправо */
   header > div:has([data-edit-id="lockup-contacts"]) {
     display: flex !important;
-    gap: 12px !important;
     justify-content: flex-end !important;
+    align-items: start !important;
   }
 
   [data-edit-id="lockup-contacts"] {
-    font-size: 16px !important;
+    font-size: 15px !important;
     transform: none !important;
   }
 
+  /* Nav — правый верхний угол, под Info */
   [data-edit-id="view-switcher"] {
     gap: 12px !important;
-    font-size: 16px !important;
+    font-size: 15px !important;
     transform: none !important;
-    margin-top: 0 !important;
+    margin-top: 4px !important;
   }
 
   [data-edit-id="view-switcher"] a {
-    font-size: 16px !important;
+    font-size: 15px !important;
   }
 }
 
