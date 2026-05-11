@@ -16,6 +16,20 @@ export interface Project {
 
 export const PROJECTS: Project[] = [
   {
+    id: 'p18',
+    name: 'Шаги',
+    videoSrc: '/projects/shagi.mp4',
+    aspect: 'wide',
+    type: 'Brand Identity / Art Direction',
+  },
+  {
+    id: 'p19',
+    name: 'Skripka',
+    videoSrc: '/projects/skripka.mp4',
+    aspect: 'vertical',
+    type: 'Brand Identity / Art Direction',
+  },
+  {
     id: 'p01',
     name: 'Aurica',
     videoSrc: '/projects/aurica.mp4',
