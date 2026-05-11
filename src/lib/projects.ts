@@ -16,10 +16,11 @@ export interface Project {
 
 export const PROJECTS: Project[] = [
   {
-    id: 'p18',
-    name: 'Шаги',
-    videoSrc: '/projects/shagi.mp4',
+    id: 'p02',
+    name: 'High Bay',
+    videoSrc: '/projects/hightbay.mp4',
     aspect: 'wide',
+    year: '2024',
     type: 'Brand Identity / Art Direction',
   },
   {
@@ -38,11 +39,10 @@ export const PROJECTS: Project[] = [
     type: 'Brand Identity / Art Direction',
   },
   {
-    id: 'p02',
-    name: 'Hight Bay',
-    videoSrc: '/projects/hightbay.mp4',
+    id: 'p18',
+    name: 'Шаги',
+    videoSrc: '/projects/shagi.mp4',
     aspect: 'wide',
-    year: '2024',
     type: 'Brand Identity / Art Direction',
   },
   {
