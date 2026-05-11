@@ -252,22 +252,22 @@
     align-items: start !important;
   }
 
-  /* Эмблема — пропорция десктопа (156px desktop → 90px mobile ≈ 58%) */
+  /* Эмблема — пропорция десктопа, опущена на линию Info */
   [data-edit-id="lockup-emblem"] {
     height: 90px !important;
-    margin-top: -10px !important;
+    margin-top: 0 !important;
     margin-bottom: -14px !important;
     transform: translateX(-12px) !important;
   }
 
-  /* MaksMartin — пропорция десктопа (25px → 15px) */
+  /* MaksMartin — на одной линии с Info */
   [data-edit-id="lockup-name"] {
     font-size: 15px !important;
     letter-spacing: -0.03em !important;
-    transform: translate(-24px, -30px) !important;
+    transform: translate(-24px, -20px) !important;
   }
 
-  /* Средняя ячейка (tagline+info) — скрываем tagline, info вправо */
+  /* Средняя ячейка (tagline+info) — info вправо */
   header > div:has([data-edit-id="lockup-contacts"]) {
     display: flex !important;
     justify-content: flex-end !important;
@@ -279,12 +279,15 @@
     transform: none !important;
   }
 
-  /* Nav — правый верхний угол, под Info */
+  /* Nav — под эмблемой, по левому краю */
   [data-edit-id="view-switcher"] {
+    position: fixed !important;
+    left: 16px !important;
+    top: calc(env(safe-area-inset-top, 0px) + 110px) !important;
     gap: 12px !important;
     font-size: 15px !important;
     transform: none !important;
-    margin-top: 4px !important;
+    margin-top: 0 !important;
   }
 
   [data-edit-id="view-switcher"] a {
