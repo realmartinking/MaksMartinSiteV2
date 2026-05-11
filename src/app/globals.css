@@ -260,11 +260,11 @@
     transform: translateX(-12px) !important;
   }
 
-  /* MaksMartin — на одной линии с Info */
+  /* MaksMartin — на одной линии с Info, ближе к эмблеме */
   [data-edit-id="lockup-name"] {
     font-size: 15px !important;
     letter-spacing: -0.03em !important;
-    transform: translate(-24px, -20px) !important;
+    transform: translate(-30px, -12px) !important;
   }
 
   /* Средняя ячейка (tagline+info) — info вправо */
@@ -283,7 +283,7 @@
   [data-edit-id="view-switcher"] {
     position: fixed !important;
     left: 16px !important;
-    top: calc(env(safe-area-inset-top, 0px) + 110px) !important;
+    top: calc(env(safe-area-inset-top, 0px) + 125px) !important;
     gap: 12px !important;
     font-size: 15px !important;
     transform: none !important;
