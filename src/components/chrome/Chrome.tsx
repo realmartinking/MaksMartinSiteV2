@@ -81,7 +81,7 @@ export function Chrome() {
           </span>
         </Link>
 
-        {/* Top-center: slogan + Contacts → /studio */}
+        {/* Top-center: slogan + Info → /info */}
         <div className="pointer-events-auto flex items-start justify-center gap-6 leading-tight">
           <p
             data-edit-id="lockup-tagline"
@@ -111,7 +111,7 @@ export function Chrome() {
             Timeless design, like classical<br />music, love, and money
           </p>
           <Link
-            href="/studio"
+            href="/info"
             data-edit-id="lockup-contacts"
             className="whitespace-nowrap hover:opacity-60 transition-opacity duration-200"
             style={{
