@@ -86,14 +86,6 @@ export const PROJECTS: Project[] = [
     type: 'Brand Identity / Art Direction',
   },
   {
-    id: 'p08',
-    name: 'Наследие',
-    videoSrc: '/projects/nasledie.mp4',
-    aspect: 'wide',
-    year: '2023',
-    type: 'Brand Identity / Art Direction',
-  },
-  {
     id: 'p09',
     name: 'Saga',
     videoSrc: '/projects/saga.mp4',
