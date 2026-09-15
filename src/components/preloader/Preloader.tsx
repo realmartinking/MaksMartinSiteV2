@@ -101,10 +101,11 @@ export function Preloader() {
   return (
     <div role="status" aria-hidden={done} style={prldrStyle}>
       <div style={innerStyle}>
-        <div style={{ height: 'min(180px, 40vw)', aspectRatio: '4 / 5' }}>
+        <div data-preloader-emblem style={{ height: 'min(180px, 40vw)', aspectRatio: '4 / 5', flexShrink: 0 }}>
           <Emblem fill />
         </div>
         <span
+          data-preloader-progress
           style={{
             fontSize: 'min(80px, 18vw)',
             fontWeight: 700,
@@ -113,7 +114,11 @@ export function Preloader() {
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.02em',
             userSelect: 'none',
-            minWidth: '3ch',
+            // Reserve the full counter slot regardless of digit count or
+            // proportional numeral widths in Gramatika. The emblem stays put.
+            width: '3em',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           {progress}%

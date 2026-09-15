@@ -241,6 +241,7 @@ html[data-intro="loading"] main { opacity: 0; }
   animation-play-state: paused;
 }
 html[data-intro="ready"] .project-entrance { animation-play-state: running; }
+.project-entrance[data-entrance="waiting"] { animation: none; opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .project-entrance { animation: none; }
+  .project-entrance, .project-entrance[data-entrance="waiting"] { animation: none; opacity: 1; }
 }

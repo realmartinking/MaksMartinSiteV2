@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { PROJECTS, type Project } from '@/lib/projects';
-import { entranceStyle } from '@/components/effects/ProjectEntrance';
+import { ViewportEntrance } from '@/components/effects/ViewportEntrance';
 import { GridTile } from '@/components/grid/GridTile';
 
 export function ProjectGallery({ projects = PROJECTS, infinite = true }: { projects?: Project[]; infinite?: boolean }) {
@@ -32,18 +32,17 @@ export function ProjectGallery({ projects = PROJECTS, infinite = true }: { proje
         className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
         style={{ gap: 'var(--grid-gap)', paddingLeft: 'var(--grid-padding-x)', paddingRight: 'var(--grid-padding-x)' }}
       >
-        {tiles.map(({ key, ...p }, idx) => (
-          <div
+        {tiles.map(({ key, ...p }) => (
+          <ViewportEntrance
             key={key}
-            style={entranceStyle(idx < projects.length ? idx : 0)}
-            className="project-entrance group aspect-square overflow-hidden"
+            className="group aspect-square overflow-hidden"
           >
             <GridTile
               project={p}
               sizing="fill"
               className="w-full h-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
             />
-          </div>
+          </ViewportEntrance>
         ))}
 
         {/* Infinite scroll sentinel */}

@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test:motion": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/folderMotion.test.mjs"
+    "test:motion": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/*.test.mjs"
   },
   "dependencies": {
     "@types/animejs": "^3.1.13",

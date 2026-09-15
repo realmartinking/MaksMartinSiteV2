@@ -34,6 +34,10 @@ export function ProductionFolder() {
         plane.style.transform = `translate(-50%, -50%) translateY(${pose.y}px) scale(${pose.scale}) perspective(${pose.perspective}px) rotateX(${pose.angle}deg)`;
         // Nearer files occlude the distant files; no selected-card z-index hack.
         plane.style.zIndex = `${100 + index - Math.round(current.position)}`;
+        // Blur the video inside its clipped surface, never the projected plane
+        // or its edges. Use the same opening clock as the stack geometry.
+        const blur = current.selected !== null && index !== current.selected ? current.opening * 5 : 0;
+        plane.style.setProperty('--folder-content-filter', blur < 0.01 ? 'none' : `blur(${blur}px)`);
       });
       root.current?.setAttribute('data-folder-opening', current.opening.toFixed(3));
       root.current?.setAttribute('data-folder-position', current.position.toFixed(4));
@@ -176,7 +180,9 @@ export function ProductionFolder() {
             <button type="button" className={styles.folderCard} aria-label={`Preview ${project.name}`} aria-expanded={selected === index}
               onPointerEnter={() => hover(index)} onPointerMove={() => hover(index)} onPointerLeave={() => setHovered(current => current === index ? null : current)}
               onFocus={() => setHovered(index)} onBlur={() => setHovered(current => current === index ? null : current)} onClick={() => choose.current(index)}>
-              <GridTile project={project} reserveSpace className="w-full" />
+              <div className={styles.folderMediaClip}>
+                <div className={styles.folderMediaContent}><GridTile project={project} reserveSpace className="w-full" /></div>
+              </div>
             </button>
           </ProjectEntrance>
         </div>;

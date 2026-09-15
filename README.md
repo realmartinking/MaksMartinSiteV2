@@ -238,3 +238,12 @@ Run `npm run test:motion` (Node 22.6+) to check continuous input, short/full ges
 
 
 Emblem readback optimization: completed alpha-processed frames are retained for the repeating 24fps loop. Cached frames are the exact ImageData already displayed; they require no new video-to-canvas readback or alpha calculation. Caches are per mounted emblem and theme, cleared on resize/theme change/unmount, and used only when the whole loop fits the 64MiB limit. The original canvas size, pixels, and source video remain unchanged.
+
+
+### Feed entrance and Safari audit
+
+List and Gallery use `ViewportEntrance` with a shared observer and `EntranceQueue`: each newly visible instance enters once with an 80ms stagger, including duplicate projects and batches appended during the preloader. Offscreen instances wait without allocating an animated transform/filter. The queue carries across observer callbacks and the loader, then starts fresh after idle. Completed entrances release their filters and transforms.
+
+The preloader reserves a fixed 3em counter slot and prevents emblem shrink, so changing digit count does not move the emblem. Folder selection blurs only the neighboring media layers inside a clipped surface; its projected card outlines and selected video remain sharp. Closing clears the filter. List titles are keyboard-focusable buttons, use unique expansion keys, and no longer collide with Tailwind's `list-item` display utility.
+
+See [the full site and Safari audit](docs/site-audit-2026-09-16.md) for measured geometry, media details, verification, and remaining limitations. Safari 26.6.2 is installed on the audited Mac, but the live automation ran in Chrome 152; direct Safari rendering/performance was not tested.

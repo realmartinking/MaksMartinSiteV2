@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { PROJECTS, type Project } from '@/lib/projects';
-import { entranceStyle } from '@/components/effects/ProjectEntrance';
+import { ViewportEntrance } from '@/components/effects/ViewportEntrance';
 
 export function ProjectList({ projects = PROJECTS, infinite = true }: { projects?: Project[]; infinite?: boolean }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -11,16 +11,27 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
   const sentinelRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
 
-  // Play the active video (hovered on desktop, expanded on mobile)
-  const activeId = hoveredId || expandedId;
   useEffect(() => {
-    videoRefs.current.forEach((video, id) => {
-      if (id === activeId) {
-        video.play().catch(() => {});
-      } else {
-        video.pause();
-      }
+    const desktop = window.matchMedia('(min-width: 768px)');
+    const resetPreview = () => { setExpandedId(null); setHoveredId(null); };
+    desktop.addEventListener('change', resetPreview);
+    return () => desktop.removeEventListener('change', resetPreview);
+  }, []);
+
+  // Inline mobile videos own their playback; don't also decode the hidden
+  // desktop preview for an expanded item.
+  const activeId = hoveredId;
+  useEffect(() => {
+    let disposed = false;
+    const update = () => videoRefs.current.forEach((video, id) => {
+      if (id === activeId && !document.hidden && window.matchMedia('(min-width: 768px)').matches) {
+        video.play().then(() => { if (disposed || document.hidden) video.pause(); }).catch(() => {});
+      } else video.pause();
     });
+    update();
+    document.addEventListener('visibilitychange', update);
+    window.addEventListener('resize', update);
+    return () => { disposed = true; document.removeEventListener('visibilitychange', update); window.removeEventListener('resize', update); };
   }, [activeId]);
 
   const setVideoRef = useCallback((id: string, el: HTMLVideoElement | null) => {
@@ -46,32 +57,38 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
       <div
         className={[
           'flex flex-col items-center pointer-events-none',
-          '[&:has(.list-item:hover)_.list-item:not(:hover)]:blur-[2px]',
-          '[&:has(.list-item:hover)_.list-item:not(:hover)]:opacity-30',
+          '[&:has(.project-list-title:hover)_.project-list-title:not(:hover)]:blur-[2px]',
+          '[&:has(.project-list-title:hover)_.project-list-title:not(:hover)]:opacity-30',
         ].join(' ')}
       >
         {Array.from({ length: cycles }).flatMap((_, c) =>
-          projects.map((p, idx) => {
-            const isExpanded = expandedId === p.id;
+          projects.map((p) => {
+            const key = `${c}-${p.id}`;
+            const isExpanded = expandedId === key;
             return (
-              <div
-                key={`${c}-${p.id}`}
-                className="project-entrance w-full text-center overflow-hidden md:-mb-2"
-                style={entranceStyle(c === 0 ? idx : 0)}
+              <ViewportEntrance
+                key={key}
+                className="w-full text-center overflow-hidden md:-mb-2"
               >
-                <span
+                <button
+                  type="button"
                   className={[
-                    'list-item inline-block font-bold uppercase pointer-events-auto',
+                    'project-list-title inline-block font-bold uppercase pointer-events-auto bg-transparent border-0 p-0 cursor-pointer',
                     'text-[calc(1rem+6vw)]',
                     'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
                     'transition-[filter,opacity] duration-300 ease-out',
                   ].join(' ')}
                   onMouseEnter={() => setHoveredId(p.id)}
                   onMouseLeave={() => setHoveredId(null)}
-                  onClick={() => setExpandedId(isExpanded ? null : p.id)}
+                  onFocus={() => setHoveredId(p.id)}
+                  onBlur={() => setHoveredId(null)}
+                  onClick={() => {
+                    if (window.matchMedia('(max-width: 767px)').matches) setExpandedId(isExpanded ? null : key);
+                  }}
+                  aria-expanded={isExpanded}
                 >
                   {p.name}
-                </span>
+                </button>
 
                 {/* Mobile inline expand */}
                 <div
@@ -101,7 +118,7 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
                     </div>
                   </div>
                 </div>
-              </div>
+              </ViewportEntrance>
             );
           })
         )}
