@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion, useScroll } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { PROJECTS, type Project } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
@@ -9,7 +9,6 @@ import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
 
 export default function GridPage({ motionPreview = false }: { motionPreview?: boolean }) {
   const prefersReduced = useReducedMotion();
-  const { scrollY } = useScroll();
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +54,7 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
         }}
       >
         {motionPreview ? (
-          <ScrollTiltPreview scrollY={scrollY}>
+          <ScrollTiltPreview>
             {tiles.map(({ key, ...project }) => (
               <ProjectContent key={key} project={project} reserveSpace />
             ))}

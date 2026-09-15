@@ -1,19 +1,11 @@
 'use client';
 
 import { useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
-import {
-  cubicBezier,
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useTransform,
-  type MotionValue,
-} from 'framer-motion';
+import { cubicBezier } from 'framer-motion';
 
 const enterEase = cubicBezier(0.22, 1, 0.36, 1);
 const exitEase = cubicBezier(0, 0, 0.58, 1);
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
-
 const getColumns = () => window.matchMedia('(min-width: 1024px)').matches
   ? 3 : window.matchMedia('(min-width: 640px)').matches ? 2 : 1;
 const getServerColumns = () => 3;
@@ -23,140 +15,160 @@ function subscribeColumns(update: () => void) {
   return () => queries.forEach((query) => query.removeEventListener('change', update));
 }
 
-export function ScrollTiltPreview({ children, scrollY }: {
-  children: ReactNode[];
-  scrollY: MotionValue<number>;
-}) {
+type Row = {
+  anchor: HTMLDivElement;
+  plane: HTMLDivElement;
+  top: number;
+  height: number;
+  referenceHeight: number;
+  travel: number;
+  perspective: number;
+  phase: number | null;
+};
+
+/** One shared plane per row; the approved Ruixen curves and geometry are unchanged. */
+export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
   const columns = useSyncExternalStore(subscribeColumns, getColumns, getServerColumns);
-  return Array.from({ length: Math.ceil(children.length / columns) }, (_, row) => (
-    <ScrollTiltRow key={row} columns={columns} scrollY={scrollY}>
-      {children.slice(row * columns, (row + 1) * columns)}
-    </ScrollTiltRow>
-  ));
-}
-
-/**
- * Opt-in motion study inspired by Ruixen's Scroll Tilted Grid:
- * https://ruixen.com/docs/components/scroll-tilted-grid
- *
- * One perspective and one transformed plane for the whole row. Individual
- * cards stay flat inside it, so mixed heights cannot produce intersecting
- * card planes. Measure the untouched row anchor, never the moving artwork.
- */
-function ScrollTiltRow({
-  children,
-  columns,
-  scrollY,
-}: {
-  children: ReactNode;
-  columns: number;
-  scrollY: MotionValue<number>;
-}) {
-  const anchor = useRef<HTMLDivElement>(null);
-  // -1: entrance, 0: the original layout, +1: exit.
-  const phase = useMotionValue(0);
-  const travel = useMotionValue(0);
-  const perspective = useMotionValue(1000);
-
-  // Subscribe before the layout effect sets the first measured phase.
-  const rotateX = useTransform(phase, (p) => -p * 62);
-  const z = useTransform(phase, (p) => Math.abs(p) * 150);
-  const y = useTransform(() => -phase.get() * travel.get());
-  const blur = useTransform(phase, (p) => Math.abs(p) * 6);
-  const opacity = useTransform(phase, (p) => 1 - Math.abs(p) * 0.45);
-  const filter = useMotionTemplate`blur(${blur}px)`;
+  const anchors = useRef(new Map<number, HTMLDivElement>());
+  const rowCount = Math.ceil(children.length / columns);
 
   useLayoutEffect(() => {
-    const element = anchor.current;
-    if (!element) return;
+    const rows: Row[] = [...anchors.current.entries()].sort(([a], [b]) => a - b).map(([, anchor]) => ({
+      anchor, plane: anchor.firstElementChild as HTMLDivElement,
+      top: 0, height: 0, referenceHeight: 0, travel: 0, perspective: 1000, phase: null,
+    }));
+    if (!rows.length) return;
 
     const desktop = window.matchMedia('(min-width: 768px)');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let top = 0;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const active = new Set<Row>();
     let viewport = window.innerHeight;
-    let referenceHeight = 0;
+    let overscan = 1200;
     let frame = 0;
+    let needsMeasure = true;
 
-    const update = () => {
-      if (!desktop.matches || reduceMotion.matches) {
-        phase.set(0);
-        return;
-      }
-      const y = top - window.scrollY;
-      const focusStart = viewport * 0.65;
-      const focusEnd = viewport * 0.12;
-      if (y > focusStart) {
-        phase.set(-(1 - enterEase(clamp((viewport - y) / (viewport - focusStart)))));
-      } else if (y < focusEnd) {
-        phase.set(exitEase(clamp((focusEnd - y) / (referenceHeight + focusEnd))));
-      } else {
-        phase.set(0);
-      }
+    const reset = (row: Row) => {
+      row.plane.style.transform = 'none';
+      row.plane.style.filter = 'none';
+      row.plane.style.opacity = '1';
+      row.anchor.dataset.motionActive = 'false';
+      row.phase = null;
     };
 
     const measure = () => {
-      const rect = element.getBoundingClientRect();
-      // offsetTop excludes the preloader's temporary transform on <main>.
-      top = 0;
-      for (let parent: HTMLElement | null = element; parent; parent = parent.offsetParent as HTMLElement | null) {
-        top += parent.offsetTop;
-      }
       viewport = window.innerHeight;
-      const gap = parseFloat(getComputedStyle(element.firstElementChild!).columnGap) || 0;
-      const columnWidth = (rect.width - gap * (columns - 1)) / columns;
-      referenceHeight = Math.min(columnWidth * 0.75, viewport * 0.65);
-      // Keep the full plane safely in front of the camera on large displays.
-      perspective.set(Math.max(1000, rect.height * 1.6));
-      travel.set(Math.min(96, referenceHeight * 0.24));
-      update();
-    };
-    const scheduleMeasure = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(measure);
+      const gap = parseFloat(getComputedStyle(rows[0].plane).columnGap) || 0;
+      // Batch geometry reads before writing styles. No layout reads during scroll.
+      rows.forEach((row) => {
+        const rect = row.anchor.getBoundingClientRect();
+        row.top = 0;
+        for (let parent: HTMLElement | null = row.anchor; parent; parent = parent.offsetParent as HTMLElement | null) {
+          row.top += parent.offsetTop;
+        }
+        row.height = rect.height;
+        const width = (rect.width - gap * (columns - 1)) / columns;
+        row.referenceHeight = Math.min(width * 0.75, viewport * 0.65);
+        row.travel = Math.min(96, row.referenceHeight * 0.24);
+        row.perspective = Math.max(1000, row.height * 1.6);
+      });
+      overscan = rows.reduce((margin, row) => Math.max(margin, row.height), Math.max(1200, viewport));
+      rows.forEach((row) => {
+        row.anchor.style.perspective = `${row.perspective}px`;
+        reset(row);
+      });
+      active.clear();
+      needsMeasure = false;
     };
 
-    measure();
-    const unsubscribe = scrollY.on('change', update);
+    const paint = () => {
+      frame = 0;
+      if (document.hidden) return;
+      if (needsMeasure) measure();
+      const scrollTop = window.scrollY;
+      const start = scrollTop - overscan;
+      const end = scrollTop + viewport + overscan;
+      const enabled = desktop.matches && !reduced.matches;
+
+      // Sorted row anchors keep per-frame work bounded as the infinite feed grows.
+      let lo = 0, hi = rows.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (rows[mid].top + rows[mid].height < start) lo = mid + 1;
+        else hi = mid;
+      }
+      active.forEach((row) => {
+        if (row.top + row.height < start || row.top > end) {
+          reset(row);
+          active.delete(row);
+        }
+      });
+      for (let i = lo; i < rows.length && rows[i].top <= end; i++) {
+        const row = rows[i];
+        if (!active.has(row)) {
+          active.add(row);
+          row.anchor.dataset.motionActive = 'true';
+        }
+        const y = row.top - scrollTop;
+        let phase = 0;
+        if (enabled && y > viewport * 0.65) {
+          phase = -(1 - enterEase(clamp((viewport - y) / (viewport * 0.35))));
+        } else if (enabled && y < viewport * 0.12) {
+          phase = exitEase(clamp((viewport * 0.12 - y) / (row.referenceHeight + viewport * 0.12)));
+        }
+        if (phase === row.phase) continue;
+        row.phase = phase;
+        const amount = Math.abs(phase);
+        row.plane.style.transform = phase === 0 ? 'none'
+          : `translateY(${-phase * row.travel}px) translateZ(${amount * 150}px) rotateX(${-phase * 62}deg)`;
+        // An unfiltered row needs no offscreen blur surface while in focus.
+        row.plane.style.filter = phase === 0 ? 'none' : `blur(${amount * 6}px)`;
+        row.plane.style.opacity = `${1 - amount * 0.45}`;
+      }
+    };
+    const schedule = () => { if (!frame && !document.hidden) frame = requestAnimationFrame(paint); };
+    const scheduleMeasure = () => { needsMeasure = true; schedule(); };
+    const onVisibility = () => {
+      if (document.hidden) { cancelAnimationFrame(frame); frame = 0; }
+      else scheduleMeasure();
+    };
+
+    paint();
     const observer = new ResizeObserver(scheduleMeasure);
-    observer.observe(element);
-    // Earlier rows or a breakpoint change can move this row's layout anchor.
-    const grid = element.closest('[data-project-grid]');
+    rows.forEach((row) => observer.observe(row.anchor));
+    const grid = rows[0].anchor.closest('[data-project-grid]');
     if (grid) observer.observe(grid);
+    window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', scheduleMeasure);
     window.addEventListener('pageshow', scheduleMeasure);
+    document.addEventListener('visibilitychange', onVisibility);
     desktop.addEventListener('change', scheduleMeasure);
-    reduceMotion.addEventListener('change', update);
-
+    reduced.addEventListener('change', schedule);
     return () => {
-      unsubscribe();
-      observer.disconnect();
       cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', scheduleMeasure);
       window.removeEventListener('pageshow', scheduleMeasure);
+      document.removeEventListener('visibilitychange', onVisibility);
       desktop.removeEventListener('change', scheduleMeasure);
-      reduceMotion.removeEventListener('change', update);
+      reduced.removeEventListener('change', schedule);
     };
-  }, [columns, perspective, phase, scrollY, travel]);
+  }, [columns, rowCount]);
 
-  return (
-    <motion.div
-      ref={anchor}
+  return Array.from({ length: rowCount }, (_, row) => (
+    <div
+      key={row}
+      ref={(element) => { if (element) anchors.current.set(row, element); else anchors.current.delete(row); }}
       className="col-span-12 relative"
       data-scroll-tilt="row"
-      style={{ perspective, perspectiveOrigin: 'center' }}
+      style={{ perspective: 1000, perspectiveOrigin: 'center' }}
     >
-      <motion.div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-          columnGap: 'var(--grid-gap)',
-          alignItems: 'start',
-          rotateX, z, y, filter, opacity,
-          transformOrigin: 'center center',
-        }}
-      >
-        {children}
-      </motion.div>
-    </motion.div>
-  );
+      <div style={{
+        display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        columnGap: 'var(--grid-gap)', alignItems: 'start', transformOrigin: 'center center',
+      }}>
+        {children.slice(row * columns, (row + 1) * columns)}
+      </div>
+    </div>
+  ));
 }

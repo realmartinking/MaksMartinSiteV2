@@ -8,6 +8,7 @@ export interface Project {
   name: string;
   videoSrc?: string;      // путь к видео в /public/projects/
   imageSrc?: string;      // путь к изображению в /public/projects/ (для PNG проектов)
+  imageWebpSrc?: string;  // pixel-identical lossless alternative; PNG stays as fallback
   mediaSize?: readonly [width: number, height: number]; // intrinsic asset dimensions
   aspect: ProjectAspect;
   url?: string;           // ссылка на проект (опционально)
@@ -63,6 +64,7 @@ export const PROJECTS: Project[] = [
     id: 'p04',
     name: 'Muse',
     imageSrc: '/projects/muse.png',
+    imageWebpSrc: '/projects/muse.webp',
     mediaSize: [960, 1080],
     aspect: 'vertical',
     year: '2024',
@@ -72,6 +74,7 @@ export const PROJECTS: Project[] = [
     id: 'p05',
     name: 'Humber',
     imageSrc: '/projects/humber.png',
+    imageWebpSrc: '/projects/humber.webp',
     mediaSize: [1904, 1068],
     aspect: 'wide',
     year: '2024',
@@ -108,6 +111,7 @@ export const PROJECTS: Project[] = [
     id: 'p10',
     name: 'Дача Генерала Вишневецкого',
     imageSrc: '/projects/vishnevetsky.png',
+    imageWebpSrc: '/projects/vishnevetsky.webp',
     mediaSize: [1073, 1294],
     aspect: 'wide',
     year: '2023',
@@ -117,6 +121,7 @@ export const PROJECTS: Project[] = [
     id: 'p11',
     name: 'Lumio',
     imageSrc: '/projects/lumio.png',
+    imageWebpSrc: '/projects/lumio.webp',
     mediaSize: [3840, 2160],
     aspect: 'square',
     year: '2022',

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { Project } from '@/lib/projects';
+import { observeVideoPlayback } from '@/lib/videoPlayback';
 
 interface GridTileProps {
   project: Project;
@@ -24,18 +25,8 @@ export function GridTile({ project, sizing = 'natural', className = '', reserveS
   useEffect(() => {
     const el = containerRef.current;
     const video = videoRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!video) return;
-        if (entry.isIntersecting) video.play().catch(() => {});
-        else video.pause();
-      },
-      { threshold: 0.05, rootMargin: '400px' }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    if (!el || !video) return;
+    return observeVideoPlayback(el, video);
   }, []);
 
   const mediaClass =
@@ -46,13 +37,17 @@ export function GridTile({ project, sizing = 'natural', className = '', reserveS
   return (
     <div ref={containerRef} className={`overflow-hidden ${className}`} style={{ borderRadius: 'var(--tile-radius)' }}>
       {project.imageSrc ? (
-        <img
-          src={project.imageSrc}
-          alt={project.name}
-          width={reserveSpace ? project.mediaSize?.[0] : undefined}
-          height={reserveSpace ? project.mediaSize?.[1] : undefined}
-          className={mediaClass}
-        />
+        <picture className={sizing === 'fill' ? 'block w-full h-full' : 'block'}>
+          {project.imageWebpSrc && <source srcSet={project.imageWebpSrc} type="image/webp" />}
+          <img
+            src={project.imageSrc}
+            alt={project.name}
+            width={reserveSpace ? project.mediaSize?.[0] : undefined}
+            height={reserveSpace ? project.mediaSize?.[1] : undefined}
+            decoding="async"
+            className={mediaClass}
+          />
+        </picture>
       ) : (
         <video
           ref={videoRef}
