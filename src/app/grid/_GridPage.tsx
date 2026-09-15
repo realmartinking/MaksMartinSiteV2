@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll } from 'framer-motion';
-import { PROJECTS } from '@/lib/projects';
+import { PROJECTS, type Project } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
 import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
@@ -10,7 +10,6 @@ import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
 export default function GridPage({ motionPreview = false }: { motionPreview?: boolean }) {
   const prefersReduced = useReducedMotion();
   const { scrollY } = useScroll();
-  const Card = motionPreview ? ScrollTiltPreview : PerspectiveCard;
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -55,10 +54,16 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
           paddingTop: 'var(--grid-padding-top)',
         }}
       >
-        {tiles.map(({ key, ...p }, idx) => (
+        {motionPreview ? (
+          <ScrollTiltPreview scrollY={scrollY}>
+            {tiles.map(({ key, ...project }) => (
+              <ProjectContent key={key} project={project} reserveSpace />
+            ))}
+          </ScrollTiltPreview>
+        ) : tiles.map(({ key, ...p }, idx) => (
           <motion.div
             key={key}
-            initial={prefersReduced || motionPreview ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
+            initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={prefersReduced ? { duration: 0 } : {
               duration: 1.0,
@@ -67,25 +72,9 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
             }}
             className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
-            <Card className="w-full" index={idx} scrollY={scrollY}>
-              <div className="flex flex-col gap-y-[9px] group">
-                <GridTile
-                  project={p}
-                  reserveSpace={motionPreview}
-                  sizing="natural"
-                  className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
-                />
-                <p
-                  className="text-left leading-[18.75px]"
-                  style={{
-                    fontSize: 'var(--font-tile-name-size)',
-                    fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
-                  }}
-                >
-                  {p.name}. {p.type?.split(' / ')[0] ?? ''}
-                </p>
-              </div>
-            </Card>
+            <PerspectiveCard className="w-full">
+              <ProjectContent project={p} />
+            </PerspectiveCard>
           </motion.div>
         ))}
 
@@ -93,5 +82,27 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
         <div ref={sentinelRef} className="col-span-12 h-1" />
       </div>
     </main>
+  );
+}
+
+function ProjectContent({ project, reserveSpace = false }: { project: Project; reserveSpace?: boolean }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-y-[9px] group">
+      <GridTile
+        project={project}
+        reserveSpace={reserveSpace}
+        sizing="natural"
+        className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
+      />
+      <p
+        className="text-left leading-[18.75px]"
+        style={{
+          fontSize: 'var(--font-tile-name-size)',
+          fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
+        }}
+      >
+        {project.name}. {project.type?.split(' / ')[0] ?? ''}
+      </p>
+    </div>
   );
 }

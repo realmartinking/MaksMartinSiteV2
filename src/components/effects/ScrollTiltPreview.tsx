@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import {
   cubicBezier,
   motion,
@@ -14,37 +14,54 @@ const enterEase = cubicBezier(0.22, 1, 0.36, 1);
 const exitEase = cubicBezier(0, 0, 0.58, 1);
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 
+const getColumns = () => window.matchMedia('(min-width: 1024px)').matches
+  ? 3 : window.matchMedia('(min-width: 640px)').matches ? 2 : 1;
+const getServerColumns = () => 3;
+function subscribeColumns(update: () => void) {
+  const queries = [640, 1024].map((width) => window.matchMedia(`(min-width: ${width}px)`));
+  queries.forEach((query) => query.addEventListener('change', update));
+  return () => queries.forEach((query) => query.removeEventListener('change', update));
+}
+
+export function ScrollTiltPreview({ children, scrollY }: {
+  children: ReactNode[];
+  scrollY: MotionValue<number>;
+}) {
+  const columns = useSyncExternalStore(subscribeColumns, getColumns, getServerColumns);
+  return Array.from({ length: Math.ceil(children.length / columns) }, (_, row) => (
+    <ScrollTiltRow key={row} columns={columns} scrollY={scrollY}>
+      {children.slice(row * columns, (row + 1) * columns)}
+    </ScrollTiltRow>
+  ));
+}
+
 /**
  * Opt-in motion study inspired by Ruixen's Scroll Tilted Grid:
  * https://ruixen.com/docs/components/scroll-tilted-grid
  *
- * Measure the untouched layout anchor, never the transformed artwork. A common
- * width-based travel distance keeps portrait and landscape tiles in phase.
- * The existing grid, media proportions and first row remain unchanged at rest.
+ * One perspective and one transformed plane for the whole row. Individual
+ * cards stay flat inside it, so mixed heights cannot produce intersecting
+ * card planes. Measure the untouched row anchor, never the moving artwork.
  */
-export function ScrollTiltPreview({
+function ScrollTiltRow({
   children,
-  className,
-  index,
+  columns,
   scrollY,
 }: {
   children: ReactNode;
-  className?: string;
-  index: number;
+  columns: number;
   scrollY: MotionValue<number>;
 }) {
   const anchor = useRef<HTMLDivElement>(null);
   // -1: entrance, 0: the original layout, +1: exit.
   const phase = useMotionValue(0);
   const travel = useMotionValue(0);
-  const side = useMotionValue(0);
+  const perspective = useMotionValue(1000);
 
   // Subscribe before the layout effect sets the first measured phase.
   const rotateX = useTransform(phase, (p) => -p * 62);
   const z = useTransform(phase, (p) => Math.abs(p) * 150);
   const y = useTransform(() => -phase.get() * travel.get());
-  const x = useTransform(() => Math.abs(phase.get()) * side.get() * 16);
-  const rotate = useTransform(() => phase.get() * side.get() * 1.5);
   const blur = useTransform(phase, (p) => Math.abs(p) * 6);
   const opacity = useTransform(phase, (p) => 1 - Math.abs(p) * 0.45);
   const filter = useMotionTemplate`blur(${blur}px)`;
@@ -85,8 +102,11 @@ export function ScrollTiltPreview({
         top += parent.offsetTop;
       }
       viewport = window.innerHeight;
-      referenceHeight = Math.min(rect.width * 0.75, viewport * 0.65);
-      side.set(window.innerWidth >= 1024 ? (index % 3) - 1 : (index % 2) * 2 - 1);
+      const gap = parseFloat(getComputedStyle(element.firstElementChild!).columnGap) || 0;
+      const columnWidth = (rect.width - gap * (columns - 1)) / columns;
+      referenceHeight = Math.min(columnWidth * 0.75, viewport * 0.65);
+      // Keep the full plane safely in front of the camera on large displays.
+      perspective.set(Math.max(1000, rect.height * 1.6));
       travel.set(Math.min(96, referenceHeight * 0.24));
       update();
     };
@@ -99,7 +119,7 @@ export function ScrollTiltPreview({
     const unsubscribe = scrollY.on('change', update);
     const observer = new ResizeObserver(scheduleMeasure);
     observer.observe(element);
-    // Media metadata can change earlier row heights without resizing this tile.
+    // Earlier rows or a breakpoint change can move this row's layout anchor.
     const grid = element.closest('[data-project-grid]');
     if (grid) observer.observe(grid);
     window.addEventListener('resize', scheduleMeasure);
@@ -116,23 +136,27 @@ export function ScrollTiltPreview({
       desktop.removeEventListener('change', scheduleMeasure);
       reduceMotion.removeEventListener('change', update);
     };
-  }, [index, phase, scrollY, side, travel]);
+  }, [columns, perspective, phase, scrollY, travel]);
 
   return (
-    <div
+    <motion.div
       ref={anchor}
-      className={className}
-      data-scroll-tilt="preview"
-      style={{ position: 'relative', perspective: 1000, perspectiveOrigin: 'center' }}
+      className="col-span-12 relative"
+      data-scroll-tilt="row"
+      style={{ perspective, perspectiveOrigin: 'center' }}
     >
       <motion.div
         style={{
-          rotateX, z, y, x, rotate, filter, opacity,
+          display: 'grid',
+          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+          columnGap: 'var(--grid-gap)',
+          alignItems: 'start',
+          rotateX, z, y, filter, opacity,
           transformOrigin: 'center center',
         }}
       >
         {children}
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
