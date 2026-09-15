@@ -16,7 +16,8 @@
   transform-origin: center;
   will-change: transform;
 }
-.folderPlane { width: min(36vw, 740px, 100svh); }
+.folderStage { perspective: none; }
+.folderPlane { width: min(40.5vw, 95svh); }
 .rollPlane { width: min(53.5vw, 1100px); }
 .folderCard {
   display: block;
@@ -27,28 +28,27 @@
   border: 0;
   padding: 0;
   cursor: pointer;
+  outline: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
 }
 .folderCard:focus-visible { outline: 1px solid currentColor; outline-offset: 5px; }
-.folderControls {
+.folderLabel, .folderCount {
   position: fixed;
-  bottom: 18px;
-  right: var(--grid-padding-x);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  font-size: 16px;
-  line-height: 22px;
-  font-weight: 700;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 20;
-  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+  pointer-events: none;
 }
-.folderControls button { padding: 8px; cursor: pointer; }
-.folderControls button:disabled { opacity: 0.25; cursor: default; }
-.folderControls button:focus-visible { outline: 1px solid currentColor; }
+.folderLabel { left: var(--grid-padding-x); text-align: left; max-width: 24vw; }
+.folderLabel span { display: block; animation: folder-label 150ms ease-out; }
+.folderCount { right: var(--grid-padding-x); }
+@keyframes folder-label { from { opacity: 0; } to { opacity: 1; } }
 
 @media (max-width: 768px) {
   .rollPlane { width: 88vw; }
   .folderPlane { width: 68vw; }
-  .folderPlane, .rollPlane { top: 60%; }
+  .rollPlane { top: 60%; }
   .caption { font-size: 14px; }
 }
