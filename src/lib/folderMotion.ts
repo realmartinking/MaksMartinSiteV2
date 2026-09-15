@@ -33,6 +33,17 @@ export function wrapProject(index: number, count: number) {
   return ((index % count) + count) % count;
 }
 
+/** Keep the Gaussian filter's transparent fringe outside the fixed card crop.
+ * CSS transforms scale the filtered result, so solve for the source-space
+ * inset rather than adding a fixed percentage. Sharp media stays untouched.
+ */
+export function folderMediaScale(blur: number, width: number, height: number) {
+  const shortest = Math.min(width, height);
+  if (blur < 0.01 || shortest <= 0) return 1;
+  const padding = Math.min(blur * 3.5, shortest * 0.25);
+  return shortest / (shortest - padding * 2);
+}
+
 export type FolderMetrics = { width: number; height: number; cardWidth: number; cardHeight: number };
 export type FolderPose = { y: number; scale: number; angle: number; perspective: number };
 const DEPTH_STEP = 0.036;

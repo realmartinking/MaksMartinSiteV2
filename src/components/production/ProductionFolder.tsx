@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { PRODUCTION_PROJECTS } from '@/lib/projects';
-import { FolderScroll, folderPose, wrapProject, type FolderMetrics } from '@/lib/folderMotion';
+import { FolderScroll, folderPose, folderMediaScale, wrapProject, type FolderMetrics } from '@/lib/folderMotion';
 import { GridTile } from '@/components/grid/GridTile';
 import { ProjectEntrance } from '@/components/effects/ProjectEntrance';
 import styles from './Production.module.css';
@@ -38,6 +38,8 @@ export function ProductionFolder() {
         // or its edges. Use the same opening clock as the stack geometry.
         const blur = current.selected !== null && index !== current.selected ? current.opening * 5 : 0;
         plane.style.setProperty('--folder-content-filter', blur < 0.01 ? 'none' : `blur(${blur}px)`);
+        const mediaScale = folderMediaScale(blur, metrics.cardWidth, metrics.cardHeight);
+        plane.style.setProperty('--folder-content-transform', mediaScale === 1 ? 'none' : `scale(${mediaScale})`);
       });
       root.current?.setAttribute('data-folder-opening', current.opening.toFixed(3));
       root.current?.setAttribute('data-folder-position', current.position.toFixed(4));

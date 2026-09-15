@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FolderScroll, folderPose, folderEdges, wrapProject } from './folderMotion.ts';
+import { FolderScroll, folderPose, folderEdges, folderMediaScale, wrapProject } from './folderMotion.ts';
 const metrics = { width: 1440, height: 810, cardWidth: 583.2, cardHeight: 328.05 };
 
 function gesture(deltas, stride = 445.5) {
@@ -99,4 +99,19 @@ test('opened foreground fits exactly three strips across desktop aspect ratios',
 });
 test('infinite selection wraps in both directions', () => {
   assert.deepEqual([-2,-1,0,1,2,3,4,5].map(i=>wrapProject(i,4)),[2,3,0,1,2,3,0,1]);
+  assert.deepEqual([-1,0,7,8,17].map(i=>wrapProject(i,8)),[7,0,7,0,1]);
+});
+test('blur overscan keeps the transparent fringe outside every edge throughout opening', () => {
+  for (const [width,height] of [[265,149],[583.2,328.05],[1036.8,583.2]]) {
+    assert.equal(folderMediaScale(0,width,height),1);
+    for (let blur=.05;blur<=5;blur+=.05) {
+      const scale=folderMediaScale(blur,width,height);
+      for (const dimension of [width,height]) {
+        const sourceInset=dimension*(scale-1)/(2*scale);
+        assert.ok(sourceInset>=3.5*blur-1e-9, 'crop falls inside opaque filtered pixels');
+      }
+    }
+  }
+  assert.equal(folderMediaScale(5,0,0),1);
+  assert.ok(Number.isFinite(folderMediaScale(5,10,5)));
 });

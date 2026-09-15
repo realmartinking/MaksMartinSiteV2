@@ -1,5 +1,5 @@
 // Данные проектов для MaksMartin Studio
-// 17 проектов с разными aspect ratios для хаотичной сетки
+// 18 проектов брендинга с разными aspect ratios для хаотичной сетки
 
 export type ProjectAspect = 'wide' | 'vertical' | 'square'; // 16:9 | 9:16 | 1:1
 
@@ -184,7 +184,50 @@ export const PROJECTS: Project[] = [
 ];
 
 // A separate selection; the Branding collection stays intact.
-export const PRODUCTION_PROJECTS = ['p03', 'p13', 'p12', 'p16'].map((id) => PROJECTS.find((project) => project.id === id)!);
+export const PRODUCTION_PROJECTS: Project[] = [
+  ...['p03', 'p13', 'p12'].map((id) => ({
+    ...PROJECTS.find((project) => project.id === id)!,
+    type: 'Art Direction',
+  })),
+  {
+    ...PROJECTS.find((project) => project.id === 'p16')!,
+    name: 'Новогоднее OLV Манеры',
+    type: 'AI Prodaction',
+  },
+  {
+    id: 'production-fashion-summer-awards-2026',
+    name: 'Fashion Summer Awards 2026',
+    type: 'AI Production',
+    videoSrc: '/projects/fashion-summer-awards-2026.mp4',
+    mediaSize: [1920, 1080],
+    aspect: 'wide',
+    year: '2026',
+  },
+  {
+    id: 'production-fashion-tv',
+    name: 'Fashion TV',
+    type: 'AI Production',
+    videoSrc: '/projects/fashion-tv.mp4',
+    mediaSize: [1920, 1080],
+    aspect: 'wide',
+  },
+  {
+    id: 'production-manery-campaign',
+    name: 'РК Манеры',
+    type: 'Рекламная компания',
+    videoSrc: '/projects/manery-campaign.mp4',
+    mediaSize: [1920, 1080],
+    aspect: 'wide',
+  },
+  {
+    id: 'production-manery-olv',
+    name: 'Манеры OLV',
+    type: 'AI Production',
+    videoSrc: '/projects/manery-olv-10s.mp4',
+    mediaSize: [1920, 1080],
+    aspect: 'wide',
+  },
+];
 
 // Slogan и контактные данные
 export const SITE_INFO = {

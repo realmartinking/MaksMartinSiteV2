@@ -32,7 +32,11 @@
 }
 .folderCard:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
 .folderMediaClip { overflow: hidden; isolation: isolate; }
-.folderMediaContent { filter: var(--folder-content-filter, none); }
+.folderMediaContent {
+  filter: var(--folder-content-filter, none);
+  transform: var(--folder-content-transform, none);
+  transform-origin: center;
+}
 .folderLabel, .folderCount {
   position: fixed;
   top: 50%;
