@@ -54,7 +54,7 @@ test('only the selected file unfolds and both parts of the stack change angle', 
     assert.notEqual(folderPose(i,metrics,1).angle,folderPose(i,metrics).angle);
   }
 });
-test('opening gradually reveals the selected card and finishes with clear edges', () => {
+test('opening gradually reveals the selected card and leaves air below it', () => {
   let lastVisible=0;
   for (let opening=0;opening<=1.001;opening+=.025) {
     const selected=folderEdges(folderPose(0,metrics,opening),metrics.cardHeight);
@@ -65,8 +65,36 @@ test('opening gradually reveals the selected card and finishes with clear edges'
   }
   const selected=folderEdges(folderPose(0,metrics,1),metrics.cardHeight);
   for (let i=1;i<=5;i++) {
-    assert.ok(folderEdges(folderPose(i,metrics,1),metrics.cardHeight).top>selected.bottom);
-    assert.ok(folderEdges(folderPose(-i,metrics,1),metrics.cardHeight).bottom<selected.top);
+    assert.ok(folderEdges(folderPose(i,metrics,1),metrics.cardHeight).top>=selected.bottom+metrics.height*.025-0.001);
+  }
+});
+test('rear files straighten, diminish with depth and continue behind the selection', () => {
+  for (let i=1;i<=6;i++) {
+    const rear=folderPose(-i,metrics,1), nearer=folderPose(1-i,metrics,1);
+    const edges=folderEdges(rear,metrics.cardHeight), next=folderEdges(nearer,metrics.cardHeight);
+    assert.ok(Math.abs(rear.angle)<=10);
+    assert.ok(rear.scale<nearer.scale);
+    assert.ok(edges.top<next.top && edges.bottom>next.top, 'upper strips occlude full rear cards');
+  }
+});
+test('closed stack shows at most ten strips throughout a scroll step', () => {
+  for (let phase=0;phase<1;phase+=.01) {
+    let visible=0;
+    for (let i=-10;i<=10;i++) {
+      const edges=folderEdges(folderPose(i-phase,metrics),metrics.cardHeight);
+      const next=folderEdges(folderPose(i+1-phase,metrics),metrics.cardHeight);
+      if (edges.top<metrics.height/2 && Math.min(edges.bottom,next.top)>-metrics.height/2) visible++;
+    }
+    assert.ok(visible<=10, `${visible} strips at ${phase}`);
+    if (phase===0) assert.equal(visible,10);
+  }
+});
+test('opened foreground fits exactly three strips across desktop aspect ratios', () => {
+  for (const [width,height] of [[1280,800],[1440,810],[1920,1080],[2560,1080],[1440,1000]]) {
+    const cardWidth=Math.min(width*.405,height*.95);
+    const size={width,height,cardWidth,cardHeight:cardWidth*9/16};
+    for (let i=1;i<=3;i++) assert.ok(folderEdges(folderPose(i,size,1),size.cardHeight).top<height/2);
+    assert.ok(folderEdges(folderPose(4,size,1),size.cardHeight).top>=height/2);
   }
 });
 test('infinite selection wraps in both directions', () => {

@@ -24,6 +24,7 @@ export function ProductionReel() {
     let height = innerHeight;
     const paint = () => {
       const progress = position.get();
+      root.current?.setAttribute('data-roll-position', progress.toFixed(4));
       planes.current.forEach((plane, index) => {
         const distance = index - progress;
         const amount = reduced ? 0 : Math.max(0, Math.min(1, (Math.abs(distance) - 0.12) / 0.88));
@@ -79,7 +80,17 @@ export function ProductionReel() {
   }, [position, reduced]);
 
   useEffect(() => {
-    const advance = (pixels: number) => move.current(target.current + pixels * 1.08 / (innerHeight * 0.58));
+    let snapTimer: ReturnType<typeof setTimeout> | undefined;
+    let touching = false;
+    const settle = () => {
+      clearTimeout(snapTimer);
+      snapTimer = setTimeout(() => move.current(Math.round(target.current)), 160);
+    };
+    const advance = (pixels: number) => {
+      clearTimeout(snapTimer);
+      move.current(target.current + pixels * 1.08 / (innerHeight * 0.58));
+      if (!touching) settle();
+    };
     const wheel = (event: WheelEvent) => {
       if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
       if ((event.target as Element).closest('[data-lenis-prevent]')) return;
@@ -96,11 +107,21 @@ export function ProductionReel() {
       if (down || up || event.key === 'Home') {
         event.preventDefault();
         if (event.repeat) return;
+        clearTimeout(snapTimer);
         move.current(event.key === 'Home' ? 0 : Math.round(target.current) + (down ? 1 : -1));
       }
     };
     let touchY = 0;
-    const start = (event: TouchEvent) => { touchY = event.touches[0].clientY; };
+    const start = (event: TouchEvent) => {
+      clearTimeout(snapTimer);
+      touching = true;
+      touchY = event.touches[0].clientY;
+    };
+    const end = (event: TouchEvent) => {
+      if (event.touches.length) return;
+      touching = false;
+      settle();
+    };
     const touch = (event: TouchEvent) => {
       if (event.touches.length !== 1) return;
       event.preventDefault();
@@ -113,11 +134,16 @@ export function ProductionReel() {
     window.addEventListener('keydown', keyboard);
     element.addEventListener('touchstart', start, { passive: true });
     element.addEventListener('touchmove', touch, { passive: false });
+    element.addEventListener('touchend', end, { passive: true });
+    element.addEventListener('touchcancel', end, { passive: true });
     return () => {
+      clearTimeout(snapTimer);
       window.removeEventListener('wheel', wheel);
       window.removeEventListener('keydown', keyboard);
       element.removeEventListener('touchstart', start);
       element.removeEventListener('touchmove', touch);
+      element.removeEventListener('touchend', end);
+      element.removeEventListener('touchcancel', end);
     };
   }, []);
 
