@@ -13,7 +13,13 @@ const VIEWS = [
   { href: '/gallery', label: 'Gallery' },
 ];
 
-const UPCOMING = ['Production', 'AI BrandStudio', 'Tools'];
+const UPCOMING = ['AI BrandStudio', 'Tools'];
+const PRODUCTION_VIEWS = [
+  { href: '/production/list', label: 'List' },
+  { href: '/production/roll', label: 'Roll' },
+  { href: '/production/gallery', label: 'Gallery' },
+  { href: '/production/folder', label: 'Folder' },
+];
 
 // Keep the existing visual editor's overrides available on the rebuilt header.
 function elementStyle(id: string, fontSize = 'inherit', lineHeight = 'inherit'): React.CSSProperties {
@@ -40,7 +46,9 @@ function elementStyle(id: string, fontSize = 'inherit', lineHeight = 'inherit'):
 
 export function Chrome() {
   const pathname = usePathname();
-  const isActive = (href: string) => pathname === href || (href === '/grid' && pathname === '/');
+  const isProduction = pathname.startsWith('/production');
+  const views = isProduction ? PRODUCTION_VIEWS : VIEWS;
+  const isActive = (href: string) => pathname === href || (href === '/grid' && pathname === '/') || (href === '/production/folder' && pathname === '/production');
   const isBranding = pathname === '/' || VIEWS.some(({ href }) => pathname === href);
 
   return (
@@ -66,6 +74,7 @@ export function Chrome() {
           <Link href="/grid" className={isBranding ? styles.active : undefined} aria-current={isBranding ? 'page' : undefined}>
             Branding
           </Link>
+          <Link href="/production/folder" className={isProduction ? styles.active : undefined} aria-current={isProduction ? 'page' : undefined}>Production</Link>
           {UPCOMING.map((label) => (
             <button key={label} type="button" className={styles.upcoming} aria-disabled="true" aria-label={`${label} — coming soon`}>
               <span className={styles.upcomingLabel} aria-hidden="true">{label}</span>
@@ -77,8 +86,8 @@ export function Chrome() {
           </Link>
         </nav>
 
-        <nav data-edit-id="view-switcher" className={styles.views} aria-label="Project view" style={elementStyle('view-switcher', 'var(--view-font-size)', '22.5px')}>
-          {VIEWS.map(({ href, label }) => (
+        <nav data-edit-id="view-switcher" className={`${styles.views} ${isProduction ? styles.productionViews : ''}`} aria-label="Project view" style={elementStyle('view-switcher', 'var(--view-font-size)', '22.5px')}>
+          {views.map(({ href, label }) => (
             <Link key={href} href={href} className={isActive(href) ? styles.active : undefined} aria-current={isActive(href) ? 'page' : undefined}>
               {label}
             </Link>

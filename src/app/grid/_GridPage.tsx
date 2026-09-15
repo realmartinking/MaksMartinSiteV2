@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { ProjectEntrance, entranceStyle } from '@/components/effects/ProjectEntrance';
 import { PROJECTS, type Project } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
 import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
 
 export default function GridPage({ motionPreview = false }: { motionPreview?: boolean }) {
-  const prefersReduced = useReducedMotion();
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -55,26 +54,20 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
       >
         {motionPreview ? (
           <ScrollTiltPreview>
-            {tiles.map(({ key, ...project }) => (
-              <ProjectContent key={key} project={project} reserveSpace />
+            {tiles.map(({ key, ...project }, index) => (
+              <ProjectEntrance key={key} index={index < PROJECTS.length ? index : 0}><ProjectContent project={project} reserveSpace /></ProjectEntrance>
             ))}
           </ScrollTiltPreview>
         ) : tiles.map(({ key, ...p }, idx) => (
-          <motion.div
+          <div
             key={key}
-            initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={prefersReduced ? { duration: 0 } : {
-              duration: 1.0,
-              ease: [0.16, 1, 0.3, 1],
-              delay: idx < PROJECTS.length ? Math.min(idx * 0.08, 1.2) : 0,
-            }}
-            className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
+            style={entranceStyle(idx < PROJECTS.length ? idx : 0)}
+            className="project-entrance col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
             <PerspectiveCard className="w-full">
               <ProjectContent project={p} />
             </PerspectiveCard>
-          </motion.div>
+          </div>
         ))}
 
         {/* Infinite scroll sentinel */}

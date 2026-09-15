@@ -22,8 +22,8 @@ export function Preloader() {
   const startedRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const cnt = document.querySelector('main') as HTMLElement | null;
-    if (cnt) cnt.style.opacity = '0';
+    document.documentElement.dataset.intro = 'loading';
+    let finish: ReturnType<typeof setTimeout> | undefined;
 
     startedRef.current = performance.now();
 
@@ -52,27 +52,9 @@ export function Preloader() {
         cancelAnimationFrame(raf);
         setStage('gone');
 
-        // Контент появляется
-        if (cnt) {
-          cnt.style.transition = 'opacity 600ms cubic-bezier(0.215, 0.61, 0.355, 1), filter 600ms cubic-bezier(0.215, 0.61, 0.355, 1), transform 600ms cubic-bezier(0.215, 0.61, 0.355, 1)';
-          cnt.style.filter = 'blur(10px)';
-          cnt.style.transform = 'translateY(20px)';
-          cnt.style.opacity = '0';
-
-          requestAnimationFrame(() => {
-            cnt.style.opacity = '1';
-            cnt.style.filter = 'blur(0px)';
-            cnt.style.transform = 'translateY(0)';
-          });
-
-          setTimeout(() => {
-            cnt.style.transition = '';
-            cnt.style.filter = '';
-            cnt.style.transform = '';
-          }, 700);
-        }
-
-        setTimeout(() => setDone(true), 350);
+        // Start every project's own entrance after the loader, not behind it.
+        document.documentElement.dataset.intro = 'ready';
+        finish = setTimeout(() => setDone(true), 350);
         return;
       }
       raf = requestAnimationFrame(tick);
@@ -81,6 +63,8 @@ export function Preloader() {
 
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(finish);
+      document.documentElement.dataset.intro = 'ready';
     };
   }, []);
 

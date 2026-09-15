@@ -1,0 +1,54 @@
+.caption {
+  display: block;
+  margin-top: 9px;
+  text-align: left;
+  font-size: 16px;
+  line-height: 18.75px;
+  font-weight: 700;
+}
+
+.reel { height: 100svh; overflow: clip; touch-action: pan-x pinch-zoom; }
+.reelStage { position: fixed; inset: 0; perspective: 1600px; overflow: clip; }
+.folderPlane, .rollPlane {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  will-change: transform;
+}
+.folderPlane { width: min(36vw, 740px, 100svh); }
+.rollPlane { width: min(53.5vw, 1100px); }
+.folderCard {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  background: var(--background);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.folderCard:focus-visible { outline: 1px solid currentColor; outline-offset: 5px; }
+.folderControls {
+  position: fixed;
+  bottom: 18px;
+  right: var(--grid-padding-x);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 700;
+  z-index: 20;
+  font-variant-numeric: tabular-nums;
+}
+.folderControls button { padding: 8px; cursor: pointer; }
+.folderControls button:disabled { opacity: 0.25; cursor: default; }
+.folderControls button:focus-visible { outline: 1px solid currentColor; }
+
+@media (max-width: 768px) {
+  .rollPlane { width: 88vw; }
+  .folderPlane { width: 68vw; }
+  .folderPlane, .rollPlane { top: 60%; }
+  .caption { font-size: 14px; }
+}

@@ -6,6 +6,10 @@ import { useTheme } from 'next-themes';
 // Uint8ClampedArray preserves the original alpha rounding for every RGB sum.
 const DARK_ALPHA = Uint8ClampedArray.from({ length: 766 }, (_, sum) => Math.min(255, (sum / 3) * 1.5));
 const LIGHT_ALPHA = Uint8ClampedArray.from({ length: 766 }, (_, sum) => Math.max(0, 255 - (sum / 3) * 1.2));
+// Both original emblem sources are 145 frames at 24 fps. Cache the exact pixels
+// after alpha conversion to avoid a GPU-to-CPU readback on every repeated loop.
+const SOURCE_FPS = 24;
+const FRAME_CACHE_BYTES = 64 * 1024 * 1024;
 
 interface EmblemProps {
   height?: number;
@@ -54,11 +58,17 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
     let retry: ReturnType<typeof setTimeout> | undefined;
     let lastFrame = -1;
     let pendingPosition: number | null = positionRef.current;
+    const frames = new Map<number, ImageData>();
 
-    const draw = (force = false, frameTime = video.currentTime) => {
+    const draw = (force = false, frameTime = video.currentTime, sourceFrame?: number) => {
       if (stopped || document.hidden || video.readyState < 2 || video.seeking || !video.videoWidth || !canvas.width || !canvas.height) return;
       if (!force && frameTime === lastFrame) return;
       lastFrame = frameTime;
+      const cached = sourceFrame === undefined ? undefined : frames.get(sourceFrame);
+      if (cached) {
+        ctx.putImageData(cached, 0, 0);
+        return;
+      }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       try {
@@ -68,6 +78,9 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
           data[i + 3] = alpha[data[i] + data[i + 1] + data[i + 2]];
         }
         ctx.putImageData(pixels, 0, 0);
+        // Keep the entire loop or none of it: partial LRU caching would thrash.
+        const loopBytes = Math.ceil(video.duration * SOURCE_FPS) * pixels.data.byteLength;
+        if (sourceFrame !== undefined && loopBytes <= FRAME_CACHE_BYTES) frames.set(sourceFrame, pixels);
       } catch (error) {
         console.warn('[emblem] putImageData failed:', error);
       }
@@ -79,6 +92,7 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
       const width = Math.round(rect.width * dpr);
       const height = Math.round(rect.height * dpr);
       if (canvas.width !== width || canvas.height !== height) {
+        frames.clear();
         canvas.width = width;
         canvas.height = height;
         draw(true);
@@ -95,7 +109,7 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
       if (videoFrames) {
         videoFrame = video.requestVideoFrameCallback((_now, metadata) => {
           videoFrame = null;
-          draw(false, metadata.mediaTime);
+          draw(false, metadata.mediaTime, Math.round(metadata.mediaTime * SOURCE_FPS));
           queueFrame();
         });
       } else {
@@ -148,6 +162,7 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
       stopped = true;
       positionRef.current = video.currentTime;
       pause();
+      frames.clear();
       observer.disconnect();
       window.removeEventListener('resize', updateSize);
       document.removeEventListener('visibilitychange', onVisibility);

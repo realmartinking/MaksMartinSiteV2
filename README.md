@@ -202,17 +202,17 @@ The header and Grid follow [Figma frame 589:104](https://www.figma.com/design/1j
 
 At 1440px: page gutters and column gaps are 10px, the three media columns are 466.667px wide, the first row starts at y=193px and the second at y≈857px. Captions use 16px type, 18.75px line height, and a 9px media gap. The header's optical offsets are in `src/components/chrome/Chrome.module.css`.
 
-Production, AI BrandStudio, and Tools are non-navigating buttons that display “Soon” on hover or keyboard focus without changing their width. Branding opens Grid; List, Grid, Gallery, Info, infinite scrolling, video playback, and existing motion remain available.
+AI BrandStudio and Tools are non-navigating buttons that display “Soon” on hover or keyboard focus without changing their width. Branding opens Grid; List, Grid, Gallery, Info, infinite scrolling, video playback, and existing motion remain available.
 
 The emblem uses its original full video frame within an unclipped positioning stage. Its Figma anchor is 93×169px, while the video stage is 134.4×173.6px with an offset of (-26px, -6px). Measured across all 145 frames of both source videos, visible artwork stays within the desktop viewport. The reference pose's visible size is approximately 83×156px. Keep the stage overflow visible when editing the lockup.
 
 Animation provenance: the original README links to [21st.dev / Ruixen UI Scroll Tilted Grid](https://21st.dev/community/components/ruixenui/scroll-tilted-grid/default); the [current author documentation](https://ruixen.com/docs/components/scroll-tilted-grid) describes the effect. `PerspectiveCard.tsx` also names `emelecollab.com/grid` as a visual reference. The source of the pre-rendered emblem video is not recorded.
 
-### Opt-in scroll preview
+### Shared scroll motion
 
-Open `/grid?motion=ruixen` to try the Ruixen-inspired choreography; `/grid` keeps the existing effect for comparison. Each responsive row is one shared plane with a 62° entry/exit tilt, up to +150px depth, and 6px blur. Perspective starts at 1000px and increases for tall rows on large displays to keep the plane in front of the camera. Between 12% and 65% of viewport height the row anchor is in focus and all transforms are zero. The first row at y=193px stays flat on the reference desktop viewport.
+The Ruixen-inspired choreography is the default at `/grid`; existing `/grid?motion=ruixen` links still work. `/grid?motion=classic` keeps the earlier effect available for comparison. Each responsive row is one shared plane with a 62° entry/exit tilt, up to +150px depth, and 6px blur. Perspective starts at 1000px and increases for tall rows on large displays to keep the plane in front of the camera. Between 12% and 65% of viewport height the row anchor is in focus and all transforms are zero. The first row at y=193px stays flat on the reference desktop viewport.
 
-`ScrollTiltPreview.tsx` groups cards at the same 640px/1024px breakpoints as the original grid and transforms the entire row. Cards have no independent perspective, tilt, or lateral drift, preventing portrait cards from intersecting their landscape neighbors. The inner row grid preserves column widths, gaps, top alignment, and each media asset's proportions. Untransformed row anchors share one passive scroll listener and a requestAnimationFrame scheduler; timing still uses column width. Intrinsic dimensions in `projects.ts` reserve space before videos load. The preview skips the existing per-tile mount animation, respects reduced motion, and disables the 3D study below 768px. Playback, looping, hover behavior, typography, the emblem, and the default Grid remain available as before.
+`ScrollTiltPreview.tsx` groups cards at the same 640px/1024px breakpoints as the original grid and transforms the entire row. Cards have no independent perspective, tilt, or lateral drift, preventing portrait cards from intersecting their landscape neighbors. The inner row grid preserves column widths, gaps, top alignment, and each media asset's proportions. Untransformed row anchors subscribe to the same animation frame as the document scroll; timing still uses column width. Intrinsic dimensions in `projects.ts` reserve space before videos load. All project views share the same staggered entrance. The row effect respects reduced motion and disables 3D below 768px. Playback, looping, hover behavior, typography, the emblem, and the default Grid remain available as before.
 
 
 ### Rendering and media optimizations
@@ -222,3 +222,19 @@ The preview caches row geometry in one shared ResizeObserver and updates only ro
 The emblem processes new video frames with `requestVideoFrameCallback`, with a requestAnimationFrame fallback for older browsers. Only the current theme's video plays; theme switches preserve its playback position. Canvas dimensions, DPR, source videos (24 fps), and pixel alpha are unchanged. A lookup table replaces per-pixel luminance arithmetic; all 1,532 alpha results match the previous clamped-byte calculation exactly. Geometry is measured on resize instead of every frame. Emblem and project playback pause while the document is hidden; project tiles share one IntersectionObserver with the original 400px playback margin.
 
 Humber, Lumio, Muse, and Vishnevetsky have lossless WebP alternatives with PNG fallback. Decoded RGBA pixels match their source PNGs exactly. Their combined transfer size drops from 13,567,173 to 8,664,712 bytes (36.1%); the original files and full dimensions are retained. Project videos are unchanged.
+
+
+### Smooth scrolling and Production
+
+Desktop wheel scrolling uses Lenis 1.3.26 with `lerp: 0.085` and `wheelMultiplier: 1.08`, the values found in the public implementation at [khanhnguyen.design](https://khanhnguyen.design/). Touch scrolling remains native. The Grid row renderer runs from Lenis's scroll notification immediately after it sets document position, avoiding an extra RAF of transform lag. Only one scroll integrator runs. Production's virtual reels own their input and frame loop; Folder uses discrete gestures and Roll continuous wheel input. Reduced motion, page visibility, route changes, and the visual editor's nested scroll area are handled explicitly.
+
+Production opens `/production/folder` and offers List, Roll, Gallery, Folder. Its selection is Value, Raif Vision Conference, Forma Houseboat, and Манеры, in that order. `PRODUCTION_PROJECTS` references the original assets; all 18 Branding projects remain available. All four Production views loop infinitely. List and Gallery extend their feeds; Roll and Folder recycle a bounded window of cards in both directions.
+
+Roll centers a 53.5vw video and lets the next one rise from below. Adjacent cards retain the 62° tilt, 150px depth, and 6px blur. Folder follows the video reference: a compact 36vw file stack recedes upward into depth, with progressively smaller cards. Cards share the same resting tilt and unfold on hover or keyboard focus. It is not a centered four-card carousel. A short wheel gesture advances one project; a strong gesture advances at most two, including its momentum tail. Arrow keys, Page Up/Down, Home, touch swipes, card clicks, and previous/next controls also work. Neither virtual reel runs Lenis simultaneously; both use the same 0.085 time-corrected inertia and keep their original video assets.
+
+`ProjectEntrance` and `entranceStyle` provide the same 1s blur/lift/fade and 80ms stagger across Grid, List, Gallery, Info, Roll, and Folder. On first load they wait for the preloader instead of completing behind it. Finished entrance animations release their filters and transforms; returning to a route starts a fresh sequence.
+
+Run `npm run test:motion` (Node 22.6+) to check gesture budgets, momentum noise, reversals, and continuity of the folder pose. Source media, Gramatika text, emblem rotation bounds, and the dark default theme are retained.
+
+
+Emblem readback optimization: completed alpha-processed frames are retained for the repeating 24fps loop. Cached frames are the exact ImageData already displayed; they require no new video-to-canvas readback or alpha calculation. Caches are per mounted emblem and theme, cleared on resize/theme change/unmount, and used only when the whole loop fits the 64MiB limit. The original canvas size, pixels, and source video remain unchanged.

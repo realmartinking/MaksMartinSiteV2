@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { entranceStyle } from '@/components/effects/ProjectEntrance';
 
 const ABOUT = '10+ years building creative direction at the intersection of strategy, management, and product. My approach combines systems thinking, aesthetic judgment, and technical flexibility, producing cohesive creative solutions that scale with the business.';
 
@@ -35,10 +36,8 @@ export default function InfoPage() {
 function Block({ label, children, index = 0 }: { label?: string; children: ReactNode; index?: number }) {
   return (
     <section
-      className="flex flex-col items-center gap-y-[10px] max-w-[80vw] text-center"
-      style={{
-        animation: `list-entrance 1s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.15}s both`,
-      }}
+      className="project-entrance flex flex-col items-center gap-y-[10px] max-w-[80vw] text-center"
+      style={entranceStyle(index)}
     >
       {label && (
         <h2 className="text-[15px] font-bold tracking-tight">{label}</h2>

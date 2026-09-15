@@ -183,6 +183,9 @@ export const PROJECTS: Project[] = [
   },
 ];
 
+// A separate selection; the Branding collection stays intact.
+export const PRODUCTION_PROJECTS = ['p03', 'p13', 'p12', 'p16'].map((id) => PROJECTS.find((project) => project.id === id)!);
+
 // Slogan и контактные данные
 export const SITE_INFO = {
   name: 'MaksMartin',

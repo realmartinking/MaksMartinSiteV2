@@ -6,5 +6,5 @@ export default async function Page({
   searchParams: Promise<{ motion?: string }>;
 }) {
   const { motion } = await searchParams;
-  return <GridPage motionPreview={motion === 'ruixen'} />;
+  return <GridPage motionPreview={motion !== 'classic'} />;
 }

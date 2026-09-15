@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { cubicBezier } from 'framer-motion';
+import { subscribeScrollFrame } from '@/lib/scrollFrame';
 
 const enterEase = cubicBezier(0.22, 1, 0.36, 1);
 const exitEase = cubicBezier(0, 0, 0.58, 1);
@@ -81,7 +82,6 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     };
 
     const paint = () => {
-      frame = 0;
       if (document.hidden) return;
       if (needsMeasure) measure();
       const scrollTop = window.scrollY;
@@ -125,7 +125,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
         row.plane.style.opacity = `${1 - amount * 0.45}`;
       }
     };
-    const schedule = () => { if (!frame && !document.hidden) frame = requestAnimationFrame(paint); };
+    const schedule = () => { if (!frame && !document.hidden) frame = requestAnimationFrame(() => { frame = 0; paint(); }); };
     const scheduleMeasure = () => { needsMeasure = true; schedule(); };
     const onVisibility = () => {
       if (document.hidden) { cancelAnimationFrame(frame); frame = 0; }
@@ -137,7 +137,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     rows.forEach((row) => observer.observe(row.anchor));
     const grid = rows[0].anchor.closest('[data-project-grid]');
     if (grid) observer.observe(grid);
-    window.addEventListener('scroll', schedule, { passive: true });
+    const unsubscribe = subscribeScrollFrame(paint);
     window.addEventListener('resize', scheduleMeasure);
     window.addEventListener('pageshow', scheduleMeasure);
     document.addEventListener('visibilitychange', onVisibility);
@@ -146,7 +146,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
-      window.removeEventListener('scroll', schedule);
+      unsubscribe();
       window.removeEventListener('resize', scheduleMeasure);
       window.removeEventListener('pageshow', scheduleMeasure);
       document.removeEventListener('visibilitychange', onVisibility);

@@ -128,7 +128,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* Keep the viewport grid aligned with the Figma canvas; scrolling stays native. */
+  /* Keep the viewport grid aligned with the Figma canvas; Lenis preserves native document positioning. */
   html { scrollbar-width: none; }
   html::-webkit-scrollbar { width: 0; height: 0; }
 
@@ -231,4 +231,16 @@
   :root {
     --grid-padding-top: 193px;
   }
+}
+
+
+/* One entrance across views. It starts only after the first-visit loader. */
+html[data-intro="loading"] main { opacity: 0; }
+.project-entrance {
+  animation: list-entrance 1s cubic-bezier(0.16, 1, 0.3, 1) var(--entrance-delay, 0s) backwards;
+  animation-play-state: paused;
+}
+html[data-intro="ready"] .project-entrance { animation-play-state: running; }
+@media (prefers-reduced-motion: reduce) {
+  .project-entrance { animation: none; }
 }

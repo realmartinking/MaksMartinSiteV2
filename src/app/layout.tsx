@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import 'lenis/dist/lenis.css';
+import { SmoothScroll } from '@/components/effects/SmoothScroll';
 import { Chrome } from '@/components/chrome/Chrome';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { Preloader } from '@/components/preloader/Preloader';
@@ -42,10 +44,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-intro="loading" suppressHydrationWarning>
       <body className="font-sans text-[15px] select-none cursor-crosshair antialiased">
 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <SmoothScroll />
           <Preloader />
           <Chrome />
           {children}

@@ -106,6 +106,8 @@
   line-height: 22.5px;
 }
 
+.productionViews { grid-template-columns: 55px 55px 80px 48px; }
+
 .views > a {
   padding-block: 10px;
   margin-block: -10px;
