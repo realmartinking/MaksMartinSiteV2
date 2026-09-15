@@ -37,7 +37,7 @@ export default function GridPage() {
       */}
       <div
         className="
-          grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[50px]
+          grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[53px]
           pb-20
           [&:has(.group:hover)_.group:not(:hover)_video]:grayscale
           [&:has(.group:hover)_.group:not(:hover)_img]:grayscale
@@ -64,20 +64,20 @@ export default function GridPage() {
             className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
             <PerspectiveCard className="w-full">
-              <div className="flex flex-col gap-y-[4px] group">
+              <div className="flex flex-col gap-y-[9px] group">
                 <GridTile
                   project={p}
                   sizing="natural"
                   className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
                 />
                 <p
-                  className="leading-tight text-center"
+                  className="text-left leading-[18.75px]"
                   style={{
                     fontSize: 'var(--font-tile-name-size)',
                     fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
                   }}
                 >
-                  {p.name}&nbsp;&nbsp;/&nbsp;&nbsp;{p.type ?? ''}
+                  {p.name}. {p.type?.split(' / ')[0] ?? ''}
                 </p>
               </div>
             </PerspectiveCard>

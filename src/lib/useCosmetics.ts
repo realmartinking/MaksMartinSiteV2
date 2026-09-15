@@ -32,7 +32,7 @@ export interface CosmeticTokens {
 
 export const DEFAULTS: CosmeticTokens = {
   'lockup-emblem-size': '60px',
-  'lockup-name-size': '15px',
+  'lockup-name-size': '24px',
   'lockup-name-weight': '700',
   'lockup-tagline-size': '13px',
   'lockup-tagline-max-width': '260px',
@@ -41,7 +41,7 @@ export const DEFAULTS: CosmeticTokens = {
   'grid-columns': '12',
   'grid-gap': '10px',
   'grid-padding-x': '10px',
-  'grid-padding-top': '185px',
+  'grid-padding-top': '193px',
   'tile-radius': '0px',
   'tile-hover-scale': '0.95',
   'perspective-distance': '1500px',
@@ -49,7 +49,7 @@ export const DEFAULTS: CosmeticTokens = {
   'perspective-translate-z': '-200px',
   'view-switcher-font-size': '15px',
   'view-switcher-radius': '0px',
-  'font-tile-name-size': '15px',
+  'font-tile-name-size': '16px',
   'font-tile-name-weight': '700',
   'font-tile-meta-size': '15px',
   'unified-text-size': '15px',
@@ -77,7 +77,9 @@ export function useCosmetics() {
     if (!isLoaded) return;
     const root = document.documentElement;
     Object.entries(tokens).forEach(([key, value]) => {
-      root.style.setProperty(`--${key}`, value);
+      // Let CSS defaults and media queries work until a value is customized.
+      if (value === DEFAULTS[key as keyof CosmeticTokens]) root.style.removeProperty(`--${key}`);
+      else root.style.setProperty(`--${key}`, value);
     });
   }, [tokens, isLoaded]);
 

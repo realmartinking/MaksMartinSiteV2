@@ -194,3 +194,16 @@ src/
 - Telegram — <https://t.me/martinmuur>
 - Email    — <mailto:martinmursalimov@gmail.com>
 - Behance  — <https://www.behance.net/realmartinking>
+
+
+## September 2026 desktop layout
+
+The header and Grid follow [Figma frame 589:104](https://www.figma.com/design/1jPsxEt95jMghCqSUMEVZV/Maks-Martin-St.-Brand-Studio?node-id=589-104). Gramatika Demo Bold is served from the existing local font files. Dark is the default theme; the theme switch and remembered visitor choice remain available.
+
+At 1440px: page gutters and column gaps are 10px, the three media columns are 466.667px wide, the first row starts at y=193px and the second at y≈857px. Captions use 16px type, 18.75px line height, and a 9px media gap. The header's optical offsets are in `src/components/chrome/Chrome.module.css`.
+
+Production, AI BrandStudio, and Tools are non-navigating buttons that display “Soon” on hover or keyboard focus without changing their width. Branding opens Grid; List, Grid, Gallery, Info, infinite scrolling, video playback, and existing motion remain available.
+
+The emblem uses its original full video frame within an unclipped positioning stage. Its Figma anchor is 93×169px, while the video stage is 134.4×173.6px with an offset of (-26px, -6px). Measured across all 145 frames of both source videos, visible artwork stays within the desktop viewport. The reference pose's visible size is approximately 83×156px. Keep the stage overflow visible when editing the lockup.
+
+Animation provenance: the original README links to [21st.dev / Ruixen UI Scroll Tilted Grid](https://21st.dev/community/components/ruixenui/scroll-tilted-grid/default); the [current author documentation](https://ruixen.com/docs/components/scroll-tilted-grid) describes the effect. `PerspectiveCard.tsx` also names `emelecollab.com/grid` as a visual reference. The source of the pre-rendered emblem video is not recorded.
