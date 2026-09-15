@@ -8,6 +8,7 @@ interface GridTileProps {
   /** 'fill' — fill container (gallery), 'natural' — natural video height (grid). Default: 'natural' */
   sizing?: 'fill' | 'natural';
   className?: string;
+  reserveSpace?: boolean;
 }
 
 /**
@@ -16,7 +17,7 @@ interface GridTileProps {
  * - Для grid: w-full h-auto (native aspect ratio, masonry feel)
  * - Для gallery: w-full h-full object-contain (uniform cells)
  */
-export function GridTile({ project, sizing = 'natural', className = '' }: GridTileProps) {
+export function GridTile({ project, sizing = 'natural', className = '', reserveSpace = false }: GridTileProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -48,12 +49,16 @@ export function GridTile({ project, sizing = 'natural', className = '' }: GridTi
         <img
           src={project.imageSrc}
           alt={project.name}
+          width={reserveSpace ? project.mediaSize?.[0] : undefined}
+          height={reserveSpace ? project.mediaSize?.[1] : undefined}
           className={mediaClass}
         />
       ) : (
         <video
           ref={videoRef}
           src={project.videoSrc}
+          width={reserveSpace ? project.mediaSize?.[0] : undefined}
+          height={reserveSpace ? project.mediaSize?.[1] : undefined}
           muted
           loop
           playsInline

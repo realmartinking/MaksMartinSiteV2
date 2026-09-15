@@ -207,3 +207,9 @@ Production, AI BrandStudio, and Tools are non-navigating buttons that display �
 The emblem uses its original full video frame within an unclipped positioning stage. Its Figma anchor is 93×169px, while the video stage is 134.4×173.6px with an offset of (-26px, -6px). Measured across all 145 frames of both source videos, visible artwork stays within the desktop viewport. The reference pose's visible size is approximately 83×156px. Keep the stage overflow visible when editing the lockup.
 
 Animation provenance: the original README links to [21st.dev / Ruixen UI Scroll Tilted Grid](https://21st.dev/community/components/ruixenui/scroll-tilted-grid/default); the [current author documentation](https://ruixen.com/docs/components/scroll-tilted-grid) describes the effect. `PerspectiveCard.tsx` also names `emelecollab.com/grid` as a visual reference. The source of the pre-rendered emblem video is not recorded.
+
+### Opt-in scroll preview
+
+Open `/grid?motion=ruixen` to try the Ruixen-inspired choreography; `/grid` keeps the existing effect for comparison. The preview uses a 62° entry/exit tilt, 1000px perspective, up to +150px depth, 6px blur, and a small lateral drift. Between 12% and 65% of viewport height the row anchor is in focus and all transforms are zero. The first row at y=193px stays flat on the reference desktop viewport.
+
+`ScrollTiltPreview.tsx` measures untransformed layout anchors and drives all cards from one shared scroll value. Row timing uses column width so different media heights remain in phase. Intrinsic dimensions in `projects.ts` were read from the local assets and reserve space in the preview before videos load. The preview skips the existing per-tile mount animation, respects reduced motion, and disables the 3D study below 768px. Media playback, looping, hover behavior, typography, the emblem, and the default Grid remain available as before.

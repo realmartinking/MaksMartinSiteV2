@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, useScroll } from 'framer-motion';
 import { PROJECTS } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
+import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
 
-export default function GridPage() {
+export default function GridPage({ motionPreview = false }: { motionPreview?: boolean }) {
   const prefersReduced = useReducedMotion();
+  const { scrollY } = useScroll();
+  const Card = motionPreview ? ScrollTiltPreview : PerspectiveCard;
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -28,7 +31,7 @@ export default function GridPage() {
   );
 
   return (
-    <main>
+    <main style={motionPreview ? { overflowX: 'clip' } : undefined}>
       {/*
         Pure-CSS grayscale via :has(a:hover):
         When ANY <a> in this container is hovered, every OTHER <a>'s video gets grayscale.
@@ -36,6 +39,7 @@ export default function GridPage() {
         No JS state needed — no stuck-grayscale bug.
       */}
       <div
+        data-project-grid
         className="
           grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[53px]
           pb-20
@@ -54,7 +58,7 @@ export default function GridPage() {
         {tiles.map(({ key, ...p }, idx) => (
           <motion.div
             key={key}
-            initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
+            initial={prefersReduced || motionPreview ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={prefersReduced ? { duration: 0 } : {
               duration: 1.0,
@@ -63,10 +67,11 @@ export default function GridPage() {
             }}
             className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
-            <PerspectiveCard className="w-full">
+            <Card className="w-full" index={idx} scrollY={scrollY}>
               <div className="flex flex-col gap-y-[9px] group">
                 <GridTile
                   project={p}
+                  reserveSpace={motionPreview}
                   sizing="natural"
                   className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
                 />
@@ -80,7 +85,7 @@ export default function GridPage() {
                   {p.name}. {p.type?.split(' / ')[0] ?? ''}
                 </p>
               </div>
-            </PerspectiveCard>
+            </Card>
           </motion.div>
         ))}
 
