@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FolderScroll, folderPose, folderEdges, folderMediaScale, folderBottomInset, wrapProject } from './folderMotion.ts';
+import { FolderScroll, folderPose, folderEdges, folderMediaScale, wrapProject } from './folderMotion.ts';
 const metrics = { width: 1440, height: 810, cardWidth: 583.2, cardHeight: 328.05 };
 
 function gesture(deltas, stride = 445.5) {
@@ -43,7 +43,7 @@ test('resting files overlap to form strips without flattening the whole video', 
     assert.ok(a.y < b.y && a.scale < b.scale);
     assert.ok(next.top < edges.bottom);
     assert.ok(Math.cos(a.angle*Math.PI/180) > 0.65);
-    assert.ok(next.top-edges.top < (edges.bottom-edges.top)*0.4);
+    assert.ok(next.top-edges.top < (edges.bottom-edges.top)*0.45);
   }
 });
 test('only the selected file unfolds and both parts of the stack change angle', () => {
@@ -86,7 +86,7 @@ test('closed stack shows at most ten strips throughout a scroll step', () => {
       if (edges.top<metrics.height/2 && Math.min(edges.bottom,next.top)>-metrics.height/2) visible++;
     }
     assert.ok(visible<=10, `${visible} strips at ${phase}`);
-    if (phase===0) assert.equal(visible,10);
+    if (phase===0) assert.equal(visible,9);
   }
 });
 test('opened foreground fits exactly three strips across desktop aspect ratios', () => {
@@ -97,11 +97,11 @@ test('opened foreground fits exactly three strips across desktop aspect ratios',
     assert.ok(folderEdges(folderPose(4,size,1),size.cardHeight).top>=height/2);
   }
 });
-test('closed Folder omits the former bottom strip and releases the crop on opening', () => {
-  for (const [width,height,factor] of [[390,844,.68],[1440,810,.405],[2560,1080,.405]]) {
+test('closed Folder fills the bottom edge with the remaining front card without a stage crop', () => {
+  for (const [width,height,factor] of [[390,844,.68],[433,938,.68],[1440,810,.405],[2560,1080,.405],[3584,1928,.405]]) {
     const cardWidth=Math.min(width*factor,height*.95);
     const size={width,height,cardWidth,cardHeight:cardWidth*9/16};
-    const limit=height/2-folderBottomInset(size);
+    const limit=height/2;
     let visible=0;
     for (let i=-10;i<=10;i++) {
       const edges=folderEdges(folderPose(i,size),size.cardHeight);
@@ -109,8 +109,15 @@ test('closed Folder omits the former bottom strip and releases the crop on openi
       if(edges.top<limit-.001 && Math.min(edges.bottom,next.top)>-height/2) visible++;
     }
     assert.equal(visible,9);
-    assert.ok(Math.abs(folderEdges(folderPose(4,size),size.cardHeight).top-limit)<.001);
-    assert.equal(folderBottomInset(size,1),0);
+    assert.ok(folderEdges(folderPose(4,size),size.cardHeight).top>limit);
+    assert.ok(folderEdges(folderPose(3,size),size.cardHeight).bottom>limit);
+    for (let phase=0;phase<1;phase+=.02) {
+      for (let i=-8;i<8;i++) {
+        const edges=folderEdges(folderPose(i-phase,size),size.cardHeight);
+        const next=folderEdges(folderPose(i+1-phase,size),size.cardHeight);
+        if(edges.top<limit && next.top>=limit) assert.ok(edges.bottom>limit, `bottom gap at ${width}x${height}, phase ${phase}`);
+      }
+    }
   }
 });
 test('infinite selection wraps in both directions', () => {
