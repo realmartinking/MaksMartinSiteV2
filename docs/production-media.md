@@ -15,16 +15,14 @@ Files are in `public/projects/`. All keep 1920×1080 pixels. Fashion and OLV ret
 
 ## Ten-second OLV edit
 
-Six normal-speed source ranges at 24 fps produce exactly 240 frames. Cuts are direct; no synthetic frames, retiming, or still-image substitutions are used.
+Four normal-speed source ranges at 24 fps produce exactly 240 frames. The apple shot and scarf action start and end at their original shot boundaries; the market walk and stray five-frame fragments are excluded.
 
-| Source range, seconds (end exclusive) | Frames | Beat |
-| --- | ---: | --- |
-| 0.50–2.00 | 36 | Market and shoe fitting |
-| 3.75–4.75 | 24 | Boy looking up |
-| 7.50–8.75 | 30 | Girl and arches |
-| 9.00–10.25 | 30 | Red tie falling to the ground |
-| 11.50–14.00 | 60 | Children becoming adults in the new architecture |
-| 17.50–20.00 | 60 | Building, Манеры title and Ингрупп end card |
+| Source frames (end exclusive) | Source seconds | Frames | Beat |
+| --- | --- | ---: | --- |
+| 43–76 | 1.791667–3.166667 | 33 | Complete apple shot |
+| 185–236 | 7.708333–9.833333 | 51 | Uninterrupted scarf action |
+| 269–365 | 11.208333–15.208333 | 96 | Children, transformation and adult couple |
+| 420–480 | 17.50–20.00 | 60 | Building, Манеры title and Ингрупп end card |
 
 Rebuild with `python3 scripts/prepare-production-media.py /path/to/sources --ffmpeg /path/to/ffmpeg`. Use `--only manery-olv-10s.mp4` to rebuild the short edit alone. Source edits live in frame indices in that script.
 
@@ -36,6 +34,8 @@ The inner layer now scales just enough to keep 3.5 blur radii of source padding 
 
 ## Verification
 
-The encoded loops contain 354, 120, 597 and 240 frames respectively: 14.75 s, 5 s, 9.95 s and 10 s at their preserved frame rates. MP4 headers precede media data for progressive playback. Combined web payload: 31,207,194 bytes.
+The encoded loops contain 354, 120, 597 and 240 frames respectively: 14.75 s, 5 s, 9.95 s and 10 s at their preserved frame rates. MP4 headers precede media data for progressive playback. Combined web payload: 31,838,825 bytes.
 
 Local browser checks verified all eight List titles and Gallery sources, the corrected Roll captions, playback of the new 1920×1080 videos, and Roll wrapping from index 7 to index 8 / Value while retaining seven DOM planes. Folder selection keeps the chosen layer at `filter: none; transform: none`; neighboring content reaches `blur(5px)` with a measured scale of 1.12111 at 1422×800. White and yellow edges no longer show the prior dark fringe. Escape restores all 21 inner layers to `none` for both properties. Sixteen motion/entrance tests include coverage of the blur padding throughout opening and eight-project wrapping. Browser rendering checks use the in-app Chromium browser; direct Safari verification remains outside this run.
+
+The revised edit was compared against the mapped source frame for all 240 output frames after decoding at 64×36 RGB: mean absolute channel difference 0.156/255, worst frame 0.310/255. This is a timing/foreign-frame check, not a full-resolution perceptual quality score. The 30-frame contact sheet confirms continuous apple and scarf scenes.

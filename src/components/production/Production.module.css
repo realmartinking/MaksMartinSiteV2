@@ -24,7 +24,8 @@
   width: 100%;
   text-align: left;
   color: inherit;
-  background: var(--background);
+  background: transparent;
+  appearance: none;
   border: 0;
   padding: 0;
   cursor: pointer;

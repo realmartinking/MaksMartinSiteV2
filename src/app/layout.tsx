@@ -16,11 +16,11 @@ export const viewport = {
 export const metadata: Metadata = {
   title: 'Maks Martin',
   description: 'Timeless design, like classical music, love and money',
-  metadataBase: new URL('https://maksmartin-v2.vercel.app'),
+  metadataBase: new URL('https://maksmartin.com'),
   openGraph: {
     title: 'Maks Martin',
     description: 'Timeless design, like classical music, love and money',
-    url: 'https://maksmartin-v2.vercel.app',
+    url: 'https://maksmartin.com',
     siteName: 'Maks Martin',
     type: 'website',
     images: [{ url: '/favicon/icon-512.png', width: 512, height: 512, alt: 'Maks Martin' }],

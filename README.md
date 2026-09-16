@@ -200,7 +200,7 @@ src/
 
 The header and Grid follow [Figma frame 589:104](https://www.figma.com/design/1jPsxEt95jMghCqSUMEVZV/Maks-Martin-St.-Brand-Studio?node-id=589-104). Gramatika Demo Bold is served from the existing local font files. Dark is the default theme; the theme switch and remembered visitor choice remain available.
 
-At 1440px: page gutters and column gaps are 10px, the three media columns are 466.667px wide, the first row starts at y=193px and the second at y≈857px. Captions use 16px type, 18.75px line height, and a 9px media gap. The header's optical offsets are in `src/components/chrome/Chrome.module.css`.
+At 1440px: page gutters and column gaps are 10px, the three media columns are 466.667px wide, the first row starts at y=193px and the second at y≈857px. Captions use 16px type, 18.75px line height, and a 9px media gap. The complete desktop brand group has an additional 12px left inset to leave room for the rotating hair silhouette. The header's optical offsets are in `src/components/chrome/Chrome.module.css`.
 
 AI BrandStudio and Tools are non-navigating buttons that display “Soon” on hover or keyboard focus without changing their width. Branding opens Grid; List, Grid, Gallery, Info, infinite scrolling, video playback, and existing motion remain available.
 
@@ -247,3 +247,9 @@ List and Gallery use `ViewportEntrance` with a shared observer and `EntranceQueu
 The preloader reserves a fixed 3em counter slot and prevents emblem shrink, so changing digit count does not move the emblem. Folder selection blurs only the neighboring media layers inside a clipped surface; its projected card outlines and selected video remain sharp. The filtered content overscans the crop by 3.5 blur radii, calculated from the measured card size, so transparent filter edges stay outside the visible rectangle. Closing clears both the filter and the overscan transform. List titles are keyboard-focusable buttons, use unique expansion keys, and no longer collide with Tailwind's `list-item` display utility.
 
 See [the full site and Safari audit](docs/site-audit-2026-09-16.md) for measured geometry, media details, verification, and remaining limitations. Safari 26.6.2 is installed on the audited Mac, but the live automation ran in Chrome 152; direct Safari rendering/performance was not tested.
+
+### Production release corrections
+
+List uses the same 0.8em line height for wrapped titles and adjacent projects, with block title boxes and consistent horizontal gutters. This removes inline baseline gaps without clipping Cyrillic descenders. Long names wrap naturally. Roll keeps its landscape desktop spacing; on portrait windows spacing is capped by the video height plus breathing room, retaining visible neighbours above and below. Folder card buttons have transparent backgrounds and no native appearance, avoiding a second black silhouette under antialiased video edges. The existing inner-blur overscan remains.
+
+The OLV edit uses complete apple/scarf shots and remains exactly ten seconds. See `docs/production-media.md`. The main domain is `https://maksmartin.com`; metadata now points to that domain.

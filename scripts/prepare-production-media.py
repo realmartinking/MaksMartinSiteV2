@@ -22,8 +22,9 @@ jobs = [
 ]
 
 # Frame-accurate, normal-speed cuts at the source's 24 fps. Total: 240 frames.
-# Market → boy → girl → red tie → transformation → architecture / end logo.
-olv_ranges = [(12, 48), (90, 114), (180, 210), (216, 246), (276, 336), (420, 480)]
+# Complete apple shot → uninterrupted scarf action → transformation → end card.
+# Start/end on source shot boundaries: no 5-frame apple/close-up fragments.
+olv_ranges = [(43, 76), (185, 236), (269, 365), (420, 480)]
 assert sum(end - start for start, end in olv_ranges) == 240
 
 for source, output in jobs:

@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useMotionValue, useReducedMotion } from 'framer-motion';
 import { PRODUCTION_PROJECTS } from '@/lib/projects';
 import { wrapProject } from '@/lib/folderMotion';
+import { rollStride } from '@/lib/rollMotion';
 import { GridTile } from '@/components/grid/GridTile';
 import { ProjectEntrance } from '@/components/effects/ProjectEntrance';
 import styles from './Production.module.css';
@@ -16,6 +17,7 @@ export function ProductionReel() {
   const planes = useRef(new Map<number, HTMLDivElement>());
   const root = useRef<HTMLElement>(null);
   const target = useRef(0);
+  const stride = useRef(0);
   const move = useRef<(value: number) => void>(() => {});
   const radius = 3;
   const slots = Array.from({ length: radius * 2 + 1 }, (_, index) => center + index - radius);
@@ -28,7 +30,7 @@ export function ProductionReel() {
       planes.current.forEach((plane, index) => {
         const distance = index - progress;
         const amount = reduced ? 0 : Math.max(0, Math.min(1, (Math.abs(distance) - 0.12) / 0.88));
-        plane.style.transform = `translate(-50%, -50%) translate3d(0, ${distance * height * 0.58}px, ${amount * 150}px) rotateX(${Math.sign(distance) * amount * 62}deg)`;
+        plane.style.transform = `translate(-50%, -50%) translate3d(0, ${distance * stride.current}px, ${amount * 150}px) rotateX(${Math.sign(distance) * amount * 62}deg)`;
         plane.style.filter = amount === 0 ? 'none' : `blur(${amount * 6}px)`;
         plane.style.opacity = `${1 - amount * 0.45}`;
         plane.style.zIndex = `${100 - Math.round(Math.abs(distance) * 10)}`;
@@ -36,6 +38,8 @@ export function ProductionReel() {
     };
     const measure = () => {
       height = innerHeight;
+      const first = planes.current.values().next().value;
+      stride.current = rollStride(height, (first?.offsetWidth ?? innerWidth * 0.535) * 9 / 16);
       paint();
     };
     measure();
@@ -88,7 +92,7 @@ export function ProductionReel() {
     };
     const advance = (pixels: number) => {
       clearTimeout(snapTimer);
-      move.current(target.current + pixels * 1.08 / (innerHeight * 0.58));
+      move.current(target.current + pixels * 1.08 / (stride.current || innerHeight * 0.58));
       if (!touching) settle();
     };
     const wheel = (event: WheelEvent) => {

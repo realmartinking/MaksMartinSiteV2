@@ -68,14 +68,14 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
             return (
               <ViewportEntrance
                 key={key}
-                className="w-full text-center overflow-hidden md:-mb-2"
+                className="w-full text-center leading-none px-[var(--grid-padding-x)]"
               >
                 <button
                   type="button"
                   className={[
-                    'project-list-title inline-block font-bold uppercase pointer-events-auto bg-transparent border-0 p-0 cursor-pointer',
+                    'project-list-title block w-fit max-w-full mx-auto font-bold uppercase pointer-events-auto bg-transparent border-0 p-0 cursor-pointer',
                     'text-[calc(1rem+6vw)]',
-                    'leading-[0.9] md:leading-[0.85] lg:leading-[0.8]',
+                    'leading-[0.8] whitespace-normal [overflow-wrap:anywhere]',
                     'transition-[filter,opacity] duration-300 ease-out',
                   ].join(' ')}
                   onMouseEnter={() => setHoveredId(p.id)}

@@ -23,6 +23,7 @@
   grid-template-columns: 77px max-content;
   align-items: start;
   width: max-content;
+  margin-left: 12px;
   pointer-events: auto;
   overflow: visible;
 }
@@ -36,7 +37,7 @@
 
 /* Figma's 93 × 169 image includes different empty margins than the video.
    Full video at 134.4 × 173.6 gives frame-zero artwork bounds ≈83 × 156.
-   Across all 145 frames its visible bounds stay x=3.8…98.5, y=9.4…172.9
+   With the brand's extra 12px inset, all 145 frames stay x≈16…111, y≈9.4…172.9
    in the desktop viewport. Do not clip this stage to the 93px anchor. */
 .emblemStage {
   position: absolute;
@@ -134,7 +135,7 @@
     font-size: 15px;
     line-height: 20px;
   }
-  .brand { display: contents; }
+  .brand { display: contents; margin-left: 0; }
   .wordmark { position: absolute; left: 16px; top: calc(12px + env(safe-area-inset-top, 0px)); }
   .emblem { width: 96px; margin-top: 61px; order: 2; }
   .emblemStage { inset: 0; width: 100%; height: 100%; }
