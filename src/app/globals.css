@@ -12,7 +12,7 @@
   --breakpoint-4xl: 1920px;
 
   /* Map font-sans to Gramatika */
-  --font-family-sans: 'Gramatika', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Gramatika', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* ═══════════════════════════════════════════════
@@ -22,7 +22,7 @@
 @font-face {
   font-family: 'Gramatika';
   src: url('/fonts/GramatikaRegular.woff') format('woff'),
-       url('/fonts/Gramatika Regular.otf') format('opentype');
+       url('/fonts/Gramatika-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -40,7 +40,7 @@
 @font-face {
   font-family: 'Gramatika';
   src: url('/fonts/GramatikaBold.woff') format('woff'),
-       url('/fonts/Gramatika Bold.otf') format('opentype');
+       url('/fonts/Gramatika-Bold.otf') format('opentype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -128,6 +128,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
+  /* Keep the viewport grid aligned with the Figma canvas; Lenis preserves native document positioning. */
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar { width: 0; height: 0; }
+
   /* Scrollbar styling */
   ::-webkit-scrollbar {
     width: 8px;
@@ -182,7 +186,7 @@
 :root {
   /* Global tokens */
   --lockup-emblem-size: 60px;
-  --lockup-name-size: 15px;
+  --lockup-name-size: 24px;
   --lockup-name-weight: 700;
   --lockup-tagline-size: 13px;
   --lockup-tagline-max-width: 260px;
@@ -192,42 +196,24 @@
   --grid-columns: 12;
   --grid-gap: 10px;
   --grid-padding-x: 10px;
-  --grid-padding-top: 185px;
+  --grid-padding-top: 193px;
 
   --tile-radius: 0px;
   --tile-hover-scale: 0.95;
 
-  --perspective-distance: 500px;
+  --perspective-distance: 1500px;
   --perspective-tilt-max: 60deg;
   --perspective-translate-z: -200px;
 
   --view-switcher-font-size: 15px;
   --view-switcher-radius: 0px;
 
-  --font-tile-name-size: 15px;
+  --font-tile-name-size: 16px;
   --font-tile-name-weight: 700;
   --font-tile-meta-size: 15px;
 
   --unified-text-size: 15px;
   --unified-text-weight: 700;
-
-  /* Per-element overrides — lockup-tagline */
-  --el-lockup-tagline-text-align: left;
-  --el-lockup-tagline-translate-x: -90px;
-  --el-lockup-tagline-translate-y: 0px;
-  --el-lockup-tagline-line-height: 1;
-
-  /* Per-element overrides — lockup-emblem (DESKTOP ONLY — не трогать) */
-  --el-lockup-emblem-height: 156px;
-  --el-lockup-emblem-margin-top: -18px;
-  --el-lockup-emblem-margin-bottom: -24px;
-  --el-lockup-emblem-translate-x: -36px;
-
-  /* Per-element overrides — lockup-name (DESKTOP ONLY — не трогать) */
-  --el-lockup-name-font-size: 25px;
-  --el-lockup-name-letter-spacing: -0.03em;
-  --el-lockup-name-translate-x: -69px;
-  --el-lockup-name-translate-y: -53px;
 }
 
 @media (max-width: 768px) {
@@ -238,81 +224,24 @@
     --grid-padding-x: 12px;
     --grid-padding-top: 240px;
   }
+}
 
-  /* Скрываем слоган на мобиле */
-  [data-edit-id="lockup-tagline"] {
-    display: none !important;
-  }
-
-  /* Шапка: вертикальная centered композиция */
-  header {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    padding: 12px 16px 0 !important;
-    gap: 0 !important;
-  }
-
-  /* Верхний ряд lockup: MaksMartin слева, разрываем flex с эмблемой */
-  header > a:first-child {
-    display: contents !important;
-  }
-
-  /* Эмблема — по центру, крупная */
-  [data-edit-id="lockup-emblem"] {
-    height: 120px !important;
-    margin: 8px 0 0 !important;
-    transform: none !important;
-    order: 2 !important;
-  }
-
-  /* MaksMartin — левый верхний угол */
-  [data-edit-id="lockup-name"] {
-    position: fixed !important;
-    top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
-    left: 16px !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.03em !important;
-    transform: none !important;
-    pointer-events: auto !important;
-  }
-
-  /* Центральная ячейка: скрыть tagline, info в правый верхний */
-  header > div:has([data-edit-id="lockup-contacts"]) {
-    display: contents !important;
-  }
-
-  [data-edit-id="lockup-contacts"] {
-    position: fixed !important;
-    top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
-    right: 16px !important;
-    font-size: 15px !important;
-    transform: none !important;
-    pointer-events: auto !important;
-  }
-
-  /* Nav — по центру, под эмблемой */
-  [data-edit-id="view-switcher"] {
-    order: 3 !important;
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    gap: 16px !important;
-    font-size: 15px !important;
-    transform: none !important;
-    margin-top: 8px !important;
-    justify-self: center !important;
-  }
-
-  [data-edit-id="view-switcher"] a {
-    font-size: 15px !important;
+/* Compact desktop landscape retains the desktop content start. */
+@media (min-width: 769px) and (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --grid-padding-top: 193px;
   }
 }
 
-/* Landscape phone: высота меньше 500px и landscape — больший top padding */
-@media (max-height: 500px) and (orientation: landscape) {
-  :root {
-    --grid-padding-top: 185px;
-  }
+
+/* One entrance across views. It starts only after the first-visit loader. */
+html[data-intro="loading"] main { opacity: 0; }
+.project-entrance {
+  animation: list-entrance 1s cubic-bezier(0.16, 1, 0.3, 1) var(--entrance-delay, 0s) backwards;
+  animation-play-state: paused;
+}
+html[data-intro="ready"] .project-entrance { animation-play-state: running; }
+.project-entrance[data-entrance="waiting"] { animation: none; opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .project-entrance, .project-entrance[data-entrance="waiting"] { animation: none; opacity: 1; }
 }

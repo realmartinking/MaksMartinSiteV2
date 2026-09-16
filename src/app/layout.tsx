@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import 'lenis/dist/lenis.css';
+import { SmoothScroll } from '@/components/effects/SmoothScroll';
 import { Chrome } from '@/components/chrome/Chrome';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { Preloader } from '@/components/preloader/Preloader';
@@ -14,11 +16,11 @@ export const viewport = {
 export const metadata: Metadata = {
   title: 'Maks Martin',
   description: 'Timeless design, like classical music, love and money',
-  metadataBase: new URL('https://maksmartin-v2.vercel.app'),
+  metadataBase: new URL('https://maksmartin.com'),
   openGraph: {
     title: 'Maks Martin',
     description: 'Timeless design, like classical music, love and money',
-    url: 'https://maksmartin-v2.vercel.app',
+    url: 'https://maksmartin.com',
     siteName: 'Maks Martin',
     type: 'website',
     images: [{ url: '/favicon/icon-512.png', width: 512, height: 512, alt: 'Maks Martin' }],
@@ -42,10 +44,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-intro="loading" suppressHydrationWarning>
       <body className="font-sans text-[15px] select-none cursor-crosshair antialiased">
 
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <SmoothScroll />
           <Preloader />
           <Chrome />
           {children}

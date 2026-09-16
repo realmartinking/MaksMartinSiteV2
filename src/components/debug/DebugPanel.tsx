@@ -101,6 +101,7 @@ export function DebugPanel() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            data-lenis-prevent
             className="fixed top-4 right-4 z-[10000] w-[320px] max-h-[calc(100vh-32px)] bg-black/95 backdrop-blur-xl text-white rounded-xl border border-white/10 shadow-2xl flex flex-col"
             initial={{ opacity: 0, x: 50, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}

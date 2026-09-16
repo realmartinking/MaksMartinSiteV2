@@ -1,0 +1,61 @@
+.caption {
+  display: block;
+  margin-top: 9px;
+  text-align: left;
+  font-size: 16px;
+  line-height: 18.75px;
+  font-weight: 700;
+}
+
+.reel { height: 100svh; overflow: clip; touch-action: pan-x pinch-zoom; }
+.reelStage { position: fixed; inset: 0; perspective: 1600px; overflow: clip; }
+.folderPlane, .rollPlane {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  will-change: transform;
+}
+.folderStage { perspective: none; }
+.folderPlane { width: min(40.5vw, 95svh); }
+.rollPlane { width: min(53.5vw, 1100px); }
+.folderCard {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+.folderCard:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+.folderMediaClip { overflow: hidden; isolation: isolate; }
+.folderMediaContent {
+  filter: var(--folder-content-filter, none);
+  transform: var(--folder-content-transform, none);
+  transform-origin: center;
+}
+.folderLabel, .folderCount {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+  pointer-events: none;
+}
+.folderLabel { left: var(--grid-padding-x); text-align: left; max-width: 24vw; }
+.folderLabel span { display: block; animation: folder-label 150ms ease-out; }
+.folderCount { right: var(--grid-padding-x); }
+@keyframes folder-label { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 768px) {
+  .rollPlane { width: 88vw; }
+  .folderPlane { width: 68vw; }
+  .rollPlane { top: 60%; }
+  .caption { font-size: 14px; }
+}

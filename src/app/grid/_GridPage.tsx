@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { PROJECTS } from '@/lib/projects';
+import { ProjectEntrance, entranceStyle } from '@/components/effects/ProjectEntrance';
+import { PROJECTS, type Project } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
+import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
 
-export default function GridPage() {
-  const prefersReduced = useReducedMotion();
+export default function GridPage({ motionPreview = false }: { motionPreview?: boolean }) {
   const [cycles, setCycles] = useState(2);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -28,7 +28,7 @@ export default function GridPage() {
   );
 
   return (
-    <main>
+    <main style={motionPreview ? { overflowX: 'clip' } : undefined}>
       {/*
         Pure-CSS grayscale via :has(a:hover):
         When ANY <a> in this container is hovered, every OTHER <a>'s video gets grayscale.
@@ -36,8 +36,9 @@ export default function GridPage() {
         No JS state needed — no stuck-grayscale bug.
       */}
       <div
+        data-project-grid
         className="
-          grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[50px]
+          grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[53px]
           pb-20
           [&:has(.group:hover)_.group:not(:hover)_video]:grayscale
           [&:has(.group:hover)_.group:not(:hover)_img]:grayscale
@@ -51,42 +52,49 @@ export default function GridPage() {
           paddingTop: 'var(--grid-padding-top)',
         }}
       >
-        {tiles.map(({ key, ...p }, idx) => (
-          <motion.div
+        {motionPreview ? (
+          <ScrollTiltPreview>
+            {tiles.map(({ key, ...project }, index) => (
+              <ProjectEntrance key={key} index={index < PROJECTS.length ? index : 0}><ProjectContent project={project} reserveSpace /></ProjectEntrance>
+            ))}
+          </ScrollTiltPreview>
+        ) : tiles.map(({ key, ...p }, idx) => (
+          <div
             key={key}
-            initial={prefersReduced ? false : { opacity: 0, y: 40, filter: 'blur(12px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={prefersReduced ? { duration: 0 } : {
-              duration: 1.0,
-              ease: [0.16, 1, 0.3, 1],
-              delay: idx < PROJECTS.length ? Math.min(idx * 0.08, 1.2) : 0,
-            }}
-            className="col-span-12 sm:col-span-6 lg:col-span-4 self-start"
+            style={entranceStyle(idx < PROJECTS.length ? idx : 0)}
+            className="project-entrance col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
             <PerspectiveCard className="w-full">
-              <div className="flex flex-col gap-y-[4px] group">
-                <GridTile
-                  project={p}
-                  sizing="natural"
-                  className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
-                />
-                <p
-                  className="leading-tight text-center"
-                  style={{
-                    fontSize: 'var(--font-tile-name-size)',
-                    fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
-                  }}
-                >
-                  {p.name}&nbsp;&nbsp;/&nbsp;&nbsp;{p.type ?? ''}
-                </p>
-              </div>
+              <ProjectContent project={p} />
             </PerspectiveCard>
-          </motion.div>
+          </div>
         ))}
 
         {/* Infinite scroll sentinel */}
         <div ref={sentinelRef} className="col-span-12 h-1" />
       </div>
     </main>
+  );
+}
+
+function ProjectContent({ project, reserveSpace = false }: { project: Project; reserveSpace?: boolean }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-y-[9px] group">
+      <GridTile
+        project={project}
+        reserveSpace={reserveSpace}
+        sizing="natural"
+        className="w-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
+      />
+      <p
+        className="text-left leading-[18.75px]"
+        style={{
+          fontSize: 'var(--font-tile-name-size)',
+          fontWeight: 'var(--font-tile-name-weight)' as React.CSSProperties['fontWeight'],
+        }}
+      >
+        {project.name}. {project.type?.split(' / ')[0] ?? ''}
+      </p>
+    </div>
   );
 }

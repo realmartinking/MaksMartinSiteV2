@@ -194,3 +194,62 @@ src/
 - Telegram — <https://t.me/martinmuur>
 - Email    — <mailto:martinmursalimov@gmail.com>
 - Behance  — <https://www.behance.net/realmartinking>
+
+
+## September 2026 desktop layout
+
+The header and Grid follow [Figma frame 589:104](https://www.figma.com/design/1jPsxEt95jMghCqSUMEVZV/Maks-Martin-St.-Brand-Studio?node-id=589-104). Gramatika Demo Bold is served from the existing local font files. Dark is the default theme; the theme switch and remembered visitor choice remain available.
+
+At 1440px: page gutters and column gaps are 10px, the three media columns are 466.667px wide, the first row starts at y=193px and the second at y≈857px. Captions use 16px type, 18.75px line height, and a 9px media gap. The complete desktop brand group has an additional 12px left inset to leave room for the rotating hair silhouette. The header's optical offsets are in `src/components/chrome/Chrome.module.css`.
+
+AI BrandStudio and Tools are non-navigating buttons that display “Soon” on hover or keyboard focus without changing their width. Branding opens Grid; List, Grid, Gallery, Info, infinite scrolling, video playback, and existing motion remain available.
+
+The emblem uses its original full video frame within an unclipped positioning stage. Its Figma anchor is 93×169px, while the video stage is 134.4×173.6px with an offset of (-26px, -6px). Measured across all 145 frames of both source videos, visible artwork stays within the desktop viewport. The reference pose's visible size is approximately 83×156px. Keep the stage overflow visible when editing the lockup.
+
+Animation provenance: the original README links to [21st.dev / Ruixen UI Scroll Tilted Grid](https://21st.dev/community/components/ruixenui/scroll-tilted-grid/default); the [current author documentation](https://ruixen.com/docs/components/scroll-tilted-grid) describes the effect. `PerspectiveCard.tsx` also names `emelecollab.com/grid` as a visual reference. The source of the pre-rendered emblem video is not recorded.
+
+### Shared scroll motion
+
+The Ruixen-inspired choreography is the default at `/grid`; existing `/grid?motion=ruixen` links still work. `/grid?motion=classic` keeps the earlier effect available for comparison. Each responsive row is one shared plane with a 62° entry/exit tilt, up to +150px depth, and 6px blur. Perspective starts at 1000px and increases for tall rows on large displays to keep the plane in front of the camera. Between 12% and 65% of viewport height the row anchor is in focus and all transforms are zero. The first row at y=193px stays flat on the reference desktop viewport.
+
+`ScrollTiltPreview.tsx` groups cards at the same 640px/1024px breakpoints as the original grid and transforms the entire row. Cards have no independent perspective, tilt, or lateral drift, preventing portrait cards from intersecting their landscape neighbors. The inner row grid preserves column widths, gaps, top alignment, and each media asset's proportions. Untransformed row anchors subscribe to the same animation frame as the document scroll; timing still uses column width. Intrinsic dimensions in `projects.ts` reserve space before videos load. All project views share the same staggered entrance. The row effect respects reduced motion and disables 3D below 768px. Playback, looping, hover behavior, typography, the emblem, and the default Grid remain available as before.
+
+
+### Rendering and media optimizations
+
+The preview caches row geometry in one shared ResizeObserver and updates only rows near the viewport, found by binary search. Distant rows return to an unfiltered, untransformed state, while all content remains in the document. Scrolling back restores the same motion curves before a row enters view. Focused rows use `filter: none` instead of `blur(0px)`. Tilt, depth, blur, opacity, easing, spacing, and the shared row perspective are unchanged.
+
+The emblem processes new video frames with `requestVideoFrameCallback`, with a requestAnimationFrame fallback for older browsers. Only the current theme's video plays; theme switches preserve its playback position. Canvas dimensions, DPR, source videos (24 fps), and pixel alpha are unchanged. A lookup table replaces per-pixel luminance arithmetic; all 1,532 alpha results match the previous clamped-byte calculation exactly. Geometry is measured on resize instead of every frame. Emblem and project playback pause while the document is hidden; project tiles share one IntersectionObserver with the original 400px playback margin.
+
+Humber, Lumio, Muse, and Vishnevetsky have lossless WebP alternatives with PNG fallback. Decoded RGBA pixels match their source PNGs exactly. Their combined transfer size drops from 13,567,173 to 8,664,712 bytes (36.1%); the original files and full dimensions are retained. Project videos are unchanged.
+
+
+### Smooth scrolling and Production
+
+Desktop wheel scrolling uses Lenis 1.3.26 with `lerp: 0.085` and `wheelMultiplier: 1.08`, the values found in the public implementation at [khanhnguyen.design](https://khanhnguyen.design/). Touch scrolling remains native. The Grid row renderer runs from Lenis's scroll notification immediately after it sets document position, avoiding an extra RAF of transform lag. Only one scroll integrator runs. Production's virtual reels own their input and frame loop; Both Folder and Roll accept continuous wheel input and settle on a project after the gesture. Reduced motion, page visibility, route changes, and the visual editor's nested scroll area are handled explicitly.
+
+Production opens `/production/folder` and offers List, Roll, Gallery, Folder. Its eight-project selection is Value, Raif Vision Conference, Forma Houseboat, Новогоднее OLV Манеры, Fashion Summer Awards 2026, Fashion TV, РК Манеры, and Манеры OLV, in that order. The first three use Art Direction in Production. Production metadata can override the shared Branding entry without changing it; all 18 Branding projects remain available. The last four use the supplied new videos; Манеры OLV is a frame-accurate 10-second edit. See [Production media](docs/production-media.md) for sources and edit points. All four Production views loop infinitely. List and Gallery extend their feeds; Roll and Folder recycle a bounded window of cards in both directions.
+
+Roll centers a 53.5vw video and lets the next one rise from below. Adjacent cards retain the 62° tilt, 150px depth, and 6px blur. Folder uses overlapping full video cards: the thin strips are their visible upper portions, not flattened frames. Resting cards use a restrained 42° tilt, a 40.5vw base width, gradual depth scaling, and a shared layout. Hover/focus shows the project name at the left-center. Clicking any visible file centers it first, then unfolds that single selection while both parts of the stack move and change perspective. Wheel input stays continuous and snaps to an integer project after 140ms of idle; a short gesture completes one card, a viewport-sized gesture approximately two. Further input is never locked out by an animation or a two-card budget. Arrow keys, Page Up/Down, Home, Escape, and touch gestures are supported. Both reels retain bounded DOM windows and the projects’ video assets; neither runs Lenis simultaneously. Roll keeps its existing inertia and wheel gain, then snaps to the nearest project after 160ms without wheel input (or after touch release). New input immediately interrupts that settling. Folder uses time-corrected damping and its own idle snap. The closed Folder stack shows at most ten overlapping strips; its opened foreground fits three cards with a 2.5vh gap below the selected file. Rear cards straighten to 5–10° and remain tucked behind the selection, progressively smaller with depth. Card edges have no decorative outline; keyboard focus uses an inset outline. See [the Folder audit](docs/folder-audit.md) for the reference comparison.
+
+`ProjectEntrance` and `entranceStyle` provide the same 1s blur/lift/fade and 80ms stagger across Grid, List, Gallery, Info, Roll, and Folder. On first load they wait for the preloader instead of completing behind it. Finished entrance animations release their filters and transforms; returning to a route starts a fresh sequence.
+
+Run `npm run test:motion` (Node 22.6+) to check continuous input, short/full gestures, reversals, overlap geometry, selection clearance, and infinite indexing. Source media, Gramatika text, emblem rotation bounds, and the dark default theme are retained.
+
+
+Emblem readback optimization: completed alpha-processed frames are retained for the repeating 24fps loop. Cached frames are the exact ImageData already displayed; they require no new video-to-canvas readback or alpha calculation. Caches are per mounted emblem and theme, cleared on resize/theme change/unmount, and used only when the whole loop fits the 64MiB limit. The original canvas size, pixels, and source video remain unchanged.
+
+
+### Feed entrance and Safari audit
+
+List and Gallery use `ViewportEntrance` with a shared observer and `EntranceQueue`: each newly visible instance enters once with an 80ms stagger, including duplicate projects and batches appended during the preloader. Offscreen instances wait without allocating an animated transform/filter. The queue carries across observer callbacks and the loader, then starts fresh after idle. Completed entrances release their filters and transforms.
+
+The preloader reserves a fixed 3em counter slot and prevents emblem shrink, so changing digit count does not move the emblem. Folder selection blurs only the neighboring media layers inside a clipped surface; its projected card outlines and selected video remain sharp. The filtered content overscans the crop by 3.5 blur radii, calculated from the measured card size, so transparent filter edges stay outside the visible rectangle. Closing clears both the filter and the overscan transform. List titles are keyboard-focusable buttons, use unique expansion keys, and no longer collide with Tailwind's `list-item` display utility.
+
+See [the full site and Safari audit](docs/site-audit-2026-09-16.md) for measured geometry, media details, verification, and remaining limitations. Safari 26.6.2 is installed on the audited Mac, but the live automation ran in Chrome 152; direct Safari rendering/performance was not tested.
+
+### Production release corrections
+
+List uses the same 0.8em line height for wrapped titles and adjacent projects, with block title boxes and consistent horizontal gutters. This removes inline baseline gaps without clipping Cyrillic descenders. Long names wrap naturally. Roll keeps its landscape desktop spacing; on portrait windows spacing is capped by the video height plus breathing room, retaining visible neighbours above and below. Folder card buttons have transparent backgrounds and no native appearance, avoiding a second black silhouette under antialiased video edges. The existing inner-blur overscan remains.
+
+The OLV edit uses complete apple/scarf shots and remains exactly ten seconds. See `docs/production-media.md`. The main domain is `https://maksmartin.com`; metadata now points to that domain.

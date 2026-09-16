@@ -1,0 +1,153 @@
+.header {
+  --emblem-anchor-height: 169px;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  grid-template-rows: 27.5px 22.5px;
+  align-content: space-between;
+  align-items: start;
+  height: calc(193px + env(safe-area-inset-top, 0px));
+  padding: calc(8px + env(safe-area-inset-top, 0px)) var(--grid-padding-x) 17.5px;
+  overflow: visible;
+  pointer-events: none;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 27.5px;
+}
+
+.brand {
+  grid-area: 1 / 1 / 3 / 2;
+  display: grid;
+  grid-template-columns: 77px max-content;
+  align-items: start;
+  width: max-content;
+  margin-left: 12px;
+  pointer-events: auto;
+  overflow: visible;
+}
+
+.emblem {
+  position: relative;
+  width: 93px;
+  margin-top: 3px;
+  overflow: visible;
+}
+
+/* Figma's 93 × 169 image includes different empty margins than the video.
+   Full video at 134.4 × 173.6 gives frame-zero artwork bounds ≈83 × 156.
+   With the brand's extra 12px inset, all 145 frames stay x≈16…111, y≈9.4…172.9
+   in the desktop viewport. Do not clip this stage to the 93px anchor. */
+.emblemStage {
+  position: absolute;
+  width: 134.4px;
+  height: 173.6px;
+  left: -26px;
+  top: -6px;
+  pointer-events: none;
+}
+
+.wordmark {
+  grid-column: 2;
+  position: relative;
+  white-space: nowrap;
+}
+
+.sections {
+  grid-area: 1 / 2;
+  display: grid;
+  /* Optical starts measured from Figma: 816, 956, 1106, 1301, 1389. */
+  grid-template-columns: 140px 150px 195px 88px 41px;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.sections > *, .views > * {
+  width: max-content;
+  transition: filter 200ms, opacity 200ms;
+}
+
+.sections > :focus-visible, .views > :focus-visible, .brand:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 5px;
+  filter: none;
+  opacity: 1;
+}
+
+.active {
+  filter: blur(2px);
+  opacity: 0.5;
+}
+
+.upcoming {
+  display: grid;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+
+.upcomingLabel, .soon { grid-area: 1 / 1; }
+.soon { visibility: hidden; }
+.upcoming:is(:hover, :focus-visible) .upcomingLabel { visibility: hidden; }
+.upcoming:is(:hover, :focus-visible) .soon { visibility: visible; }
+
+.views {
+  --view-font-size: 16px;
+  grid-area: 2 / 2;
+  justify-self: end;
+  display: grid;
+  grid-template-columns: 55px 60px 46px;
+  pointer-events: auto;
+  font-size: 16px;
+  line-height: 22.5px;
+}
+
+.productionViews { grid-template-columns: 55px 55px 80px 48px; }
+
+.views > a {
+  padding-block: 10px;
+  margin-block: -10px;
+}
+
+@media (hover: hover) {
+  .sections:has(> :hover) > :not(:hover),
+  .views:has(> a:hover) > a:not(:hover) { filter: blur(2px); opacity: 0.5; }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  .header { font-size: 18px; }
+  .sections { grid-template-columns: 105px 112.5px 146.25px 66px 31px; }
+}
+
+@media (max-width: 768px) {
+  .header {
+    --emblem-anchor-height: 120px;
+    height: calc(222px + env(safe-area-inset-top, 0px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 0;
+    font-size: 15px;
+    line-height: 20px;
+  }
+  .brand { display: contents; margin-left: 0; }
+  .wordmark { position: absolute; left: 16px; top: calc(12px + env(safe-area-inset-top, 0px)); }
+  .emblem { width: 96px; margin-top: 61px; order: 2; }
+  .emblemStage { inset: 0; width: 100%; height: 100%; }
+  .sections {
+    position: absolute;
+    top: calc(44px + env(safe-area-inset-top, 0px));
+    inset-inline: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: clamp(12px, 3.5vw, 15px);
+  }
+  .sections > :last-child { position: absolute; right: 0; top: -32px; font-size: 15px; }
+  .views { --view-font-size: 15px; display: flex; gap: 24px; order: 3; margin-top: 8px; font-size: 15px; }
+}
