@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { PROJECTS, type Project } from '@/lib/projects';
 import { ViewportEntrance } from '@/components/effects/ViewportEntrance';
+import { useScrollAwareHover } from '@/lib/useScrollAwareHover';
 
 export function ProjectList({ projects = PROJECTS, infinite = true }: { projects?: Project[]; infinite?: boolean }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -10,6 +11,8 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
   const [cycles, setCycles] = useState(infinite ? 2 : 1);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const hoverRoot = useRef<HTMLDivElement>(null);
+  useScrollAwareHover(hoverRoot, '.project-list-title', element => setHoveredId(element?.dataset.projectId ?? null));
 
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 768px)');
@@ -55,11 +58,8 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
     <main className="min-h-screen pb-[20vh]" style={{ paddingTop: 'var(--grid-padding-top)' }}>
       {/* Project name stack */}
       <div
-        className={[
-          'flex flex-col items-center pointer-events-none',
-          '[&:has(.project-list-title:hover)_.project-list-title:not(:hover)]:blur-[2px]',
-          '[&:has(.project-list-title:hover)_.project-list-title:not(:hover)]:opacity-30',
-        ].join(' ')}
+        ref={hoverRoot}
+        className="project-hover-list flex flex-col items-center pointer-events-none"
       >
         {Array.from({ length: cycles }).flatMap((_, c) =>
           projects.map((p) => {
@@ -72,16 +72,13 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
               >
                 <button
                   type="button"
+                  data-project-id={p.id}
                   className={[
                     'project-list-title block w-fit max-w-full mx-auto font-bold uppercase pointer-events-auto bg-transparent border-0 p-0 cursor-pointer',
                     'text-[calc(1rem+6vw)]',
-                    'leading-[0.8] whitespace-normal [overflow-wrap:anywhere]',
+                    'leading-[0.78] whitespace-normal [overflow-wrap:anywhere]',
                     'transition-[filter,opacity] duration-300 ease-out',
                   ].join(' ')}
-                  onMouseEnter={() => setHoveredId(p.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  onFocus={() => setHoveredId(p.id)}
-                  onBlur={() => setHoveredId(null)}
                   onClick={() => {
                     if (window.matchMedia('(max-width: 767px)').matches) setExpandedId(isExpanded ? null : key);
                   }}

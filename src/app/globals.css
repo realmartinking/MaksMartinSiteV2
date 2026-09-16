@@ -242,6 +242,19 @@ html[data-intro="loading"] main { opacity: 0; }
 }
 html[data-intro="ready"] .project-entrance { animation-play-state: running; }
 .project-entrance[data-entrance="waiting"] { animation: none; opacity: 0; }
+
+/* Hover changes only on pointer intent or after scroll settles, not whenever
+   moving content crosses a stationary cursor. No global :has(:hover) scans. */
+.project-hover-list[data-hover-active] .project-list-title:not([data-hovered]) {
+  filter: blur(2px);
+  opacity: 0.3;
+}
+.project-hover-grid[data-hover-active] [data-hover-card]:not([data-hovered]) :is(video, img) {
+  filter: grayscale(1);
+}
+.project-hover-grid [data-hovered] .project-hover-media {
+  transform: scale(var(--tile-hover-scale));
+}
 @media (prefers-reduced-motion: reduce) {
   .project-entrance, .project-entrance[data-entrance="waiting"] { animation: none; opacity: 1; }
 }

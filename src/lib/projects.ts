@@ -229,6 +229,12 @@ export const PRODUCTION_PROJECTS: Project[] = [
   },
 ];
 
+// Roll starts with Fashion TV; the other Production views keep their order.
+export const PRODUCTION_ROLL_PROJECTS = [
+  PRODUCTION_PROJECTS.find((project) => project.id === 'production-fashion-tv')!,
+  ...PRODUCTION_PROJECTS.filter((project) => project.id !== 'production-fashion-tv'),
+];
+
 // Slogan и контактные данные
 export const SITE_INFO = {
   name: 'MaksMartin',

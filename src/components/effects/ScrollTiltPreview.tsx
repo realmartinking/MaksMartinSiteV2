@@ -52,6 +52,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
       row.plane.style.transform = 'none';
       row.plane.style.filter = 'none';
       row.plane.style.opacity = '1';
+      row.plane.style.willChange = '';
       row.anchor.dataset.motionActive = 'false';
       row.phase = null;
     };
@@ -72,7 +73,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
         row.travel = Math.min(96, row.referenceHeight * 0.24);
         row.perspective = Math.max(1000, row.height * 1.6);
       });
-      overscan = rows.reduce((margin, row) => Math.max(margin, row.height), Math.max(1200, viewport));
+      overscan = rows.reduce((margin, row) => Math.max(margin, row.height), 480);
       rows.forEach((row) => {
         row.anchor.style.perspective = `${row.perspective}px`;
         reset(row);
@@ -107,6 +108,9 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
         if (!active.has(row)) {
           active.add(row);
           row.anchor.dataset.motionActive = 'true';
+          // Retain the same plane through its flat focus region, avoiding a
+          // fresh compositing allocation at every entry/exit on Safari.
+          if (enabled) row.plane.style.willChange = 'transform';
         }
         const y = row.top - scrollTop;
         let phase = 0;

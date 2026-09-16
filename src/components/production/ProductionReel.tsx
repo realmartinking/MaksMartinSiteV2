@@ -2,9 +2,10 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useMotionValue, useReducedMotion } from 'framer-motion';
-import { PRODUCTION_PROJECTS } from '@/lib/projects';
+import { PRODUCTION_ROLL_PROJECTS } from '@/lib/projects';
 import { wrapProject } from '@/lib/folderMotion';
 import { rollStride } from '@/lib/rollMotion';
+import { scrollBlend, SCROLL_WHEEL_GAIN } from '@/lib/scrollTuning';
 import { GridTile } from '@/components/grid/GridTile';
 import { ProjectEntrance } from '@/components/effects/ProjectEntrance';
 import styles from './Production.module.css';
@@ -65,8 +66,8 @@ export function ProductionReel() {
         position.set(target.current);
         raf = 0; lastTime = 0;
       } else {
-        // The same time-corrected inertia as the reference's Lenis settings.
-        position.set(position.get() + difference * (1 - Math.pow(1 - 0.085, dt / (1000 / 60))));
+        // Share the weighted scroll profile without running a second integrator.
+        position.set(position.get() + difference * scrollBlend(dt));
         raf = requestAnimationFrame(tick);
       }
     };
@@ -92,7 +93,7 @@ export function ProductionReel() {
     };
     const advance = (pixels: number) => {
       clearTimeout(snapTimer);
-      move.current(target.current + pixels * 1.08 / (stride.current || innerHeight * 0.58));
+      move.current(target.current + pixels * SCROLL_WHEEL_GAIN / (stride.current || innerHeight * 0.58));
       if (!touching) settle();
     };
     const wheel = (event: WheelEvent) => {
@@ -155,7 +156,7 @@ export function ProductionReel() {
     <main ref={root} className={styles.reel} aria-label="Production Roll" data-reel-position={center}>
       <div className={styles.reelStage}>
         {slots.map((index, slot) => {
-          const project = PRODUCTION_PROJECTS[wrapProject(index, PRODUCTION_PROJECTS.length)];
+          const project = PRODUCTION_ROLL_PROJECTS[wrapProject(index, PRODUCTION_ROLL_PROJECTS.length)];
           return (
             <div key={index} data-reel-card={index} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.rollPlane}>
               <ProjectEntrance index={slot} enabled={entering}>
