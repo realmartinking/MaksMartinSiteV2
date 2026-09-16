@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PROJECTS, type Project } from '@/lib/projects';
 import { ViewportEntrance } from '@/components/effects/ViewportEntrance';
+import { ProjectVideo } from '@/components/grid/ProjectVideo';
 import { useScrollAwareHover } from '@/lib/useScrollAwareHover';
 
 export function ProjectList({ projects = PROJECTS, infinite = true }: { projects?: Project[]; infinite?: boolean }) {
@@ -10,36 +11,16 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [cycles, setCycles] = useState(infinite ? 2 : 1);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const [isDesktop, setIsDesktop] = useState(false);
   const hoverRoot = useRef<HTMLDivElement>(null);
   useScrollAwareHover(hoverRoot, '.project-list-title', element => setHoveredId(element?.dataset.projectId ?? null));
 
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 768px)');
-    const resetPreview = () => { setExpandedId(null); setHoveredId(null); };
+    const resetPreview = () => { setIsDesktop(desktop.matches); setExpandedId(null); setHoveredId(null); };
+    resetPreview();
     desktop.addEventListener('change', resetPreview);
     return () => desktop.removeEventListener('change', resetPreview);
-  }, []);
-
-  // Inline mobile videos own their playback; don't also decode the hidden
-  // desktop preview for an expanded item.
-  const activeId = hoveredId;
-  useEffect(() => {
-    let disposed = false;
-    const update = () => videoRefs.current.forEach((video, id) => {
-      if (id === activeId && !document.hidden && window.matchMedia('(min-width: 768px)').matches) {
-        video.play().then(() => { if (disposed || document.hidden) video.pause(); }).catch(() => {});
-      } else video.pause();
-    });
-    update();
-    document.addEventListener('visibilitychange', update);
-    window.addEventListener('resize', update);
-    return () => { disposed = true; document.removeEventListener('visibilitychange', update); window.removeEventListener('resize', update); };
-  }, [activeId]);
-
-  const setVideoRef = useCallback((id: string, el: HTMLVideoElement | null) => {
-    if (el) videoRefs.current.set(id, el);
-    else videoRefs.current.delete(id);
   }, []);
 
   // Infinite scroll — no cap
@@ -76,7 +57,7 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
                   className={[
                     'project-list-title block w-fit max-w-full mx-auto font-bold uppercase pointer-events-auto bg-transparent border-0 p-0 cursor-pointer',
                     'text-[calc(1rem+6vw)]',
-                    'leading-[0.78] whitespace-normal [overflow-wrap:anywhere]',
+                    'leading-[0.76] whitespace-normal [overflow-wrap:anywhere]',
                     'transition-[filter,opacity] duration-300 ease-out',
                   ].join(' ')}
                   onClick={() => {
@@ -96,14 +77,7 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
                     <div className="py-3 px-4">
                       {isExpanded && (
                         p.videoSrc ? (
-                          <video
-                            src={p.videoSrc}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full h-auto"
-                          />
+                          <ProjectVideo project={p} active />
                         ) : (
                           <img
                             src={p.imageSrc}
@@ -127,20 +101,16 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
       <div className="hidden md:block fixed bottom-2 right-3 z-30 w-full max-w-[24vw] pointer-events-none">
         {projects.map((p) => (
           p.videoSrc ? (
-            <video
+            <div
               key={p.id}
-              ref={(el) => setVideoRef(p.id, el)}
-              src={p.videoSrc}
-              loop
-              muted
-              playsInline
-              preload="none"
               className={[
                 'absolute bottom-0 right-0 w-full h-auto',
                 'transition-opacity duration-200 ease-out',
                 hoveredId === p.id ? 'opacity-100' : 'opacity-0',
               ].join(' ')}
-            />
+            >
+              <ProjectVideo project={p} active={isDesktop && hoveredId === p.id} />
+            </div>
           ) : (
             <img
               key={p.id}

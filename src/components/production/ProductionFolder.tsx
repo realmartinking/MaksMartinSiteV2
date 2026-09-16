@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { PRODUCTION_PROJECTS } from '@/lib/projects';
-import { FolderScroll, folderPose, folderMediaScale, wrapProject, type FolderMetrics } from '@/lib/folderMotion';
+import { FolderScroll, folderPose, folderMediaScale, folderBottomInset, wrapProject, type FolderMetrics } from '@/lib/folderMotion';
 import { GridTile } from '@/components/grid/GridTile';
 import { ProjectEntrance } from '@/components/effects/ProjectEntrance';
 import styles from './Production.module.css';
@@ -12,6 +12,7 @@ const RADIUS = 10;
 export function ProductionFolder() {
   const reduced = useReducedMotion();
   const root = useRef<HTMLElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
   const planes = useRef(new Map<number, HTMLDivElement>());
   const [center, setCenter] = useState(0);
   const [entering, setEntering] = useState(true);
@@ -29,6 +30,7 @@ export function ProductionFolder() {
     let previousCenter = Math.round(state.current.position);
     const paint = () => {
       const current = state.current;
+      if (stage.current) stage.current.style.clipPath = `inset(0 0 ${folderBottomInset(metrics, current.opening)}px 0)`;
       planes.current.forEach((plane, index) => {
         const pose = folderPose(index - current.position, metrics, current.opening, (current.selected ?? current.position) - current.position);
         plane.style.transform = `translate(-50%, -50%) translateY(${pose.y}px) scale(${pose.scale}) perspective(${pose.perspective}px) rotateX(${pose.angle}deg)`;
@@ -174,7 +176,7 @@ export function ProductionFolder() {
   const labelIndex = hovered ?? selected;
   const label = labelIndex === null ? null : PRODUCTION_PROJECTS[wrapProject(labelIndex, PRODUCTION_PROJECTS.length)];
   return <main ref={root} className={styles.reel} aria-label="Production Folder" data-reel-position={center} data-folder-selection={selected ?? ''}>
-    <div className={`${styles.reelStage} ${styles.folderStage}`}>
+    <div ref={stage} className={`${styles.reelStage} ${styles.folderStage}`}>
       {slots.map((index, slot) => {
         const project = PRODUCTION_PROJECTS[wrapProject(index, PRODUCTION_PROJECTS.length)];
         return <div key={index} data-reel-card={index} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.folderPlane}>
