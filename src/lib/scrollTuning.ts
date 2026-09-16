@@ -1,5 +1,5 @@
-export const SCROLL_LERP = 0.055;
-export const SCROLL_WHEEL_GAIN = 0.92;
+export const SCROLL_LERP = 0.04;
+export const SCROLL_WHEEL_GAIN = 0.8;
 
 /** Same exponential damping as Lenis, independent of 30/60/120Hz frames. */
 export function scrollBlend(deltaMs: number) {

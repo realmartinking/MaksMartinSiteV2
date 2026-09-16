@@ -74,6 +74,15 @@ function restingPose(distance: number, metrics: FolderMetrics): FolderPose {
   return pose;
 }
 
+/** End the closed stack where its former foremost strip began. This preserves
+ * every other projected edge and removes the extra bottom strip, not a project.
+ * The opening releases the crop so the three opened foreground files still fit.
+ */
+export function folderBottomInset(metrics: FolderMetrics, opening = 0) {
+  const front = folderEdges(restingPose(4, metrics), metrics.cardHeight);
+  return Math.max(0, metrics.height / 2 - front.top) * (1 - opening);
+}
+
 /** One coherent layout for the closed stack and its centered selection. */
 function rawFolderPose(distance: number, metrics: FolderMetrics, opening = 0, selectedDistance = 0): FolderPose {
   const closed = restingPose(distance, metrics);

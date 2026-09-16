@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import type { Project } from '@/lib/projects';
-import { observeVideoPlayback } from '@/lib/videoPlayback';
+import { ProjectVideo } from './ProjectVideo';
 
 interface GridTileProps {
   project: Project;
@@ -19,23 +18,13 @@ interface GridTileProps {
  * - Для gallery: w-full h-full object-contain (uniform cells)
  */
 export function GridTile({ project, sizing = 'natural', className = '', reserveSpace = false }: GridTileProps) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    const video = videoRef.current;
-    if (!el || !video) return;
-    return observeVideoPlayback(el, video);
-  }, []);
-
   const mediaClass =
     sizing === 'fill'
       ? 'w-full h-full object-contain'
       : 'w-full h-auto';
 
   return (
-    <div ref={containerRef} className={`overflow-hidden ${className}`} style={{ borderRadius: 'var(--tile-radius)' }}>
+    <div className={`overflow-hidden ${className}`} style={{ borderRadius: 'var(--tile-radius)' }}>
       {project.imageSrc ? (
         <picture className={sizing === 'fill' ? 'block w-full h-full' : 'block'}>
           {project.imageWebpSrc && <source srcSet={project.imageWebpSrc} type="image/webp" />}
@@ -49,17 +38,7 @@ export function GridTile({ project, sizing = 'natural', className = '', reserveS
           />
         </picture>
       ) : (
-        <video
-          ref={videoRef}
-          src={project.videoSrc}
-          width={reserveSpace ? project.mediaSize?.[0] : undefined}
-          height={reserveSpace ? project.mediaSize?.[1] : undefined}
-          muted
-          loop
-          playsInline
-          preload="none"
-          className={mediaClass}
-        />
+        <ProjectVideo project={project} fill={sizing === 'fill'} />
       )}
     </div>
   );

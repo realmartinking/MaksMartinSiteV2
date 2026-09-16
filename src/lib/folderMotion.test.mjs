@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FolderScroll, folderPose, folderEdges, folderMediaScale, wrapProject } from './folderMotion.ts';
+import { FolderScroll, folderPose, folderEdges, folderMediaScale, folderBottomInset, wrapProject } from './folderMotion.ts';
 const metrics = { width: 1440, height: 810, cardWidth: 583.2, cardHeight: 328.05 };
 
 function gesture(deltas, stride = 445.5) {
@@ -95,6 +95,22 @@ test('opened foreground fits exactly three strips across desktop aspect ratios',
     const size={width,height,cardWidth,cardHeight:cardWidth*9/16};
     for (let i=1;i<=3;i++) assert.ok(folderEdges(folderPose(i,size,1),size.cardHeight).top<height/2);
     assert.ok(folderEdges(folderPose(4,size,1),size.cardHeight).top>=height/2);
+  }
+});
+test('closed Folder omits the former bottom strip and releases the crop on opening', () => {
+  for (const [width,height,factor] of [[390,844,.68],[1440,810,.405],[2560,1080,.405]]) {
+    const cardWidth=Math.min(width*factor,height*.95);
+    const size={width,height,cardWidth,cardHeight:cardWidth*9/16};
+    const limit=height/2-folderBottomInset(size);
+    let visible=0;
+    for (let i=-10;i<=10;i++) {
+      const edges=folderEdges(folderPose(i,size),size.cardHeight);
+      const next=folderEdges(folderPose(i+1,size),size.cardHeight);
+      if(edges.top<limit-.001 && Math.min(edges.bottom,next.top)>-height/2) visible++;
+    }
+    assert.equal(visible,9);
+    assert.ok(Math.abs(folderEdges(folderPose(4,size),size.cardHeight).top-limit)<.001);
+    assert.equal(folderBottomInset(size,1),0);
   }
 });
 test('infinite selection wraps in both directions', () => {

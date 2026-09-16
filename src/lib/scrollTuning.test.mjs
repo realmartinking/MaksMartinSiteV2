@@ -9,7 +9,7 @@ test('weighted scrolling travels the same distance at 30, 60 and 120Hz', () => {
     return position;
   });
   assert.ok(Math.max(...results)-Math.min(...results)<1e-8);
-  assert.ok(results[0]>950 && results[0]<980, 'longer tail without a locked gesture');
+  assert.ok(results[0]>900 && results[0]<930, 'longer tail without a locked gesture');
 });
 test('interrupting an unfinished scroll immediately reverses its direction', () => {
   let position=500;
