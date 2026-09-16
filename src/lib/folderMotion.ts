@@ -71,16 +71,13 @@ function restingPose(distance: number, metrics: FolderMetrics): FolderPose {
   // Center the visible upper strip, not the hidden center of the full video.
   // Most of each card is naturally occluded by the next card in the stack.
   pose.y = stackTravel(distance, metrics) - metrics.height * CLOSED_SPACING / 2 * scale - folderEdges(pose, metrics.cardHeight).top;
+  // Spread the closed stack from its rear edge so the next foreground strip
+  // starts below the viewport. The remaining front card keeps its full surface
+  // through the bottom edge; clipping the stage would leave a black band.
+  const nextFrontTop = stackTravel(4, metrics) - metrics.height * CLOSED_SPACING / 2 * Math.exp(DEPTH_STEP * 4);
+  const frontClearance = Math.max(0, metrics.height / 2 + 1 - nextFrontTop);
+  pose.y += Math.max(0, (distance + 5) / 9) * frontClearance;
   return pose;
-}
-
-/** End the closed stack where its former foremost strip began. This preserves
- * every other projected edge and removes the extra bottom strip, not a project.
- * The opening releases the crop so the three opened foreground files still fit.
- */
-export function folderBottomInset(metrics: FolderMetrics, opening = 0) {
-  const front = folderEdges(restingPose(4, metrics), metrics.cardHeight);
-  return Math.max(0, metrics.height / 2 - front.top) * (1 - opening);
 }
 
 /** One coherent layout for the closed stack and its centered selection. */
