@@ -20,7 +20,7 @@
 .brand {
   grid-area: 1 / 1 / 3 / 2;
   display: grid;
-  grid-template-columns: 77px max-content;
+  grid-template-columns: 79px max-content;
   align-items: start;
   width: max-content;
   margin-left: 5px;
