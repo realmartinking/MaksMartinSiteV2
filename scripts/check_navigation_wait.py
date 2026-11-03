@@ -31,7 +31,7 @@ def slow_navigation(page, base):
     info = page.locator('header a[href="/info"]')
     info.tap()
     expect(info.locator("[data-navigation-pending]")).to_be_attached()
-    expect(info).to_have_css("text-decoration-style", "dotted")
+    expect(info).to_have_css("text-decoration-line", "none")
     expect(page.locator("main [data-project-grid]")).to_be_visible()
     expect(page.get_by_text("Loading projects…", exact=True)).not_to_be_visible()
 

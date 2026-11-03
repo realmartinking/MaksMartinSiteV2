@@ -80,9 +80,16 @@ export function useProjectFeed(size: number, initialCycles = 1, infinite = true,
       const markers = feed.querySelectorAll<HTMLElement>('[data-feed-index]');
       if (!markers.length) return;
       const first = Number(markers[0].dataset.feedIndex);
-      const firstTop = markers[0].getBoundingClientRect().top;
+      // In the tilted layout each row has a stationary anchor and a moving
+      // inner plane. In portrait its wrapper is display:contents, so use the
+      // individual tile boxes there, just as in flat galleries and lists.
+      const row = markers[0].closest<HTMLElement>('[data-scroll-tilt]');
+      const useRows = row && getComputedStyle(row).display !== 'contents';
+      const topOf = (tile: HTMLElement) =>
+        (useRows ? tile.closest<HTMLElement>('[data-scroll-tilt]')! : tile).getBoundingClientRect().top;
+      const firstTop = topOf(markers[0]);
       let columns = 1;
-      while (columns < markers.length && Math.abs(markers[columns].getBoundingClientRect().top - firstTop) < 1) columns++;
+      while (columns < markers.length && Math.abs(topOf(markers[columns]) - firstTop) < 1) columns++;
       const items = periodLength(size, columns);
       const origin = window.scrollY + firstTop - current.current.before;
 
@@ -95,7 +102,7 @@ export function useProjectFeed(size: number, initialCycles = 1, infinite = true,
       const preview = feed.querySelector<HTMLElement>('[data-feed-expanded]');
       const extra = preview ? preview.getBoundingClientRect().height : expandedAt >= 0 &&
         expandedAt === period?.expandedAt ? period.extra : 0;
-      const measured = markers[items].getBoundingClientRect().top - firstTop;
+      const measured = topOf(markers[items]) - firstTop;
       const height = measured - (expandedAt === first / items ? extra : 0);
       if (height < 1) return;
       period = { items, height, origin, expandedAt, extra };

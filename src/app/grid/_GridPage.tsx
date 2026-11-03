@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { useProjectFeed } from '@/hooks/useProjectFeed';
-import { ProjectEntrance, entranceStyle } from '@/components/effects/ProjectEntrance';
+import { ProjectEntrance } from '@/components/effects/ProjectEntrance';
 import { PROJECTS, type Project } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
 import { GridTile } from '@/components/grid/GridTile';
@@ -41,15 +41,12 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
             ))}
           </ScrollTiltPreview>
         ) : tiles.map(({ index: idx, project }) => (
-          <div
-            key={idx} data-feed-index={idx}
-            style={entranceStyle(idx < PROJECTS.length ? idx : 0)}
-            className="project-entrance col-span-12 sm:col-span-6 lg:col-span-4 self-start"
-          >
+          <ProjectEntrance key={idx} feedIndex={idx} index={idx < PROJECTS.length ? idx : 0}
+            className="col-span-12 sm:col-span-6 lg:col-span-4 self-start">
             <PerspectiveCard className="w-full">
               <ProjectContent project={project} priority={idx === 0} />
             </PerspectiveCard>
-          </div>
+          </ProjectEntrance>
         ))}
 
         {/* Infinite scroll sentinel */}

@@ -45,9 +45,54 @@ def navigate(page, name, path, touch):
     settle(page)
 
 
-def assert_header(page, theme):
-    expected = "rgb(0, 0, 0)" if theme == "dark" else "rgb(255, 255, 255)"
-    expect(page.locator("header")).to_have_css("background-color", expected)
+def original_composition(page, touch):
+    """Protect the original visible glyphs and stage placement without restricting tap padding."""
+    geometry = page.evaluate("""() => {
+        const q=s=>document.querySelector(s), rect=e=>{const b=e.getBoundingClientRect();return [b.x,b.y,b.width,b.height];};
+        const glyph=e=>{const r=document.createRange();r.selectNodeContents(e);return rect(r);};
+        const header=q('header'), active=q('header nav a[aria-current=page]');
+        const info=q('header a[href="/info"]'), title=q('header [data-edit-id="lockup-name"]');
+        const upcoming=header.querySelector('button[aria-disabled=true] span:last-child');
+        return {header:rect(header), emblem:rect(q('[data-edit-id="lockup-emblem"]')),
+                word:glyph(title), info:glyph(info), grid:rect(q('main [data-hover-card]')),
+                switch:rect(q('[role=switch]')), active:getComputedStyle(active).filter,
+                decoration:getComputedStyle(active).textDecorationLine,
+                soon:upcoming && getComputedStyle(upcoming).visibility};
+    }""")
+    # Measured on c096c8e with these exact viewports. Browser font rasterization
+    # can differ by a few pixels; the mobile emblem must still be large/centred,
+    # the switch bottom-centred and the first project at the original grid inset.
+    ref = ({"header":[0,0,430,222], "emblem":[167,73,96,120], "word":[16,14],
+            "info":[389,14.5], "switch":[187,684,56,44], "grid":[12,240,406]}
+           if touch else
+           {"header":[0,0,1440,193], "emblem":[15,11,93,169], "word":[94,10],
+            "switch":[692,844,56,44], "grid":[10,193,467]})
+    for name, required in ref.items():
+        actual=geometry[name][:len(required)]
+        assert all(abs(a-b)<=3 for a,b in zip(actual,required)), f"Original {name}: {actual} vs {required}"
+    assert geometry["active"] == "blur(2px)" and geometry["decoration"] == "none", geometry
+    assert geometry["soon"] == "hidden", "The coming-soon labels changed the original header"
+
+
+def grid_motion(page, base, touch):
+    """Original portrait rows stay flat; wider layouts tilt and soften their edges on scroll."""
+    page.emulate_media(reduced_motion="no-preference")
+    page.goto(base + "/grid", wait_until="domcontentloaded")
+    page.wait_for_function("""() => document.documentElement.dataset.intro === 'ready' &&
+        !document.querySelector('[data-mobile-intro],[data-desktop-intro]')""")
+    entrance = page.locator("main .project-entrance").first
+    expect(entrance).to_have_css("animation-duration", "1s")
+    moving = False
+    for y in (360, 700):
+        page.evaluate("y => scrollTo({top:y,behavior:'instant'})", y)
+        page.wait_for_function("y => Math.abs(scrollY-y)<2", arg=y)
+        page.evaluate("() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
+        moving |= page.evaluate("""() => [...document.querySelectorAll('[data-scroll-tilt=row]')].some(row => {
+            const b=row.getBoundingClientRect(), s=getComputedStyle(row.firstElementChild);
+            return b.top<innerHeight && b.bottom>0 && s.transform.startsWith('matrix3d') &&
+                (s.filter!=='none' || Number(s.opacity)<.99);
+        })""")
+    assert moving is (not touch), f"Original responsive row motion changed (touch={touch}, tilt={moving})"
 
 
 def screenshot(page, filename):
@@ -60,9 +105,9 @@ def route_matrix(page, base, touch, output, records):
         response = page.goto(base + path, wait_until="domcontentloaded")
         assert response and response.ok, f"{path}: {response and response.status}"
         settle(page)
-        theme = page.evaluate("document.documentElement.classList.contains('dark') ? 'dark' : 'light'")
-        if touch:
-            assert_header(page, theme)
+        if path == "/grid":
+            page.evaluate("document.fonts.ready")
+            original_composition(page, touch)
         main = page.get_by_role("main")
         if path.endswith("/list"):
             expected = PRODUCTION if path.startswith("/production") else ("High Bay", "Skripka", "Lumio")
@@ -107,14 +152,13 @@ def route_matrix(page, base, touch, output, records):
 
 
 def mobile_chrome(page, base, output):
-    # Compare the header itself against the real page background in both themes.
-    # Scrolling Info must not let its letters paint through the header.
+    # The original header is transparent. The Info text should still remain
+    # readable below it and never paint through its typography while scrolling.
     page.goto(base + "/info", wait_until="domcontentloaded")
     settle(page)
     for theme in ("dark", "light"):
         if not page.locator("html").evaluate("(e, t) => e.classList.contains(t)", theme):
             page.get_by_role("switch").tap()
-        assert_header(page, theme)
         page.evaluate('''() => Promise.all(document.getAnimations().filter(a => {
             const t = a.effect?.getComputedTiming(); return t && Number.isFinite(t.endTime) && t.endTime <= 1500;
         }).map(a => a.finished.catch(() => {})))''')
@@ -142,18 +186,21 @@ def mobile_chrome(page, base, output):
     for path in ("/production/folder", "/production/roll"):
         page.goto(base + path, wait_until="domcontentloaded")
         settle(page)
-        bounds = page.evaluate("""() => {
-            const rect = el => el.getBoundingClientRect();
-            const header = rect(document.querySelector('header'));
-            const stage = rect(document.querySelector('main [class*="reelStage"]'));
-            const theme = rect(document.querySelector('[role=switch]'));
-            const count = document.querySelector('main [class*="folderCount"]');
-            const lower = count ? rect(count).top : innerHeight;
-            return {header:header.bottom, top:stage.top, bottom:stage.bottom,
-                    controls:theme.top >= header.bottom ? Math.min(theme.top,lower) : lower};
+        actual = page.evaluate("""() => {
+            const rect=el=>el.getBoundingClientRect();
+            const stage=rect(document.querySelector('main [class*="reelStage"]'));
+            const count=document.querySelector('main [class*="folderCount"]');
+            const c=count && rect(count);
+            const plane=document.querySelector('main [data-reel-card="0"]');
+            return {stage:[stage.x,stage.y,stage.width,stage.height], planeWidth:plane.offsetWidth,
+                    count:c && [c.right,c.y+c.height/2]};
         }""")
-        assert bounds["top"] >= bounds["header"] - 1, f"{path}: stage under header: {bounds}"
-        assert bounds["bottom"] <= bounds["controls"] + 1, f"{path}: stage under theme switch: {bounds}"
+        assert all(abs(a-b)<=2 for a,b in zip(actual["stage"],[0,0,430,740])), (
+            f"{path}: original full-viewport stage changed: {actual}")
+        fraction = .68 if path.endswith("folder") else .88
+        assert abs(actual["planeWidth"] - 430*fraction) < 2, f"{path}: card width changed: {actual}"
+        if actual["count"]:
+            assert abs(actual["count"][0]-418)<2 and abs(actual["count"][1]-370)<2, actual
 
 
 def painted_media(page, locator, path, title, output):
@@ -326,6 +373,8 @@ def main():
                 productions(page, args.url.rstrip("/"), touch, output, record)
                 if touch:
                     media_unavailable(page, args.url.rstrip("/"))
+                    page.unroute("**/*.mp4")
+                grid_motion(page, args.url.rstrip("/"), touch)
                 record["result"] = "pass"
                 print(f"PASS {device} all routes, history, and 32 production previews", flush=True)
             finally:

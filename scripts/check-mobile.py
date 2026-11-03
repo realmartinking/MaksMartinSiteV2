@@ -14,6 +14,7 @@ from playwright.sync_api import expect, sync_playwright
 
 from touch_input import swipe
 from check_intro import mobile_intro
+from check_entrance import fast_entrance
 from check_navigation_wait import slow_navigation
 
 
@@ -125,10 +126,13 @@ def cold_first_tap(page, base):
     expect(page.locator("main [data-hover-card]").first).to_be_visible()
     expect(page.locator("main").get_by_text("Loading projects…", exact=True)).not_to_be_visible()
     small_targets = page.locator("header nav a:visible").evaluate_all("""links => links.filter(a => {
-        const {width, height} = a.getBoundingClientRect();
-        return width < 44 || height < 44;
-    }).map(a => a.textContent)""")
-    assert not small_targets, f"Mobile navigation targets smaller than 44 CSS pixels: {small_targets}"
+        const r=a.getBoundingClientRect(), x=r.x+r.width/2,y=r.y+r.height/2;
+        const hit=(x,y)=>a.contains(document.elementFromPoint(x,y));
+        let horizontal=0, vertical=0;
+        for (let d=-30;d<=30;d++) {horizontal+=hit(x+d,y); vertical+=hit(x,y+d);}
+        return horizontal < 43 || vertical < 43;
+    }).map(a=>a.textContent)""")
+    assert not small_targets, f"Insufficient touch area around these labels: {small_targets}"
     info = page.get_by_role("link", name="Info", exact=True)
     point = info.evaluate("""a => {
         const r = a.getBoundingClientRect(), x = r.x + r.width / 2, y = r.y + r.height / 2;
@@ -198,6 +202,7 @@ def blocked_autoplay(page, base):
     })()""")
     page.goto(base + "/grid", wait_until="domcontentloaded")
     card = page.locator("main [data-hover-card]").first
+    expect(page.locator("[data-mobile-intro]")).not_to_be_visible(timeout=4500)
     button = card.get_by_role("button", name="Play High Bay", exact=True)
     expect(button).to_be_visible()
     poster = card.locator("img").first
@@ -231,7 +236,7 @@ def main():
             profile = dict(pw.devices["iPhone 14 Pro Max"], viewport=PORTRAIT)
             profile.pop("default_browser_type", None)
             try:
-                for check in (mobile_intro, cold_first_tap, navigation, slow_navigation, media_after_scroll, blocked_autoplay):
+                for check in (mobile_intro, cold_first_tap, navigation, slow_navigation, media_after_scroll, blocked_autoplay, fast_entrance):
                     context = browser.new_context(**profile)
                     page = context.new_page()
                     page.set_default_timeout(10000)

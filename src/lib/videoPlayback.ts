@@ -13,7 +13,7 @@ type Entry = {
   blocked: boolean;
   stalled: boolean;
   stallTimer?: ReturnType<typeof setTimeout>;
-  onManual: (show: boolean) => void;
+  onManual: (show: boolean, deferred?: boolean) => void;
 };
 const entries = new Map<Element, Entry>();
 const visible = new Set<Entry>();
@@ -70,7 +70,7 @@ function refresh() {
   // Free old slots before asking WebKit for another decoder.
   for (const entry of ranked.slice(limit)) {
     release(entry);
-    entry.onManual(!document.hidden);
+    entry.onManual(!document.hidden, true);
   }
   for (const entry of ranked.slice(0, limit)) {
     entry.onManual(entry.blocked || entry.stalled);
@@ -90,7 +90,7 @@ export function requestProjectPlayback(element: Element) {
 
 export function observeVideoPlayback(
   element: Element, video: HTMLVideoElement, source: string, active: boolean | undefined,
-  onManual: (show: boolean) => void, poster?: string,
+  onManual: (show: boolean, deferred?: boolean) => void, poster?: string,
 ) {
   if (!observer) {
     observer = new IntersectionObserver(changes => {

@@ -9,6 +9,7 @@ export interface Project {
   videoSrc?: string;      // путь к видео в /public/projects/
   mobilePreviewBase?: string; // Production preview pair (.mp4 and .webp), in public/
   posterSrc?: string;     // frame shown until video is actually painted
+  posterUntil?: number;   // first visible picture after an intentional black leader
   imageSrc?: string;      // путь к изображению в /public/projects/ (для PNG проектов)
   imageWebpSrc?: string;  // pixel-identical lossless alternative; PNG stays as fallback
   imagePreviewSrcSet?: string; // Smaller versions for cards and mobile displays
@@ -63,6 +64,7 @@ export const PROJECTS: Project[] = [
     name: 'Value',
     videoSrc: '/projects/value.mp4',
     posterSrc: '/projects/posters/value.webp',
+    posterUntil: 0.5,
     mediaSize: [1280, 720],
     aspect: 'wide',
     year: '2024',

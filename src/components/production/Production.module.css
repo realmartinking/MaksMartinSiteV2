@@ -53,40 +53,17 @@
 .folderCount { right: var(--grid-padding-x); }
 @keyframes folder-label { from { opacity: 0; } to { opacity: 1; } }
 
-@media (max-width: 768px), (max-width: 1000px) and (pointer: coarse) {
-  .reel {
-    position: fixed;
-    top: var(--mobile-header-height);
-    inset-inline: var(--mobile-inset-left) var(--mobile-inset-right);
-    bottom: env(safe-area-inset-bottom, 0px);
-    height: auto;
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .reelStage { position: absolute; inset: 0; overflow: hidden; }
-  .folderStage { bottom: 42px; }
-  .reelStage:not([data-positioned]) > [data-reel-card] { visibility: hidden; }
-  .reelStage:not([data-positioned]) > [data-center-card] {
-    visibility: visible;
-    transform: translate(-50%, -50%);
-  }
-  .folderPlane, .rollPlane {
-    top: 50%;
-    max-width: calc((100dvh - var(--mobile-header-height) - env(safe-area-inset-bottom, 0px) - 54px) * 1.7778);
-  }
-  .folderPlane { width: 76vw; }
+@media (max-width: 768px) {
   .rollPlane { width: 88vw; }
+  .folderPlane { width: 68vw; }
+  .rollPlane { top: 60%; }
   .caption { font-size: 14px; }
-  .folderLabel, .folderCount {
-    position: absolute;
-    top: auto;
-    bottom: 0;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    transform: none;
-    font-size: 14px;
-  }
-  .folderLabel { left: 0; max-width: calc(100% - 90px); }
-  .folderCount { right: 0; }
+}
+
+/* Before the camera has measured its planes, paint only the central project;
+   the full stack takes over on its first positioned frame. */
+.reelStage:not([data-positioned]) > [data-reel-card] { visibility: hidden; }
+.reelStage:not([data-positioned]) > [data-center-card] {
+  visibility: visible;
+  transform: translate(-50%, -50%);
 }

@@ -42,11 +42,11 @@ The revised edit was compared against the mapped source frame for all 240 output
 
 ## Phone previews
 
-The eight desktop masters remain in `public/projects/`. Production uses a separate 854 × 480 H.264 Main, 8-bit 4:2:0 MP4 on phones, with the stream index before the video data. The phone files retain the full edits except for the first 0.50 seconds of black in Value. The campaign is sampled at 30 fps on phones; its desktop master remains 60 fps. Rebuild the eight loops and their matching posters from the checked-in masters with `python3 scripts/prepare-mobile-production.py --ffmpeg /path/to/ffmpeg`.
+The eight desktop masters remain in `public/projects/`. Production uses a separate 854 × 480 H.264 Main, 8-bit 4:2:0 MP4 on phones, with the stream index before the video data. The phone files retain the full edits including the original opening of Value. The campaign is sampled at 30 fps on phones; its desktop master remains 60 fps. Rebuild the eight loops and their matching posters from the checked-in masters with `python3 scripts/prepare-mobile-production.py --ffmpeg /path/to/ffmpeg`.
 
 | Project | Desktop MP4, bytes | Phone MP4, bytes | Phone poster, bytes |
 | --- | ---: | ---: | ---: |
-| Value | 526,958 | 382,313 | 3,388 |
+| Value | 526,958 | 386,451 | 3,388 |
 | Raif Vision Conference | 572,566 | 262,101 | 6,664 |
 | Forma Houseboat | 1,078,646 | 636,740 | 13,632 |
 | Новогоднее OLV Манеры | 555,868 | 508,691 | 29,984 |
@@ -55,4 +55,4 @@ The eight desktop masters remain in `public/projects/`. Production uses a separa
 | РК Манеры | 9,552,546 | 1,205,506 | 25,994 |
 | Манеры OLV | 8,108,886 | 1,129,526 | 32,216 |
 
-The eight phone loops occupy 5.86 MB in total. Folder and Roll provide their first poster in the server HTML. Gallery provides all eight posters, totalling 151 KB. The selected video gets the same poster directly on its native player until the first frame paints.
+The eight phone loops occupy 5.87 MB in total. Folder and Roll provide their first poster in the server HTML. Gallery provides all eight posters, totalling 151 KB. The selected video gets the same poster directly on its native player until the first frame paints.

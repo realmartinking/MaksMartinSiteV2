@@ -36,3 +36,18 @@ test('older browsers wait for actual playback and two paint opportunities',()=>s
   tick();assert.deepEqual(states,[false]);tick();assert.deepEqual(states,[false,true]);
   dispose();assert.equal(raf.size,0);
 }));
+
+test('Value keeps its poster through the black opening of the original edit', () => setup(() => {
+  const video = new EventTarget();
+  Object.assign(video, { paused: false, readyState: 2, currentTime: .6 });
+  let next;
+  video.requestVideoFrameCallback = callback => { next = callback; return 1; };
+  video.cancelVideoFrameCallback = () => {};
+  const states = [];
+  const stop = observeVideoFrame(video, ready => states.push(ready), .5);
+  next(0, { mediaTime: .42 });
+  assert.deepEqual(states, [false]);
+  next(0, { mediaTime: .54 });
+  assert.deepEqual(states, [false, true]);
+  stop();
+}));

@@ -17,11 +17,11 @@ export function ProjectVideo({ project, fill = false, active, priority = false, 
 }) {
   const root = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
-  const [control, setControl] = useState<'none' | 'button' | 'indicator'>('none');
+  const [control, setControl] = useState<'none' | 'button' | 'indicator' | 'poster'>('none');
   const [width, height] = project.mediaSize ?? [16, 9];
   useEffect(() => observeVideoFrame(video.current!, value => {
     root.current?.setAttribute('data-frame-ready', String(value));
-  }), [project.videoSrc]);
+  }, project.posterUntil), [project.videoSrc, project.posterUntil]);
   useEffect(() => {
     if (!project.videoSrc) return;
     const element = root.current!;
@@ -36,7 +36,11 @@ export function ProjectVideo({ project, fill = false, active, priority = false, 
       stop?.();
       const small = mobile?.matches ? project.mobilePreviewBase : undefined;
       stop = observeVideoPlayback(element, video.current!, small ? `${small}.mp4` : fullVideo, active,
-        show => setControl(show ? (interactiveParent ? 'indicator' : 'button') : 'none'),
+        (show, deferred) => {
+          if (!show) setControl('none');
+          else if (deferred) setControl(interactiveParent ? 'none' : 'poster');
+          else setControl(interactiveParent ? 'indicator' : 'button');
+        },
         small ? `${small}.webp` : project.posterSrc);
     };
     attach();
@@ -58,9 +62,10 @@ export function ProjectVideo({ project, fill = false, active, priority = false, 
       pictureClassName={styles.poster} className={styles.poster} />}
 
     {control === 'indicator' && <span className={styles.play} aria-hidden="true">{playIcon}</span>}
-    {control === 'button' && <button type="button" className={styles.play} aria-label={`Play ${project.name}`}
+    {(control === 'button' || control === 'poster') && <button type="button"
+      className={control === 'poster' ? styles.posterAction : styles.play} aria-label={`Play ${project.name}`}
       onClick={() => requestProjectPlayback(root.current!)}>
-      {playIcon}
+      {control === 'button' && playIcon}
     </button>}
   </div>;
 }
