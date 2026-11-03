@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import expect, sync_playwright
 
+from touch_input import swipe
 from check_intro import mobile_intro
 from check_navigation_wait import slow_navigation
 
@@ -24,18 +25,6 @@ def nav(page, name, url):
     # Use the same visible control a visitor would tap, including after swiping.
     page.get_by_role("navigation").get_by_role("link", name=name, exact=True).tap()
     page.wait_for_url(lambda target: urlparse(target).path == url)
-
-
-def swipe(page, session, x, start, end):
-    def send(event, y=None):
-        points = [] if y is None else [{"x": x, "y": y}]
-        session.send("Input.dispatchTouchEvent", {"type": event, "touchPoints": points})
-
-    send("touchStart", start)
-    for step in range(1, 11):
-        send("touchMove", round(start + (end - start) * step / 10))
-        page.wait_for_timeout(26)
-    send("touchEnd")
 
 
 def scroll_document(page, session):

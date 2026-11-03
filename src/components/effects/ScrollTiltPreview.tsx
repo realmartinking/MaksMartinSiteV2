@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
+import { isValidElement, useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { cubicBezier } from 'framer-motion';
 import { MOBILE_LAYOUT_QUERY } from '@/lib/productionNavigation';
 import { subscribeScrollFrame } from '@/lib/scrollFrame';
@@ -17,6 +17,8 @@ function subscribeColumns(update: () => void) {
   return () => queries.forEach((query) => query.removeEventListener('change', update));
 }
 
+const rowKey = (first: ReactNode, fallback: number) => isValidElement(first) ? first.key ?? fallback : fallback;
+
 type Row = {
   anchor: HTMLDivElement;
   plane: HTMLDivElement;
@@ -32,6 +34,7 @@ type Row = {
 export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
   const columns = useSyncExternalStore(subscribeColumns, getColumns, getServerColumns);
   const anchors = useRef(new Map<number, HTMLDivElement>());
+  const firstTileKey = isValidElement(children[0]) ? children[0].key : null;
   const rowCount = Math.ceil(children.length / columns);
 
   useLayoutEffect(() => {
@@ -158,11 +161,11 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
       compact.removeEventListener('change', scheduleMeasure);
       reduced.removeEventListener('change', schedule);
     };
-  }, [columns, rowCount]);
+  }, [columns, rowCount, firstTileKey]);
 
   return Array.from({ length: rowCount }, (_, row) => (
     <div
-      key={row}
+      key={rowKey(children[row * columns], row)}
       ref={(element) => { if (element) anchors.current.set(row, element); else anchors.current.delete(row); }}
       className="col-span-12 relative"
       data-scroll-tilt="row"

@@ -48,8 +48,8 @@ function observeEntrance(element: HTMLElement) {
   };
 }
 
-export function ViewportEntrance({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function ViewportEntrance({ children, className = '', feedIndex }: { children: ReactNode; className?: string; feedIndex?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => observeEntrance(ref.current!), []);
-  return <div ref={ref} data-entrance="waiting" className={`project-entrance ${className}`}>{children}</div>;
+  return <div ref={ref} data-feed-index={feedIndex} data-entrance="waiting" className={`project-entrance ${className}`}>{children}</div>;
 }

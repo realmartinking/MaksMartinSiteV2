@@ -1,6 +1,7 @@
 'use client';
 
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo } from 'react';
+import { useProjectFeed } from '@/hooks/useProjectFeed';
 import { ProjectEntrance, entranceStyle } from '@/components/effects/ProjectEntrance';
 import { PROJECTS, type Project } from '@/lib/projects';
 import { PerspectiveCard } from '@/components/effects/PerspectiveCard';
@@ -9,31 +10,15 @@ import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
 import { useScrollAwareHover } from '@/lib/useScrollAwareHover';
 
 export default function GridPage({ motionPreview = false }: { motionPreview?: boolean }) {
-  const [cycles, setCycles] = useState(1);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const hoverRoot = useRef<HTMLDivElement>(null);
-  useScrollAwareHover(hoverRoot, '[data-hover-card]');
-
-  // Infinite scroll — no cap
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setCycles((c) => c + 1); },
-      { rootMargin: '1500px' }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  const tiles = Array.from({ length: cycles }).flatMap((_, c) =>
-    PROJECTS.map((project) => ({ project, key: `${c}-${project.id}` }))
-  );
+  const feed = useProjectFeed(PROJECTS.length);
+  useScrollAwareHover(feed.root, '[data-hover-card]');
+  const tiles = feed.indices.map(index => ({ index, project: PROJECTS[index % PROJECTS.length] }));
 
   return (
     <main style={motionPreview ? { overflowX: 'clip' } : undefined}>
       <div
-        ref={hoverRoot}
+        ref={feed.root}
+        data-mobile-feed={feed.mobile || undefined}
         data-project-grid
         className={`
           ${motionPreview ? 'mobile-flat-grid' : ''} project-hover-grid grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[53px]
@@ -45,18 +30,19 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
           columnGap: 'var(--grid-gap)',
           paddingLeft: 'var(--grid-padding-x)',
           paddingRight: 'var(--grid-padding-x)',
-          paddingTop: 'var(--grid-padding-top)',
+          paddingTop: `calc(var(--grid-padding-top) + ${feed.before}px)`,
+          paddingBottom: feed.after ? `calc(5rem + ${feed.after}px)` : undefined,
         }}
       >
         {motionPreview ? (
           <ScrollTiltPreview>
-            {tiles.map(({ key, project }, index) => (
-              <ProjectEntrance key={key} index={index < PROJECTS.length ? index : 0}><ProjectContent project={project} priority={index === 0} /></ProjectEntrance>
+            {tiles.map(({ index, project }) => (
+              <ProjectEntrance key={index} feedIndex={index} index={index < PROJECTS.length ? index : 0}><ProjectContent project={project} priority={index === 0} /></ProjectEntrance>
             ))}
           </ScrollTiltPreview>
-        ) : tiles.map(({ key, project }, idx) => (
+        ) : tiles.map(({ index: idx, project }) => (
           <div
-            key={key}
+            key={idx} data-feed-index={idx}
             style={entranceStyle(idx < PROJECTS.length ? idx : 0)}
             className="project-entrance col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
@@ -67,7 +53,7 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
         ))}
 
         {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="h-1" style={{ gridColumn: '1 / -1' }} />
+        <div ref={feed.sentinel} className="h-1" style={{ gridColumn: '1 / -1' }} />
       </div>
     </main>
   );

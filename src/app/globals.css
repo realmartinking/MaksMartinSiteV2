@@ -254,6 +254,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .project-entrance, .project-entrance[data-entrance="waiting"] { animation: none; opacity: 1; }
+  .classic-card-motion { transform: none !important; filter: none !important; opacity: 1 !important; }
 }
 
 .scroll-tilt-plane { display: grid; }
@@ -280,3 +281,7 @@
 @media (orientation: landscape) and (max-height: 540px) and (max-width: 1000px) and (pointer: coarse) {
   :root { --mobile-header-height: calc(92px + env(safe-area-inset-top, 0px)); }
 }
+
+/* Offscreen rows are replaced with equal measured space, so browsers must
+   not additionally anchor to a different card when the DOM window moves. */
+html:has([data-mobile-feed]) { overflow-anchor: none; }

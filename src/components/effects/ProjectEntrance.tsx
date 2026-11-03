@@ -4,8 +4,8 @@ export function entranceStyle(index: number): CSSProperties {
   return { '--entrance-delay': `${Math.min(index * 0.08, 1.2)}s` } as CSSProperties;
 }
 
-export function ProjectEntrance({ children, index = 0, className = '', enabled = true }: {
-  children: ReactNode; index?: number; className?: string; enabled?: boolean;
+export function ProjectEntrance({ children, index = 0, className = '', enabled = true, feedIndex }: {
+  children: ReactNode; index?: number; className?: string; enabled?: boolean; feedIndex?: number;
 }) {
-  return <div className={`${enabled ? 'project-entrance' : ''} ${className}`} style={entranceStyle(index)}>{children}</div>;
+  return <div data-feed-index={feedIndex} className={`${enabled ? 'project-entrance' : ''} ${className}`} style={entranceStyle(index)}>{children}</div>;
 }
