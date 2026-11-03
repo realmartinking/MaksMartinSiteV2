@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, useReducedMotion, MotionValue } from 'framer-motion';
+import { ReactNode, useRef, useSyncExternalStore } from 'react';
+import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion';
 
 interface PerspectiveCardProps {
   children: ReactNode;
@@ -25,23 +25,29 @@ interface PerspectiveCardProps {
  *
  * Эталон: emelecollab.com/grid — карточки наклоняются ТОЛЬКО когда уходят вверх.
  */
-export function PerspectiveCard({
+const reducedMotion = '(prefers-reduced-motion: reduce)';
+const readPreference = () => window.matchMedia(reducedMotion).matches;
+const serverPreference = () => false;
+function subscribePreference(update: () => void) {
+  const query = window.matchMedia(reducedMotion);
+  query.addEventListener('change', update);
+  return () => query.removeEventListener('change', update);
+}
+
+export function PerspectiveCard(props: PerspectiveCardProps) {
+  // Hydrate the same card the server rendered. CSS honours reduced motion on
+  // its first paint; once hydrated, this branch removes the scroll listeners.
+  const flat = useSyncExternalStore(subscribePreference, readPreference, serverPreference);
+  return flat ? <div className={props.className}>{props.children}</div> : <AnimatedCard {...props} />;
+}
+
+function AnimatedCard({
   children,
   className = '',
   maxTilt = 60,
   triggerStart = 0.3,
 }: PerspectiveCardProps) {
-  const prefersReduced = useReducedMotion();
   const ref = useRef<HTMLDivElement | null>(null);
-
-  // Skip all 3D effects when reduced motion is preferred
-  if (prefersReduced) {
-    return (
-      <div className={className}>
-        {children}
-      </div>
-    );
-  }
 
   // useScroll с offset 'start end' to 'end start' даст progress 0→1
   // когда карточка проходит весь путь от появления снизу до ухода сверху
@@ -108,6 +114,7 @@ export function PerspectiveCard({
       }}
     >
       <motion.div
+        className="classic-card-motion"
         style={{
           rotateX: tiltRotateX,
           translateZ: tiltZ,

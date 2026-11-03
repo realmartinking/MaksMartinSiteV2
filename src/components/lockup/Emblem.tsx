@@ -8,14 +8,16 @@ interface EmblemProps {
   height?: number;
   fill?: boolean;
   className?: string;
+  intro?: boolean;
 }
 
-export function Emblem({ height = 200, fill = false, className = '' }: EmblemProps) {
+export function Emblem({ height = 200, fill = false, className = '', intro = false }: EmblemProps) {
   const { resolvedTheme } = useTheme();
   const [motionTheme, setMotionTheme] = useState<string>();
   const [loadedTheme, setLoadedTheme] = useState<string>();
 
   useEffect(() => {
+    if (intro) return;
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     const update = () => {
       const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
@@ -25,7 +27,7 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
     update();
     preference.addEventListener('change', update);
     return () => preference.removeEventListener('change', update);
-  }, [resolvedTheme]);
+  }, [resolvedTheme, intro]);
 
   const showingMotion = motionTheme !== undefined && loadedTheme === motionTheme;
 
@@ -33,7 +35,7 @@ export function Emblem({ height = 200, fill = false, className = '' }: EmblemPro
     <div
       data-emblem
       data-motion-theme={showingMotion ? motionTheme : undefined}
-      className={`${styles.emblem} ${className}`}
+      className={`${styles.emblem} ${intro ? styles.introArt : ''} ${className}`}
       style={fill ? { width: '100%', height: '100%' } : { height, aspectRatio: '4 / 5' }}
       aria-hidden="true"
     >

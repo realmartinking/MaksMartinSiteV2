@@ -13,7 +13,8 @@
   display: grid; place-items: center; border: 0; border-radius: 50%;
   color: white; background: rgb(0 0 0 / .72); cursor: pointer;
 }
-.play:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
+.posterAction { position: absolute; inset: 0; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.posterAction:focus-visible, .play:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
 
 .pendingImage { visibility: hidden; }
 @media (scripting: none) { .pendingImage { display: none; } }

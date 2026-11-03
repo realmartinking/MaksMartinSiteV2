@@ -7,7 +7,9 @@ export interface Project {
   id: string;
   name: string;
   videoSrc?: string;      // путь к видео в /public/projects/
+  mobilePreviewBase?: string; // Production preview pair (.mp4 and .webp), in public/
   posterSrc?: string;     // frame shown until video is actually painted
+  posterUntil?: number;   // first visible picture after an intentional black leader
   imageSrc?: string;      // путь к изображению в /public/projects/ (для PNG проектов)
   imageWebpSrc?: string;  // pixel-identical lossless alternative; PNG stays as fallback
   imagePreviewSrcSet?: string; // Smaller versions for cards and mobile displays
@@ -62,6 +64,7 @@ export const PROJECTS: Project[] = [
     name: 'Value',
     videoSrc: '/projects/value.mp4',
     posterSrc: '/projects/posters/value.webp',
+    posterUntil: 0.5,
     mediaSize: [1280, 720],
     aspect: 'wide',
     year: '2024',
@@ -205,13 +208,15 @@ export const PROJECTS: Project[] = [
 
 // A separate selection; the Branding collection stays intact.
 export const PRODUCTION_PROJECTS: Project[] = [
-  ...['p03', 'p13', 'p12'].map((id) => ({
+  ...[['p03', 'value'], ['p13', 'raif'], ['p12', 'forma']].map(([id, clip]) => ({
+    mobilePreviewBase: `/projects/mobile/${clip}`,
     ...PROJECTS.find((project) => project.id === id)!,
     type: 'Art Direction',
   })),
   {
     ...PROJECTS.find((project) => project.id === 'p16')!,
     name: 'Новогоднее OLV Манеры',
+    mobilePreviewBase: '/projects/mobile/manery',
     type: 'AI Prodaction',
   },
   {
@@ -219,6 +224,7 @@ export const PRODUCTION_PROJECTS: Project[] = [
     name: 'Fashion Summer Awards 2026',
     type: 'AI Production',
     videoSrc: '/projects/fashion-summer-awards-2026.mp4',
+    mobilePreviewBase: '/projects/mobile/fashion-summer-awards-2026',
     posterSrc: '/projects/posters/fashion-summer-awards-2026.webp',
     mediaSize: [1920, 1080],
     aspect: 'wide',
@@ -229,6 +235,7 @@ export const PRODUCTION_PROJECTS: Project[] = [
     name: 'Fashion TV',
     type: 'AI Production',
     videoSrc: '/projects/fashion-tv.mp4',
+    mobilePreviewBase: '/projects/mobile/fashion-tv',
     posterSrc: '/projects/posters/fashion-tv.webp',
     mediaSize: [1920, 1080],
     aspect: 'wide',
@@ -238,6 +245,7 @@ export const PRODUCTION_PROJECTS: Project[] = [
     name: 'РК Манеры',
     type: 'Рекламная компания',
     videoSrc: '/projects/manery-campaign.mp4',
+    mobilePreviewBase: '/projects/mobile/manery-campaign',
     posterSrc: '/projects/posters/manery-campaign.webp',
     mediaSize: [1920, 1080],
     aspect: 'wide',
@@ -247,6 +255,7 @@ export const PRODUCTION_PROJECTS: Project[] = [
     name: 'Манеры OLV',
     type: 'AI Production',
     videoSrc: '/projects/manery-olv-10s.mp4',
+    mobilePreviewBase: '/projects/mobile/manery-olv-10s',
     posterSrc: '/projects/posters/manery-olv-10s.webp',
     mediaSize: [1920, 1080],
     aspect: 'wide',
@@ -266,3 +275,6 @@ export const SITE_INFO = {
   telegram: 'https://t.me/martinmuur',
   email: 'martinmursalimov@gmail.com',
 };
+
+// Applies to narrow phones including rotated iPhones, without switching wide desktop art.
+export const MOBILE_PREVIEW_MEDIA = '(max-width: 768px), (max-width: 1024px) and (pointer: coarse)';

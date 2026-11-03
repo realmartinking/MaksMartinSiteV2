@@ -11,6 +11,7 @@ interface GridTileProps {
   className?: string;
   active?: boolean;
   priority?: boolean;
+  eagerPoster?: boolean;
 }
 
 /**
@@ -19,7 +20,7 @@ interface GridTileProps {
  * - Для grid: w-full h-auto (native aspect ratio, masonry feel)
  * - Для gallery: w-full h-full object-contain (uniform cells)
  */
-export function GridTile({ project, sizing = 'natural', className = '', active, priority = false }: GridTileProps) {
+export function GridTile({ project, sizing = 'natural', className = '', active, priority = false, eagerPoster = false }: GridTileProps) {
   const mediaClass =
     sizing === 'fill'
       ? 'w-full h-full object-contain'
@@ -34,10 +35,10 @@ export function GridTile({ project, sizing = 'natural', className = '', active, 
       {project.imageSrc ? (
         <ProjectImage src={project.imageSrc} srcSet={project.imagePreviewSrcSet ?? project.imageWebpSrc}
           sizes={sizes} alt={project.name} width={project.mediaSize?.[0]} height={project.mediaSize?.[1]}
-          priority={priority} pictureClassName={sizing === 'fill' ? 'block w-full h-full' : 'block'}
+          priority={priority} eager={eagerPoster} pictureClassName={sizing === 'fill' ? 'block w-full h-full' : 'block'}
           className={mediaClass} />
       ) : (
-        <ProjectVideo project={project} active={active} priority={priority} fill={sizing === 'fill'} />
+        <ProjectVideo project={project} active={active} priority={priority} eagerPoster={eagerPoster} fill={sizing === 'fill'} />
       )}
     </div>
   );

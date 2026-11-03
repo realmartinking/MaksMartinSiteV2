@@ -5,7 +5,7 @@ const ABOUT = '10+ years building creative direction at the intersection of stra
 
 export default function InfoPage() {
   return (
-    <main className="min-h-screen pt-[20vh] pb-[20vh] flex flex-col items-center gap-y-[15vh]">
+    <main className="info-page min-h-screen pt-[20vh] pb-[20vh] flex flex-col items-center gap-y-[15vh]">
       <Block index={0}>{ABOUT}</Block>
 
       <Block index={1} label="Capabilities">

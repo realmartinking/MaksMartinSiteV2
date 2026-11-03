@@ -12,6 +12,7 @@ const RADIUS = 10;
 export function ProductionFolder() {
   const reduced = useReducedMotion();
   const root = useRef<HTMLElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
   const planes = useRef(new Map<number, HTMLDivElement>());
   const [center, setCenter] = useState(0);
   const [entering, setEntering] = useState(true);
@@ -41,12 +42,13 @@ export function ProductionFolder() {
         const mediaScale = folderMediaScale(blur, metrics.cardWidth, metrics.cardHeight);
         plane.style.setProperty('--folder-content-transform', mediaScale === 1 ? 'none' : `scale(${mediaScale})`);
       });
+      stage.current?.setAttribute('data-positioned', '');
       root.current?.setAttribute('data-folder-opening', current.opening.toFixed(3));
       root.current?.setAttribute('data-folder-position', current.position.toFixed(4));
     };
     measure.current = () => {
       const card = planes.current.values().next().value;
-      metrics = { width: innerWidth, height: innerHeight, cardWidth: card?.offsetWidth ?? 0, cardHeight: card?.offsetHeight ?? 0 };
+      metrics = { width: stage.current?.clientWidth ?? innerWidth, height: stage.current?.clientHeight ?? innerHeight, cardWidth: card?.offsetWidth ?? 0, cardHeight: card?.offsetHeight ?? 0 };
       paint();
     };
     const tick = (time: number) => {
@@ -79,7 +81,7 @@ export function ProductionFolder() {
     };
     measure.current();
     const observer = new ResizeObserver(() => measure.current());
-    observer.observe(root.current!);
+    observer.observe(stage.current!);
     const resize = () => measure.current();
     window.addEventListener('resize', resize);
     document.addEventListener('visibilitychange', visibility);
@@ -174,16 +176,16 @@ export function ProductionFolder() {
   const labelIndex = hovered ?? selected;
   const label = labelIndex === null ? null : PRODUCTION_PROJECTS[wrapProject(labelIndex, PRODUCTION_PROJECTS.length)];
   return <main ref={root} className={styles.reel} aria-label="Production Folder" data-reel-position={center} data-folder-selection={selected ?? ''}>
-    <div className={`${styles.reelStage} ${styles.folderStage}`}>
+    <div ref={stage} className={`${styles.reelStage} ${styles.folderStage}`}>
       {slots.map((index, slot) => {
         const project = PRODUCTION_PROJECTS[wrapProject(index, PRODUCTION_PROJECTS.length)];
-        return <div key={index} data-reel-card={index} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.folderPlane}>
+        return <div key={index} data-reel-card={index} data-center-card={index === center ? '' : undefined} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.folderPlane}>
           <ProjectEntrance index={slot} enabled={entering}>
             <button type="button" className={styles.folderCard} aria-label={`Preview ${project.name}`} aria-expanded={selected === index}
               onPointerEnter={() => hover(index)} onPointerMove={() => hover(index)} onPointerLeave={() => setHovered(current => current === index ? null : current)}
               onFocus={() => setHovered(index)} onBlur={() => setHovered(current => current === index ? null : current)} onClick={() => choose.current(index)}>
               <div className={styles.folderMediaClip}>
-                <div className={styles.folderMediaContent}><GridTile project={project} active={index === (selected ?? center)} className="w-full" /></div>
+                <div className={styles.folderMediaContent}><GridTile project={project} eagerPoster={Math.abs(index - center) <= 3} active={index === (selected ?? center)} className="w-full" /></div>
               </div>
             </button>
           </ProjectEntrance>

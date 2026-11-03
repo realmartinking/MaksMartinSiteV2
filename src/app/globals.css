@@ -234,11 +234,13 @@
 }
 
 
-/* Keep project entrances independent of the decorative intro. */
+/* Let the first-visit intro release before playing the original card entrances. */
 .project-entrance {
   animation: list-entrance 1s cubic-bezier(0.16, 1, 0.3, 1) var(--entrance-delay, 0s) backwards;
 }
 .project-entrance[data-entrance="waiting"] { animation: none; opacity: 0; }
+.project-entrance[data-entrance="settled"] { animation: none; opacity: 1; }
+html[data-intro="loading"] .project-entrance { animation-play-state: paused; }
 
 /* Hover changes only on pointer intent or after scroll settles, not whenever
    moving content crosses a stationary cursor. No global :has(:hover) scans. */
@@ -254,4 +256,40 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .project-entrance, .project-entrance[data-entrance="waiting"] { animation: none; opacity: 1; }
+  .classic-card-motion { transform: none !important; filter: none !important; opacity: 1 !important; }
+}
+
+.scroll-tilt-plane { display: grid; }
+
+@media (max-width: 767px) {
+  .mobile-flat-grid { grid-template-columns: minmax(0, 1fr); }
+  .mobile-flat-grid [data-scroll-tilt='row'], .mobile-flat-grid [data-scroll-tilt='row'] > div { display: contents; }
+}
+@media (min-width: 640px) and (max-width: 767px) {
+  .mobile-flat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Offscreen rows are replaced with equal measured space, so browsers must
+   not additionally anchor to a different card when the DOM window moves. */
+html:has([data-mobile-feed]) { overflow-anchor: none; }
+
+/* On a short phone screen the original 20vh Info lead-in can be inside the
+   fixed navigation. Protect only Info's text; the header stays transparent. */
+@media (max-width: 768px), (max-width: 1000px) and (pointer: coarse) {
+  .info-page {
+    --info-nav-edge: calc(193px + env(safe-area-inset-top, 0px));
+    padding-top: max(20vh, calc(var(--info-nav-edge) + 8px));
+  }
+  .info-page::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto;
+    height: var(--info-nav-edge);
+    background: var(--background);
+    pointer-events: none;
+    z-index: 29;
+  }
+}
+@media (max-width: 768px) {
+  .info-page { --info-nav-edge: calc(222px + env(safe-area-inset-top, 0px)); }
 }

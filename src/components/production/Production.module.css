@@ -59,3 +59,11 @@
   .rollPlane { top: 60%; }
   .caption { font-size: 14px; }
 }
+
+/* Before the camera has measured its planes, paint only the central project;
+   the full stack takes over on its first positioned frame. */
+.reelStage:not([data-positioned]) > [data-reel-card] { visibility: hidden; }
+.reelStage:not([data-positioned]) > [data-center-card] {
+  visibility: visible;
+  transform: translate(-50%, -50%);
+}

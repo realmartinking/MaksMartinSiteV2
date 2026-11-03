@@ -3,37 +3,35 @@
 import { useEffect, useRef, useState } from 'react';
 import { Emblem } from '@/components/lockup/Emblem';
 import styles from './Preloader.module.css';
+import { mobileIntroScript } from './mobileIntro';
 
 export function Preloader() {
   const [dismissed, setDismissed] = useState(false);
   const intro = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (dismissed || !intro.current) return;
-    // CSS may already have finished before hydration, or skipped reduced motion.
-    const style = getComputedStyle(intro.current);
-    if (style.visibility === 'hidden' || style.display === 'none') {
-      setDismissed(true);
+    const overlay = intro.current;
+    if (!overlay) return;
+    const dismiss = () => setDismissed(true);
+    if (!overlay.hasAttribute('data-mobile-intro') && !overlay.hasAttribute('data-desktop-intro')) {
+      dismiss();
       return;
     }
-    const dismiss = () => setDismissed(true);
-    // The header and links are already interactive in the server-rendered HTML.
-    window.addEventListener('pointerdown', dismiss, { once: true, passive: true });
-    window.addEventListener('keydown', dismiss, { once: true });
-    return () => {
-      window.removeEventListener('pointerdown', dismiss);
-      window.removeEventListener('keydown', dismiss);
-    };
-  }, [dismissed]);
+    // The parser-time controller owns the clock. Hydration must never rewind it.
+    overlay.addEventListener('intro-finished', dismiss, { once: true });
+    return () => overlay.removeEventListener('intro-finished', dismiss);
+  }, []);
 
   if (dismissed) return null;
-
-  return (
-    <div ref={intro} className={styles.intro} aria-hidden="true" onAnimationEnd={event => {
-      if (event.target === event.currentTarget) setDismissed(true);
-    }}>
-      <div className={styles.art} data-preloader-emblem><Emblem fill /></div>
-      <span className={styles.progress} data-preloader-progress />
+  return <>
+    <div ref={intro} data-intro-overlay aria-hidden="true" className={styles.intro} suppressHydrationWarning>
+      <div className={styles.group} data-intro-group>
+        <div className={styles.art} data-preloader-emblem><Emblem fill intro /></div>
+        <span data-preloader-progress className={styles.progress}>
+          <span data-mobile-progress suppressHydrationWarning>0%</span>
+        </span>
+      </div>
     </div>
-  );
+    <script dangerouslySetInnerHTML={{ __html: mobileIntroScript }} />
+  </>;
 }

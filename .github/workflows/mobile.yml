@@ -30,3 +30,5 @@ jobs:
           trap 'kill "$server_pid" || true' EXIT
           curl --fail --silent --retry 15 --retry-delay 1 --retry-connrefused http://127.0.0.1:3000/grid -o /dev/null
           python scripts/check-mobile.py http://127.0.0.1:3000
+          python scripts/check_views.py http://127.0.0.1:3000
+          python scripts/check_infinite.py http://127.0.0.1:3000

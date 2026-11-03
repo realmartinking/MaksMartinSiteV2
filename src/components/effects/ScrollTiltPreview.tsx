@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
+import { isValidElement, useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { cubicBezier } from 'framer-motion';
 import { subscribeScrollFrame } from '@/lib/scrollFrame';
 
@@ -11,10 +11,12 @@ const getColumns = () => window.matchMedia('(min-width: 1024px)').matches
   ? 3 : window.matchMedia('(min-width: 640px)').matches ? 2 : 1;
 const getServerColumns = () => 3;
 function subscribeColumns(update: () => void) {
-  const queries = [640, 1024].map((width) => window.matchMedia(`(min-width: ${width}px)`));
+  const queries = ['(min-width: 640px)', '(min-width: 1024px)'].map(query => window.matchMedia(query));
   queries.forEach((query) => query.addEventListener('change', update));
   return () => queries.forEach((query) => query.removeEventListener('change', update));
 }
+
+const rowKey = (first: ReactNode, fallback: number) => isValidElement(first) ? first.key ?? fallback : fallback;
 
 type Row = {
   anchor: HTMLDivElement;
@@ -31,6 +33,7 @@ type Row = {
 export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
   const columns = useSyncExternalStore(subscribeColumns, getColumns, getServerColumns);
   const anchors = useRef(new Map<number, HTMLDivElement>());
+  const firstTileKey = isValidElement(children[0]) ? children[0].key : null;
   const rowCount = Math.ceil(children.length / columns);
 
   useLayoutEffect(() => {
@@ -40,7 +43,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     }));
     if (!rows.length) return;
 
-    const desktop = window.matchMedia('(min-width: 768px)');
+    const wide = window.matchMedia('(min-width: 768px)');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const active = new Set<Row>();
     let viewport = window.innerHeight;
@@ -83,12 +86,12 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     };
 
     const paint = () => {
-      if (document.hidden) return;
+      if (document.hidden || !wide.matches) return;
       if (needsMeasure) measure();
       const scrollTop = window.scrollY;
       const start = scrollTop - overscan;
       const end = scrollTop + viewport + overscan;
-      const enabled = desktop.matches && !reduced.matches;
+      const enabled = !reduced.matches;
 
       // Sorted row anchors keep per-frame work bounded as the infinite feed grows.
       let lo = 0, hi = rows.length;
@@ -145,7 +148,11 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     window.addEventListener('resize', scheduleMeasure);
     window.addEventListener('pageshow', scheduleMeasure);
     document.addEventListener('visibilitychange', onVisibility);
-    desktop.addEventListener('change', scheduleMeasure);
+    const onWidthChange = () => {
+      if (!wide.matches) rows.forEach(reset);
+      scheduleMeasure();
+    };
+    wide.addEventListener('change', onWidthChange);
     reduced.addEventListener('change', schedule);
     return () => {
       cancelAnimationFrame(frame);
@@ -154,21 +161,21 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
       window.removeEventListener('resize', scheduleMeasure);
       window.removeEventListener('pageshow', scheduleMeasure);
       document.removeEventListener('visibilitychange', onVisibility);
-      desktop.removeEventListener('change', scheduleMeasure);
+      wide.removeEventListener('change', onWidthChange);
       reduced.removeEventListener('change', schedule);
     };
-  }, [columns, rowCount]);
+  }, [columns, rowCount, firstTileKey]);
 
   return Array.from({ length: rowCount }, (_, row) => (
     <div
-      key={row}
+      key={rowKey(children[row * columns], row)}
       ref={(element) => { if (element) anchors.current.set(row, element); else anchors.current.delete(row); }}
       className="col-span-12 relative"
       data-scroll-tilt="row"
       style={{ perspective: 1000, perspectiveOrigin: 'center' }}
     >
-      <div style={{
-        display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+      <div className="scroll-tilt-plane" style={{
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         columnGap: 'var(--grid-gap)', alignItems: 'start', transformOrigin: 'center center',
       }}>
         {children.slice(row * columns, (row + 1) * columns)}
