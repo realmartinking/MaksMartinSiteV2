@@ -80,7 +80,9 @@ def navigation(page, base, session):
     scroll_document(page, session)
     nav(page, "Gallery", "/gallery")
     scroll_document(page, session)
-    nav(page, "Production", "/production/folder")
+    nav(page, "Production", "/production/roll")
+    expect(page.get_by_role("main", name="Production Roll")).to_be_visible()
+    nav(page, "Folder", "/production/folder")
     folder = page.get_by_role("main", name="Production Folder")
     expect(folder).to_be_visible()
     if session:
@@ -112,7 +114,7 @@ def navigation(page, base, session):
     nav(page, "List", "/list")
     page.set_viewport_size(LANDSCAPE)
     preview(page)
-    expect(page.get_by_role("link", name="Production", exact=True)).to_have_attribute("href", "/production/folder")
+    expect(page.get_by_role("link", name="Production", exact=True)).to_have_attribute("href", "/production/roll")
     page.set_viewport_size(PORTRAIT)
     preview(page)
 

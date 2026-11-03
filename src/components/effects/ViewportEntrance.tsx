@@ -26,6 +26,7 @@ function observeEntrance(element: HTMLElement) {
     const phone = window.matchMedia(MOBILE_LAYOUT_QUERY);
     let scrolled = false;
     let lastY = window.scrollY;
+    let lastDirectionDown = true;
     let lastTime = performance.now();
     let fastUntil = 0;
     const trackScroll = () => {
@@ -35,12 +36,20 @@ function observeEntrance(element: HTMLElement) {
       const now = performance.now();
       const speed = distance / Math.max(16, now - lastTime);
       scrolled = true;
+      lastDirectionDown = y > lastY;
       if (distance > window.innerHeight / 3 || speed > 1.25 || now < fastUntil) {
         if (now >= fastUntil) {
-          // Rows scheduled during the first entrance or a slow drag must not
-          // stay transparent when a flick brings them into reading position.
           for (const row of mounted) {
-            if (row.dataset.entrance === 'visible') row.dataset.entrance = 'settled';
+            if (row.dataset.entrance !== 'visible') continue;
+            if (row.closest('.project-hover-list')) {
+              // A swipe may interrupt the opening cascade. Release its queued
+              // titles but let each one's original movement run to completion.
+              if (parseFloat(row.style.getPropertyValue('--entrance-delay')) > 0) {
+                row.style.setProperty('--entrance-delay', '0s');
+              }
+            } else {
+              row.dataset.entrance = 'settled';
+            }
           }
         }
         fastUntil = now + 150;
@@ -57,12 +66,20 @@ function observeEntrance(element: HTMLElement) {
       const now = performance.now();
       visible.forEach((entry, index) => {
         const target = entry.target as HTMLElement;
-        if (phone.matches && now < fastUntil) {
+        const fast = phone.matches && now < fastUntil;
+        if (fast && !target.closest('.project-hover-list')) {
           target.dataset.entrance = 'settled';
         } else {
-          // Preserve the original opening sequence. After a phone scroll,
-          // stagger only this newly visible group, never past, recycled rows.
-          const delay = phone.matches && scrolled ? Math.min(index, 3) * 0.08 : queue.delay(now);
+          let delay;
+          if (fast) {
+            // Several rows can enter between frames during a fling. The
+            // leading row starts now; titles already inside the screen join
+            // the same 80ms cascade partway through their entrance.
+            const fromEdge = lastDirectionDown ? visible.length - 1 - index : index;
+            delay = -Math.min(fromEdge, 4) * 0.08;
+          } else {
+            delay = phone.matches && scrolled ? Math.min(index, 3) * 0.08 : queue.delay(now);
+          }
           target.style.setProperty('--entrance-delay', `${delay}s`);
           target.dataset.entrance = 'visible';
         }

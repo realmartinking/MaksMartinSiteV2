@@ -1,3 +1,5 @@
-import { ProductionEntry } from '@/components/production/ProductionEntry';
+import { redirect } from 'next/navigation';
 
-export default function ProductionPage() { return <ProductionEntry />; }
+export default function ProductionPage() {
+  redirect('/production/roll');
+}

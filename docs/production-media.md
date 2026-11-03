@@ -40,19 +40,25 @@ Local browser checks verified all eight List titles and Gallery sources, the cor
 
 The revised edit was compared against the mapped source frame for all 240 output frames after decoding at 64×36 RGB: mean absolute channel difference 0.156/255, worst frame 0.310/255. This is a timing/foreign-frame check, not a full-resolution perceptual quality score. The 30-frame contact sheet confirms continuous apple and scarf scenes.
 
-## Phone previews
+## Production playback and media
 
-The eight desktop masters remain in `public/projects/`. Production uses a separate 854 × 480 H.264 Main, 8-bit 4:2:0 MP4 on phones, with the stream index before the video data. The phone files retain the full edits including the original opening of Value. The campaign is sampled at 30 fps on phones; its desktop master remains 60 fps. Rebuild the eight loops and their matching posters from the checked-in masters with `python3 scripts/prepare-mobile-production.py --ffmpeg /path/to/ffmpeg`.
+Roll opens by default on all screen sizes. Its center, upper neighbor and lower neighbor play muted inline. Moving one position keeps the two overlapping players alive. Other Reel planes can show posters without downloading another movie. Grid and Gallery keep their separate mobile decoder budget.
+
+Forma Houseboat uses the video stream of the supplied 1920×1080, 24 fps, five-second portfolio cut, remuxed without audio or video recompression. Raif Vision Conference uses a new 1080p H.264 encode of the supplied portfolio GIF, retaining the existing 9.2-second edit. The longer Raif and Forma films are different edits. The two Production desktop files live in `public/projects/production/`; the equivalent Branding files are unchanged. The other six desktop video files are unchanged.
+
+Phones use a 1280×720 version of Forma and Raif and an 854×480 version of the other six, all H.264, muted, 8-bit 4:2:0 MP4 with the stream index before the video data. The campaign is sampled at 30 fps on phones; its desktop master remains 60 fps. A narrow window on a mouse-driven desktop continues to load the desktop version.
+
+Every Production poster comes from the actual per-device file at the first frame displayed by the player. Value retains its intentional black leader and switches from the matching first picture at 0.5 s. The covers used only in Branding remain untouched.
+
+Run `python3 scripts/prepare-mobile-production.py --ffmpeg /path/to/ffmpeg` to rebuild phone loops and both sets of posters. Use `--studio-sources /path/to/Проекты` to also rebuild the two desktop Production exports from the supplied cuts. `--only` selects one project and `--posters-only` preserves encoded video files.
 
 | Project | Desktop MP4, bytes | Phone MP4, bytes | Phone poster, bytes |
 | --- | ---: | ---: | ---: |
-| Value | 526,958 | 386,451 | 3,388 |
-| Raif Vision Conference | 572,566 | 262,101 | 6,664 |
-| Forma Houseboat | 1,078,646 | 636,740 | 13,632 |
-| Новогоднее OLV Манеры | 555,868 | 508,691 | 29,984 |
-| Fashion Summer Awards 2026 | 11,826,307 | 1,429,446 | 27,156 |
-| Fashion TV | 2,351,086 | 307,407 | 12,100 |
-| РК Манеры | 9,552,546 | 1,205,506 | 25,994 |
-| Манеры OLV | 8,108,886 | 1,129,526 | 32,216 |
-
-The eight phone loops occupy 5.87 MB in total. Folder and Roll provide their first poster in the server HTML. Gallery provides all eight posters, totalling 151 KB. The selected video gets the same poster directly on its native player until the first frame paints.
+| Value | 526,958 | 386,451 | 2,012 |
+| Raif Vision Conference | 5,854,477 | 1,382,561 | 13,110 |
+| Forma Houseboat | 6,684,869 | 1,932,398 | 53,150 |
+| Новогоднее OLV Манеры | 555,868 | 508,691 | 38,512 |
+| Fashion Summer Awards 2026 | 11,826,307 | 1,429,446 | 39,734 |
+| Fashion TV | 2,351,086 | 307,407 | 16,668 |
+| РК Манеры | 9,552,546 | 1,205,506 | 31,876 |
+| Манеры OLV | 8,108,886 | 1,129,526 | 43,270 |

@@ -72,11 +72,16 @@ def mobile_intro(page, base):
           const visual=emblem.querySelector('[data-emblem]');
           const hasArt=visual && (getComputedStyle(visual).backgroundImage!=='none' ||
             [...visual.querySelectorAll('img')].some(i=>i.complete && i.naturalWidth && getComputedStyle(i).visibility==='visible'));
+          const film = emblem.querySelector('[data-intro-film]');
+          const retina = film && overlay.hasAttribute('data-intro-film-ready') && getComputedStyle(film).opacity==='1'
+            && film.videoWidth >= Math.min(er.width * devicePixelRatio - 2, 432)
+            && film.videoHeight >= Math.min(er.height * devicePixelRatio - 2, 540);
           const hit=(x,y)=>overlay.contains(document.elementFromPoint(x,y));
           const matrix=art.transform==='none'?null:new DOMMatrixReadOnly(art.transform);
           trace.frames.push({t,n:parseInt(label.textContent,10),a:+art.opacity,blur:parseFloat(art.filter.match(/[0-9.]+/)||0),
             lift:matrix?.m42||0, gap:nr.left-er.right, centerY:Math.abs((nr.y+nr.height/2)-(er.y+er.height/2)),
             width:er.width, height:er.height, fg:art.color, bg:st.backgroundColor, art:!!hasArt,
+            retina:!!retina, mediaTime:film?.currentTime ?? 0,
             cover:hit(10,12)&&hit(innerWidth/2,innerHeight/2)&&hit(innerWidth/2,innerHeight-24),
             opacity:+st.opacity, releasing:overlay.hasAttribute('data-intro-releasing')});
         }
@@ -100,6 +105,9 @@ def mobile_intro(page, base):
             f["cover"] and f["opacity"] >= .99 and f["bg"] in ("rgb(0, 0, 0)", "rgb(255, 255, 255)")
             and 22 <= f["gap"] <= 26 and f["centerY"] <= 3 and f["height"]>=120 for f in steady), (
                 condition, "emblem and count did not occupy the original opaque centred row", steady)
+        decoded = [f["mediaTime"] for f in frames if f["retina"] and f["a"] > .92]
+        assert decoded and max(decoded) - min(decoded) > .15, (
+            condition, "the sharp mobile emblem must show advancing frames while the introduction is visible")
         assert any(f["n"]<17 and f["blur"]>1 and f["lift"]>2 and f["a"]<.9 for f in frames), (
             condition, "missing original entrance")
         assert any(f["n"]==100 and f["blur"]>2 and f["lift"] < -3 and f["a"]<.85 for f in frames), (

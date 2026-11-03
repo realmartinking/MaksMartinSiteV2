@@ -21,7 +21,9 @@ jobs:
       - run: npm ci
       - run: npm run test:motion
       - run: npm run build
-      - run: python -m pip install playwright==1.60.0
+      - run: python -m pip install playwright==1.60.0 imageio-ffmpeg==0.8.1
+      - name: Check Production posters against the first frame of each device-specific movie
+        run: FFMPEG="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')" node --experimental-strip-types scripts/check-production-posters.mjs
       - run: python -m playwright install webkit chromium
       - name: Check the production build with touch input
         run: |

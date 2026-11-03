@@ -6,6 +6,7 @@ type Entry = {
   source: string;
   poster?: string;
   ratio: number;
+  selected: boolean;
   manual: boolean;
   attached: boolean;
   attempt: number;
@@ -63,10 +64,13 @@ function refresh() {
   // Small changes at viewport edges should not repeatedly tear down a decoder.
   const priority = (entry: Entry) => Math.floor(entry.ratio * 4) + Number(entry.attached);
   const ranked = [...visible].sort((a, b) =>
-    Number(b.manual) - Number(a.manual) || priority(b) - priority(a)
+    Number(b.selected) - Number(a.selected) || Number(b.manual) - Number(a.manual) || priority(b) - priority(a)
   );
   const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  const limit = document.hidden ? 0 : mobile ? 2 : ranked.length;
+  // Grid and Gallery share two automatic slots on phones. In the Roll the
+  // camera explicitly selects three, and those must keep playing together.
+  const mobileLimit = Math.max(2, ranked.filter(entry => entry.selected).length);
+  const limit = document.hidden ? 0 : mobile ? mobileLimit : ranked.length;
   // Free old slots before asking WebKit for another decoder.
   for (const entry of ranked.slice(limit)) {
     release(entry);
@@ -86,6 +90,18 @@ export function requestProjectPlayback(element: Element) {
   entry.blocked = false;
   if (entry.stalled || entry.video.error) release(entry);
   refresh(); // play() runs within this user gesture.
+}
+
+/** Safari may deny all three muted clips until a tap, key or completed swipe.
+ * Retry them within that same gesture, without restarting a playing neighbour. */
+export function retrySelectedPlayback(container: Element) {
+  for (const entry of visible) {
+    if (entry.selected && entry.attached && entry.video.paused && container.contains(entry.element)) {
+      entry.blocked = false;
+      entry.onManual(entry.stalled);
+      play(entry);
+    }
+  }
 }
 
 export function observeVideoPlayback(
@@ -114,7 +130,7 @@ export function observeVideoPlayback(
   video.defaultMuted = true;
   video.muted = true;
   video.playsInline = true;
-  const entry: Entry = { element, video, source, poster, ratio: active ? 1 : 0, manual: false,
+  const entry: Entry = { element, video, source, poster, ratio: active ? 1 : 0, selected: active === true, manual: false,
     attached: false, attempt: 0, pending: false, blocked: false, stalled: false, onManual };
   entries.set(element, entry);
   const ready = () => { if (entry.attached) play(entry); };

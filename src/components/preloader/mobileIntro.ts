@@ -15,6 +15,35 @@ export const mobileIntroScript = `(() => {
   const root = document.documentElement;
   const attribute = matchMedia('${mobileIntroQuery}').matches ? 'data-mobile-intro' : 'data-desktop-intro';
   let clock, firstFrame, frame = 0, failSafe = 0, previous = 0;
+  // Set just the active theme on touch screens. Desktop gets the original
+  // luminance canvas, and no mobile film is requested for that renderer.
+  const film = attribute === 'data-mobile-intro' && overlay.querySelector('[data-intro-film]');
+  function startFilm() {
+    if (!film) return;
+    film.muted = true;
+    const blocked = () => {
+      if (overlay.hasAttribute(attribute)) overlay.setAttribute('data-intro-film-blocked', '');
+    };
+    film.addEventListener('error', blocked, { once: true });
+    film.addEventListener('loadedmetadata', () => {
+      const elapsed = Number(group.getAnimations?.()[0]?.currentTime ?? 0) / 1000;
+      if (elapsed > .08 && elapsed < film.duration) film.currentTime = elapsed;
+    }, { once: true });
+    function showFrame() {
+      if (!overlay.hasAttribute(attribute) || overlay.hasAttribute('data-intro-film-blocked')) return;
+      if (!film.paused && !film.seeking && film.readyState >= 2 && film.currentTime > 0) {
+        overlay.setAttribute('data-intro-film-ready', '');
+        film.removeEventListener('timeupdate', showFrame);
+      }
+    }
+    // WebKit sometimes advances media without invoking the first frame
+    // callback on a transparent element. timeupdate covers that case.
+    film.requestVideoFrameCallback?.(showFrame);
+    film.addEventListener('timeupdate', showFrame);
+    const theme = root.classList.contains('dark') ? 'dark' : 'light';
+    film.src = '/emblem/intro-' + theme + '.mp4';
+    film.play().catch(blocked);
+  }
   function release() {
     if (overlay.hasAttribute('data-intro-releasing')) return;
     cancelAnimationFrame(frame);
@@ -29,6 +58,11 @@ export const mobileIntroScript = `(() => {
     clearTimeout(failSafe);
     root.dataset.intro = 'ready';
     overlay.removeAttribute(attribute);
+    if (film) {
+      film.pause();
+      film.removeAttribute('src');
+      film.load();
+    }
     overlay.removeAttribute('data-intro-releasing');
     overlay.removeEventListener('animationend', animated);
     window.removeEventListener('pagehide', finish);
@@ -54,6 +88,7 @@ export const mobileIntroScript = `(() => {
 
   root.dataset.intro = 'loading';
   overlay.setAttribute(attribute, '');
+  startFilm();
   overlay.addEventListener('animationend', animated);
   window.addEventListener('pagehide', finish, { once: true });
   reduced.addEventListener('change', finish, { once: true });

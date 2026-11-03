@@ -211,12 +211,15 @@ export const PRODUCTION_PROJECTS: Project[] = [
   ...[['p03', 'value'], ['p13', 'raif'], ['p12', 'forma']].map(([id, clip]) => ({
     mobilePreviewBase: `/projects/mobile/${clip}`,
     ...PROJECTS.find((project) => project.id === id)!,
+    ...(clip === 'raif' || clip === 'forma' ? { videoSrc: `/projects/production/${clip}.mp4`, mediaSize: [1920, 1080] as const } : {}),
+    posterSrc: `/projects/production/posters/${clip}.webp`,
     type: 'Art Direction',
   })),
   {
     ...PROJECTS.find((project) => project.id === 'p16')!,
     name: 'Новогоднее OLV Манеры',
     mobilePreviewBase: '/projects/mobile/manery',
+    posterSrc: '/projects/production/posters/manery.webp',
     type: 'AI Prodaction',
   },
   {
@@ -277,4 +280,4 @@ export const SITE_INFO = {
 };
 
 // Applies to narrow phones including rotated iPhones, without switching wide desktop art.
-export const MOBILE_PREVIEW_MEDIA = '(max-width: 768px), (max-width: 1024px) and (pointer: coarse)';
+export const MOBILE_PREVIEW_MEDIA = '(max-width: 1024px) and (pointer: coarse)';

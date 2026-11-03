@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { observeVideoPlayback, requestProjectPlayback } from './videoPlayback.ts';
+import { observeVideoPlayback, requestProjectPlayback, retrySelectedPlayback } from './videoPlayback.ts';
 
 const flush = () => new Promise(resolve => setImmediate(resolve));
 class Video extends EventTarget {
@@ -58,6 +58,34 @@ test('Gallery reserves two mobile slots; tapping a third transfers playback', ()
   requestProjectPlayback(tiles[2].el); await flush();
   assert.equal(tiles[2].video.paused, false); assert.equal(tiles[2].manual, false);
   assert.equal(tiles.filter(tile => tile.video.src).length, 2);
+}));
+
+test('Roll plays three mobile neighbours and retries blocked clips in one gesture', () => environment(async ({doc, observe}) => {
+  const videos = Array.from({length: 4}, () => new Video());
+  const manual = [false, false, false];
+  const cleanups = videos.slice(0, 3).map((video, index) => {
+    if (index > 0) video.play = function () {
+      if (++this.plays === 1) return Promise.reject(Object.assign(new Error(), {name:'NotAllowedError'}));
+      this.paused = false;
+      return Promise.resolve();
+    };
+    return observe({}, video, true, value => { manual[index] = value; });
+  });
+  await flush();
+  assert.deepEqual(manual, [false, true, true]);
+  retrySelectedPlayback({ contains: () => true });
+  await flush();
+  assert.deepEqual(manual, [false, false, false]);
+  assert.ok(videos.slice(0, 3).every(v => !v.paused));
+  assert.equal(videos[0].plays, 1);
+  cleanups[0]();
+  observe({}, videos[3], true);
+  assert.deepEqual(videos.map(v => v.src), ['', '/clip.mp4', '/clip.mp4', '/clip.mp4']);
+  assert.deepEqual(videos.map(v => v.loads), [1, 0, 0, 0]);
+  doc.hidden = true; doc.dispatchEvent(new Event('visibilitychange'));
+  assert.ok(videos.every(v => !v.src && v.paused));
+  doc.hidden = false; doc.dispatchEvent(new Event('visibilitychange')); await flush();
+  assert.deepEqual(videos.map(v => v.paused), [true, false, false, false]);
 }));
 
 test('autoplay denial does not spin and an explicit tap retries just that preview', () => environment(async ({observe}) => {

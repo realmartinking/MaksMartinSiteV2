@@ -5,6 +5,7 @@ import { useMotionValue, useReducedMotion } from 'framer-motion';
 import { PRODUCTION_ROLL_PROJECTS } from '@/lib/projects';
 import { wrapProject } from '@/lib/folderMotion';
 import { rollStride } from '@/lib/rollMotion';
+import { retrySelectedPlayback } from '@/lib/videoPlayback';
 import { scrollBlend, SCROLL_WHEEL_GAIN } from '@/lib/scrollTuning';
 import { GridTile } from '@/components/grid/GridTile';
 import { ProjectEntrance } from '@/components/effects/ProjectEntrance';
@@ -115,6 +116,7 @@ export function ProductionReel() {
       if (down || up || event.key === 'Home') {
         event.preventDefault();
         if (event.repeat) return;
+        retrySelectedPlayback(root.current!);
         clearTimeout(snapTimer);
         move.current(event.key === 'Home' ? 0 : Math.round(target.current) + (down ? 1 : -1));
       }
@@ -156,14 +158,16 @@ export function ProductionReel() {
   }, []);
 
   return (
-    <main ref={root} className={styles.reel} aria-label="Production Roll" data-reel-position={center}>
+    <main ref={root} className={styles.reel} aria-label="Production Roll" data-reel-position={center}
+      onClick={event => retrySelectedPlayback(event.currentTarget)}
+      onTouchEnd={event => retrySelectedPlayback(event.currentTarget)}>
       <div ref={stage} className={styles.reelStage}>
         {slots.map((index, slot) => {
           const project = PRODUCTION_ROLL_PROJECTS[wrapProject(index, PRODUCTION_ROLL_PROJECTS.length)];
           return (
             <div key={index} data-reel-card={index} data-center-card={index === center ? '' : undefined} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.rollPlane}>
               <ProjectEntrance index={slot} enabled={entering}>
-                <GridTile project={project} eagerPoster={Math.abs(index - center) <= 3} active={index === center} className="w-full" />
+                <GridTile project={project} eagerPoster active={Math.abs(index - center) <= 1} className="w-full" />
                 <p className={styles.caption}>{project.name}. {project.type?.split(' / ')[0]}</p>
               </ProjectEntrance>
             </div>

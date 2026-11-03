@@ -152,14 +152,6 @@
   .views { --view-font-size: 15px; display: flex; gap: 24px; order: 3; margin-top: 8px; font-size: 15px; }
 }
 
-/* Keep the original optical positions and use a direct, working destination
-   even before React is ready. Both links occupy the same design slot. */
-.sections > .productionMobile { display: none; }
-@media (max-width: 768px), (max-width: 1000px) and (pointer: coarse) {
-  .sections > .productionMobile { display: block; }
-  .sections > .productionDesktop { display: none; }
-}
-
 @media (pointer: coarse) {
   .sections, .views { pointer-events: none; }
   .sections > *, .views > a { pointer-events: auto; touch-action: manipulation; }

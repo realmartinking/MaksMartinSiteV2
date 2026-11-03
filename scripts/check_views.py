@@ -127,7 +127,7 @@ def route_matrix(page, base, touch, output, records):
         records[path] = page.locator("header nav a:visible").evaluate_all("""links => links.map(a => {
             const b = a.getBoundingClientRect(); return [a.textContent, Math.round(b.x), Math.round(b.y)];
         })""")
-    for entry, end in (("/", "/grid"), ("/production", "/production/folder" if touch else "/production/roll"),
+    for entry, end in (("/", "/grid"), ("/production", "/production/roll"),
                        ("/grid?motion=classic", "/grid")):
         page.goto(base + entry, wait_until="domcontentloaded")
         path_is(page, end)
@@ -140,7 +140,7 @@ def route_matrix(page, base, touch, output, records):
     # Walk the same links a visitor uses, then use the browser history rather
     # than reconstructing URLs. Covers routes reached cold and through the app.
     for label, path in (("List", "/list"), ("Gallery", "/gallery"), ("Info", "/info"),
-                        ("Production", "/production/folder" if touch else "/production/roll"),
+                        ("Production", "/production/roll"),
                         ("List", "/production/list"), ("Gallery", "/production/gallery"),
                         ("Folder", "/production/folder"), ("Roll", "/production/roll"), ("Branding", "/grid")):
         navigate(page, label, path, touch)
@@ -323,9 +323,66 @@ def productions(page, base, touch, output, records):
                 video.evaluate("el => el.scrollIntoView({block:'center',behavior:'instant'})")
             expect(video).to_have_attribute("aria-label", title)
             timestamp = advancing_video(page, video, touch)
-            scores[title] = {"media_time": round(timestamp, 3),
+            source, width, height = video.evaluate("v => [new URL(v.currentSrc).pathname, v.videoWidth, v.videoHeight]")
+            assert source.startswith("/projects/mobile/") == touch, (path, title, source)
+            if title in ("Forma Houseboat", "Raif Vision Conference"):
+                assert (width, height) == ((1280, 720) if touch else (1920, 1080)), (path, title, width, height)
+            scores[title] = {"media_time": round(timestamp, 3), "source": source, "size": [width, height],
                              "contrast": painted_media(page, video, path, title, output)}
         records[path + " playback"] = scores
+
+
+def roll_neighbour_playback(page, base):
+    """Track actual presented frames and decoder continuity through both sides of the wrap."""
+    page.emulate_media(reduced_motion="no-preference")
+    page.goto(base + "/production/roll", wait_until="domcontentloaded")
+    settle(page)
+    for center, key in ((0, None), (-1, "ArrowUp"), (0, "ArrowDown"), (1, "ArrowDown")):
+        if key:
+            page.keyboard.press(key)
+        page.wait_for_function("""c => {
+            const main = document.querySelector('main[data-roll-position]');
+            return main && Math.abs(Number(main.dataset.rollPosition) - c) < .02;
+        }""", arg=center)
+        page.wait_for_function("""c => {
+            const active = [...document.querySelectorAll('[data-reel-card] video[src]')];
+            return active.length === 3 && active.every(video =>
+                Math.abs(Number(video.closest('[data-reel-card]').dataset.reelCard) - c) <= 1 &&
+                !video.paused && video.parentElement.dataset.frameReady === 'true');
+        }""", arg=center)
+        page.evaluate("""async () => {
+            const active = [...document.querySelectorAll('[data-reel-card] video[src]')];
+            const sample = video => new Promise((resolve, reject) => {
+                const timer = setTimeout(() => reject(Error('No moving frames: ' + video.ariaLabel)), 7500);
+                video.requestVideoFrameCallback((_, first) => {
+                    video.requestVideoFrameCallback((_, next) => {
+                        clearTimeout(timer);
+                        if (first.mediaTime === next.mediaTime || next.presentedFrames <= first.presentedFrames)
+                            reject(Error('Repeated frame: ' + video.ariaLabel));
+                        else resolve();
+                    });
+                });
+            });
+            await Promise.all(active.map(sample));
+            // Mark the current playing nodes. A source reset or replacement of
+            // an overlapping node during a centre change would flash its poster.
+            const previous = window.previousRollPlayers ?? new Map();
+            const current = new Map();
+            for (const video of active) {
+                const slot = video.closest('[data-reel-card]').dataset.reelCard;
+                if (previous.has(slot) && (previous.get(slot) !== video || video.rollLoads))
+                    throw Error('A playing neighbour was replaced or restarted: ' + video.ariaLabel);
+                current.set(slot, video);
+                if (video.rollLoads === undefined) {
+                    video.rollLoads = 0;
+                    video.addEventListener('loadstart', () => video.rollLoads++);
+                }
+                // A card which left the three-player window may legitimately restart.
+                if (!previous.has(slot)) video.rollLoads = 0;
+            }
+            window.previousRollPlayers = current;
+        }""")
+    page.emulate_media(reduced_motion="reduce")
 
 
 def media_unavailable(page, base):
@@ -371,6 +428,7 @@ def main():
                 if touch:
                     mobile_chrome(page, args.url.rstrip("/"), output)
                 productions(page, args.url.rstrip("/"), touch, output, record)
+                roll_neighbour_playback(page, args.url.rstrip("/"))
                 if touch:
                     media_unavailable(page, args.url.rstrip("/"))
                     page.unroute("**/*.mp4")

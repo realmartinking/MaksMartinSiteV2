@@ -75,8 +75,7 @@ export function Chrome() {
           <NavigationLink href="/grid" className={isBranding ? styles.active : undefined} aria-current={isBranding ? 'page' : undefined}>
             Branding
           </NavigationLink>
-          <NavigationLink href="/production/folder" className={`${styles.productionMobile} ${isProduction ? styles.active : ''}`} aria-current={isProduction ? 'page' : undefined}>Production</NavigationLink>
-          <NavigationLink href="/production/roll" className={`${styles.productionDesktop} ${isProduction ? styles.active : ''}`} aria-current={isProduction ? 'page' : undefined}>Production</NavigationLink>
+          <NavigationLink href="/production/roll" className={isProduction ? styles.active : undefined} aria-current={isProduction ? 'page' : undefined}>Production</NavigationLink>
           {UPCOMING.map((label) => (
             <button key={label} type="button" className={styles.upcoming} aria-disabled="true" aria-label={`${label} — coming soon`}>
               <span className={styles.upcomingLabel} aria-hidden="true">{label}</span>
