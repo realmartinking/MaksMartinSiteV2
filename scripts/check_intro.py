@@ -6,7 +6,21 @@ def mobile_intro(page, base):
     # Sample the *painted* state, including intervals when the number is already
     # at 100. Progress text alone misses the original blur, lift and outer fade.
     page.add_init_script("""(() => {
-      const trace = window.introTrace = {frames:[], released:0};
+      const trace = window.introTrace = {frames:[], started:0, released:0};
+      // A busy browser may paint its first frame well after the gate opened.
+      // Time its actual lifetime separately from the sampled animation frames.
+      const lifecycle = new MutationObserver(records => {
+        for (const r of records) {
+          if (!r.target.hasAttribute('data-intro-overlay')) continue;
+          if (r.target.hasAttribute('data-mobile-intro')) {
+            if (!trace.started) trace.started = performance.now();
+          } else if (trace.started) {
+            trace.released = performance.now();
+            lifecycle.disconnect();
+          }
+        }
+      });
+      lifecycle.observe(document, {subtree:true, attributes:true, attributeFilter:['data-mobile-intro']});
       let last = -Infinity;
       function sample(t) {
         const overlay = document.querySelector('[data-intro-overlay]'),
@@ -14,7 +28,7 @@ def mobile_intro(page, base):
               label = overlay?.querySelector('[data-mobile-progress]'),
               emblem = overlay?.querySelector('[data-preloader-emblem]');
         if (!overlay?.hasAttribute('data-mobile-intro')) {
-          if(trace.frames.length) {trace.released=t;return;}
+          if(trace.released) return;
         } else if(group && label && emblem && t-last>=34) {
           last=t;
           const st=getComputedStyle(overlay), art=getComputedStyle(group);
@@ -43,7 +57,7 @@ def mobile_intro(page, base):
         trace = page.evaluate("introTrace")
         frames = trace["frames"]
         values = [f["n"] for f in frames]
-        duration = trace["released"]-frames[0]["t"]
+        duration = trace["released"]-trace["started"]
         assert values[0] <= 8 and values[-1] == 100 and values == sorted(values), (condition, values)
         assert len(set(values)) >= 10 and 2700 <= duration < 3800, (condition, duration, values)
         steady = [f for f in frames if 40 <= f["n"] <= 85]
