@@ -9,7 +9,7 @@ import { ScrollTiltPreview } from '@/components/effects/ScrollTiltPreview';
 import { useScrollAwareHover } from '@/lib/useScrollAwareHover';
 
 export default function GridPage({ motionPreview = false }: { motionPreview?: boolean }) {
-  const [cycles, setCycles] = useState(2);
+  const [cycles, setCycles] = useState(1);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const hoverRoot = useRef<HTMLDivElement>(null);
   useScrollAwareHover(hoverRoot, '[data-hover-card]');
@@ -51,7 +51,7 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
         {motionPreview ? (
           <ScrollTiltPreview>
             {tiles.map(({ key, project }, index) => (
-              <ProjectEntrance key={key} index={index < PROJECTS.length ? index : 0}><ProjectContent project={project} reserveSpace /></ProjectEntrance>
+              <ProjectEntrance key={key} index={index < PROJECTS.length ? index : 0}><ProjectContent project={project} priority={index === 0} /></ProjectEntrance>
             ))}
           </ScrollTiltPreview>
         ) : tiles.map(({ key, project }, idx) => (
@@ -61,7 +61,7 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
             className="project-entrance col-span-12 sm:col-span-6 lg:col-span-4 self-start"
           >
             <PerspectiveCard className="w-full">
-              <ProjectContent project={project} />
+              <ProjectContent project={project} priority={idx === 0} />
             </PerspectiveCard>
           </div>
         ))}
@@ -73,12 +73,12 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
   );
 }
 
-const ProjectContent = memo(function ProjectContent({ project, reserveSpace = false }: { project: Project; reserveSpace?: boolean }) {
+const ProjectContent = memo(function ProjectContent({ project, priority }: { project: Project; priority: boolean }) {
   return (
     <div data-hover-card className="flex min-w-0 flex-col gap-y-[9px] group">
       <GridTile
         project={project}
-        reserveSpace={reserveSpace}
+        priority={priority}
         sizing="natural"
         className="project-hover-media w-full transition-transform duration-300 ease-out"
       />

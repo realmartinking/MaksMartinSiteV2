@@ -44,7 +44,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-intro="loading" suppressHydrationWarning>
+    <html lang="en" data-intro="ready" suppressHydrationWarning>
       <body className="font-sans text-[15px] select-none cursor-crosshair antialiased">
 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>

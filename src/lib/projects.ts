@@ -10,6 +10,7 @@ export interface Project {
   posterSrc?: string;     // frame shown until video is actually painted
   imageSrc?: string;      // путь к изображению в /public/projects/ (для PNG проектов)
   imageWebpSrc?: string;  // pixel-identical lossless alternative; PNG stays as fallback
+  imagePreviewSrcSet?: string; // Smaller versions for cards and mobile displays
   mediaSize?: readonly [width: number, height: number]; // intrinsic asset dimensions
   aspect: ProjectAspect;
   url?: string;           // ссылка на проект (опционально)
@@ -71,6 +72,7 @@ export const PROJECTS: Project[] = [
     name: 'Muse',
     imageSrc: '/projects/muse.png',
     imageWebpSrc: '/projects/muse.webp',
+    imagePreviewSrcSet: '/projects/previews/muse-480.webp 480w, /projects/previews/muse-960.webp 960w',
     mediaSize: [960, 1080],
     aspect: 'vertical',
     year: '2024',
@@ -81,6 +83,7 @@ export const PROJECTS: Project[] = [
     name: 'Humber',
     imageSrc: '/projects/humber.png',
     imageWebpSrc: '/projects/humber.webp',
+    imagePreviewSrcSet: '/projects/previews/humber-480.webp 480w, /projects/previews/humber-1280.webp 1280w, /projects/humber.webp 1904w',
     mediaSize: [1904, 1068],
     aspect: 'wide',
     year: '2024',
@@ -121,6 +124,7 @@ export const PROJECTS: Project[] = [
     name: 'Дача Генерала Вишневецкого',
     imageSrc: '/projects/vishnevetsky.png',
     imageWebpSrc: '/projects/vishnevetsky.webp',
+    imagePreviewSrcSet: '/projects/previews/vishnevetsky-480.webp 480w, /projects/previews/vishnevetsky-1073.webp 1073w',
     mediaSize: [1073, 1294],
     aspect: 'wide',
     year: '2023',
@@ -131,6 +135,7 @@ export const PROJECTS: Project[] = [
     name: 'Lumio',
     imageSrc: '/projects/lumio.png',
     imageWebpSrc: '/projects/lumio.webp',
+    imagePreviewSrcSet: '/projects/previews/lumio-480.webp 480w, /projects/previews/lumio-1280.webp 1280w, /projects/lumio.webp 3840w',
     mediaSize: [3840, 2160],
     aspect: 'square',
     year: '2022',

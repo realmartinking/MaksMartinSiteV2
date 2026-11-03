@@ -2,128 +2,38 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Emblem } from '@/components/lockup/Emblem';
+import styles from './Preloader.module.css';
 
-/**
- * Прелоадер: эмблема + счётчик процентов на белом/чёрном фоне.
- *
- * Тайминг (td=600ms):
- *  0ms       прелоадер виден, контент скрыт
- *  +100ms    inner fade-in (blur+y, 600ms easeOutCubic)
- *  параллельно — счётчик 0→100 за 1900ms
- *  +2000ms   inner fade-out (blur+y up, 600ms easeInCubic)
- *  +2700ms   prldr fade-out (300ms)
- *  +3000ms   контент fade-in (blur+y, 600ms)
- *  +3600ms   готово
- */
 export function Preloader() {
-  const [progress, setProgress] = useState(0);
-  const [stage, setStage] = useState<'in' | 'hold' | 'out' | 'gone'>('in');
-  const [done, setDone] = useState(false);
-  const startedRef = useRef<number | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+  const intro = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.documentElement.dataset.intro = 'loading';
-    let finish: ReturnType<typeof setTimeout> | undefined;
-
-    startedRef.current = performance.now();
-
-    let raf = 0;
-    const tick = () => {
-      const elapsed = performance.now() - (startedRef.current || 0);
-
-      // Counter 0→100 over 1900ms (от 100ms до 2000ms)
-      if (elapsed < 100) {
-        setProgress(0);
-      } else if (elapsed < 2000) {
-        const t = (elapsed - 100) / 1900;
-        setProgress(Math.min(100, Math.round(t * 100)));
-      } else {
-        setProgress(100);
-      }
-
-      // Stage transitions
-      if (elapsed < 100) {
-        setStage('in');
-      } else if (elapsed < 2000) {
-        setStage('hold');
-      } else if (elapsed < 2700) {
-        setStage('out');
-      } else if (elapsed >= 2700) {
-        cancelAnimationFrame(raf);
-        setStage('gone');
-
-        // Start every project's own entrance after the loader, not behind it.
-        document.documentElement.dataset.intro = 'ready';
-        finish = setTimeout(() => setDone(true), 350);
-        return;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
+    if (dismissed || !intro.current) return;
+    // CSS may already have finished before hydration, or skipped reduced motion.
+    const style = getComputedStyle(intro.current);
+    if (style.visibility === 'hidden' || style.display === 'none') {
+      setDismissed(true);
+      return;
+    }
+    const dismiss = () => setDismissed(true);
+    // The header and links are already interactive in the server-rendered HTML.
+    window.addEventListener('pointerdown', dismiss, { once: true, passive: true });
+    window.addEventListener('keydown', dismiss, { once: true });
     return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(finish);
-      document.documentElement.dataset.intro = 'ready';
+      window.removeEventListener('pointerdown', dismiss);
+      window.removeEventListener('keydown', dismiss);
     };
-  }, []);
+  }, [dismissed]);
 
-  if (done) return null;
-
-  const innerStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '24px',
-    transition: 'opacity 600ms cubic-bezier(0.215, 0.61, 0.355, 1), filter 600ms cubic-bezier(0.215, 0.61, 0.355, 1), transform 600ms cubic-bezier(0.215, 0.61, 0.355, 1)',
-    opacity: stage === 'in' ? 0 : stage === 'out' ? 0 : 1,
-    filter: stage === 'in' ? 'blur(10px)' : stage === 'out' ? 'blur(10px)' : 'blur(0px)',
-    transform:
-      stage === 'in' ? 'translateY(20px)'
-      : stage === 'out' ? 'translateY(-20px)'
-      : 'translateY(0)',
-  };
-
-  const prldrStyle: React.CSSProperties = {
-    position: 'fixed',
-    inset: 0,
-    width: '100%',
-    height: '100dvh',
-    background: 'var(--background)',
-    zIndex: 9999,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    transition: 'opacity 300ms cubic-bezier(0.215, 0.61, 0.355, 1)',
-    opacity: stage === 'gone' ? 0 : 1,
-    pointerEvents: stage === 'gone' ? 'none' : 'auto',
-  };
+  if (dismissed) return null;
 
   return (
-    <div role="status" aria-hidden={done} style={prldrStyle}>
-      <div style={innerStyle}>
-        <div data-preloader-emblem style={{ height: 'min(180px, 40vw)', aspectRatio: '4 / 5', flexShrink: 0 }}>
-          <Emblem fill />
-        </div>
-        <span
-          data-preloader-progress
-          style={{
-            fontSize: 'min(80px, 18vw)',
-            fontWeight: 700,
-            lineHeight: 1,
-            color: 'var(--foreground)',
-            fontVariantNumeric: 'tabular-nums',
-            letterSpacing: '-0.02em',
-            userSelect: 'none',
-            // Reserve the full counter slot regardless of digit count or
-            // proportional numeral widths in Gramatika. The emblem stays put.
-            width: '3em',
-            flexShrink: 0,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {progress}%
-        </span>
-      </div>
+    <div ref={intro} className={styles.intro} aria-hidden="true" onAnimationEnd={event => {
+      if (event.target === event.currentTarget) setDismissed(true);
+    }}>
+      <div className={styles.art} data-preloader-emblem><Emblem fill /></div>
+      <span className={styles.progress} data-preloader-progress />
     </div>
   );
 }
