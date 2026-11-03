@@ -6,7 +6,7 @@ import { ViewportEntrance } from '@/components/effects/ViewportEntrance';
 import { GridTile } from '@/components/grid/GridTile';
 
 export function ProjectGallery({ projects = PROJECTS, infinite = true }: { projects?: Project[]; infinite?: boolean }) {
-  const [cycles, setCycles] = useState(infinite ? 2 : 1);
+  const [cycles, setCycles] = useState(1);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,13 +32,14 @@ export function ProjectGallery({ projects = PROJECTS, infinite = true }: { proje
         className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
         style={{ gap: 'var(--grid-gap)', paddingLeft: 'var(--grid-padding-x)', paddingRight: 'var(--grid-padding-x)' }}
       >
-        {tiles.map(({ key, ...p }) => (
+        {tiles.map(({ key, ...p }, index) => (
           <ViewportEntrance
             key={key}
             className="group aspect-square overflow-hidden"
           >
             <GridTile
               project={p}
+              priority={index === 0}
               sizing="fill"
               className="w-full h-full group-hover:scale-[var(--tile-hover-scale)] transition-transform duration-300 ease-out"
             />

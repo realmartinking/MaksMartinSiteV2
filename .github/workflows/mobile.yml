@@ -1,0 +1,32 @@
+name: Mobile navigation and playback
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  mobile:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run test:motion
+      - run: npm run build
+      - run: python -m pip install playwright==1.60.0
+      - run: python -m playwright install webkit chromium
+      - name: Check the production build with touch input
+        run: |
+          npm start -- --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/site.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          curl --fail --silent --retry 15 --retry-delay 1 --retry-connrefused http://127.0.0.1:3000/grid -o /dev/null
+          python scripts/check-mobile.py http://127.0.0.1:3000

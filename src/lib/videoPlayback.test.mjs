@@ -1,94 +1,118 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { observeVideoPlayback } from './videoPlayback.ts';
+import { observeVideoPlayback, requestProjectPlayback } from './videoPlayback.ts';
 
 const flush = () => new Promise(resolve => setImmediate(resolve));
 class Video extends EventTarget {
-  src = '/projects/test.mp4'; preload = 'none'; paused = true; loads = 0; plays = 0;
+  src = ''; currentTime = 0; paused = true; loads = 0; plays = 0;
   play() { this.paused = false; this.plays++; return Promise.resolve(); }
   pause() { this.paused = true; }
   load() { this.loads++; }
+  removeAttribute(name) { if (name === 'src') this.src = ''; }
 }
 async function environment(run) {
   const originals = { document: globalThis.document, window: globalThis.window, IntersectionObserver: globalThis.IntersectionObserver };
   const doc = new EventTarget(); doc.hidden = false;
   const observers = [], cleanups = [];
   globalThis.document = doc;
-  globalThis.window = new EventTarget();
+  globalThis.window = Object.assign(new EventTarget(), { matchMedia: () => ({matches:true}) });
   globalThis.IntersectionObserver = class {
-    constructor(callback, options) { this.callback = callback; this.options = options; this.targets = new Set(); observers.push(this); }
+    constructor(callback) { this.callback = callback; this.targets = new Set(); observers.push(this); }
     observe(target) { this.targets.add(target); }
     unobserve(target) { this.targets.delete(target); }
     disconnect() { this.targets.clear(); }
-    send(target, isIntersecting) { this.callback([{ target, isIntersecting }]); }
+    send(target, ratio) { this.callback([{ target, intersectionRatio: ratio, isIntersecting: ratio > 0 }]); }
   };
-  const observe = (...args) => { const cleanup=observeVideoPlayback(...args); cleanups.push(cleanup); return cleanup; };
+  const observe = (target, video, active, onManual = () => {}) => {
+    const cleanup = observeVideoPlayback(target, video, '/clip.mp4', active, onManual);
+    cleanups.push(cleanup);
+    return cleanup;
+  };
   try { await run({doc, observers, observe}); }
-  finally { cleanups.reverse().forEach(fn=>fn()); Object.assign(globalThis, originals); }
+  finally { cleanups.reverse().forEach(fn => fn()); Object.assign(globalThis, originals); }
 }
 
-test('warming never resets video in either observer callback order', () => environment(async ({doc,observers,observe}) => {
-  for (const playFirst of [false,true]) {
-    const target={}, video=new Video();
-    const cleanup=observe(target,video);
-    const [playback,preload]=observers.slice(-2);
-    if(playFirst)playback.send(target,true);
-    preload.send(target,true);
-    if(!playFirst)playback.send(target,true);
-    await flush();
-    assert.equal(video.loads,0,'load() would discard buffered data / abort play');
-    assert.equal(video.preload,'auto');
-    assert.equal(video.paused,false);
-    playback.send(target,true);
-    assert.equal(video.plays,1);
-    doc.hidden=true;doc.dispatchEvent(new Event('visibilitychange'));
-    assert.equal(video.paused,true);
-    doc.hidden=false;doc.dispatchEvent(new Event('visibilitychange'));await flush();
-    assert.equal(video.paused,false);
-    playback.send(target,false);assert.equal(video.paused,true);
-    cleanup();assert.equal(playback.targets.size,0);assert.equal(preload.targets.size,0);
-  }
+test('offscreen copies have no source, relinquish buffers on exit, and resume upon return', () => environment(async ({doc, observers, observe}) => {
+  const a = {}, b = {}, first = new Video(), second = new Video();
+  observe(a, first); observe(b, second);
+  assert.equal(first.src, ''); assert.equal(second.src, '');
+  const viewport = observers[0];
+  viewport.send(a, 1); await flush();
+  assert.equal(first.src, '/clip.mp4'); assert.equal(first.paused, false);
+  assert.equal(second.loads, 0);
+  viewport.send(a, 0);
+  assert.equal(first.src, ''); assert.equal(first.paused, true); assert.equal(first.loads, 1);
+  viewport.send(a, 1); await flush(); assert.equal(first.plays, 2);
+  doc.hidden = true; doc.dispatchEvent(new Event('visibilitychange'));
+  assert.equal(first.src, '');
+  doc.hidden = false; doc.dispatchEvent(new Event('visibilitychange')); await flush();
+  assert.equal(first.paused, false);
 }));
-test('a quick leave/re-enter recovers an interrupted pending play without another intersection', () => environment(async ({observers,observe}) => {
-  const target={}, video=new Video();let reject;
-  video.play=function(){this.plays++;this.paused=false;return this.plays===1?new Promise((_,no)=>reject=no):Promise.resolve();};
-  observe(target,video);
-  const playback=observers[0];
-  playback.send(target,true);playback.send(target,false);playback.send(target,true);
-  assert.equal(video.plays,1);
-  reject(Object.assign(new Error('interrupted'),{name:'AbortError'}));await flush();
-  assert.equal(video.plays,2);assert.equal(video.paused,false);
+
+test('Gallery reserves two mobile slots; tapping a third transfers playback', () => environment(async ({observers, observe}) => {
+  const tiles = Array.from({length: 3}, () => ({el: {}, video: new Video(), manual: false}));
+  for (const tile of tiles) observe(tile.el, tile.video, undefined, value => { tile.manual = value; });
+  tiles.forEach(tile => observers[0].send(tile.el, 1));
+  assert.deepEqual(tiles.map(tile => tile.video.src), ['/clip.mp4', '/clip.mp4', '']);
+  assert.equal(tiles[2].manual, true);
+  requestProjectPlayback(tiles[2].el); await flush();
+  assert.equal(tiles[2].video.paused, false); assert.equal(tiles[2].manual, false);
+  assert.equal(tiles.filter(tile => tile.video.src).length, 2);
 }));
-test('policy denial does not spin; a later user gesture can resume the visible video', () => environment(async ({doc,observe}) => {
-  const video=new Video();
-  video.play=function(){this.plays++;if(this.plays===1)return Promise.reject(Object.assign(new Error(),{name:'NotAllowedError'}));this.paused=false;return Promise.resolve();};
-  observe({},video,true);await flush();
-  assert.equal(video.plays,1);
-  doc.dispatchEvent(new Event('pointerup'));await flush();
-  assert.equal(video.plays,2);assert.equal(video.paused,false);
+
+test('autoplay denial does not spin and an explicit tap retries just that preview', () => environment(async ({observe}) => {
+  const target = {}, video = new Video(), manual = [];
+  video.play = function () {
+    this.plays++;
+    if (this.plays === 1) return Promise.reject(Object.assign(new Error(), { name: 'NotAllowedError' }));
+    this.paused = false;
+    return Promise.resolve();
+  };
+  observe(target, video, true, state => manual.push(state)); await flush();
+  video.dispatchEvent(new Event('canplay')); assert.equal(video.plays, 1);
+  assert.equal(manual.at(-1), true);
+  requestProjectPlayback(target); await flush();
+  assert.equal(video.plays, 2); assert.equal(video.paused, false); assert.equal(manual.at(-1), false);
 }));
-test('List owns its preview and canplay recovers a paused visible video', () => environment(async ({observers,observe}) => {
-  const target={}, video=new Video();
-  const cleanup=observe(target,video,false);
-  video.dispatchEvent(new Event('canplay'));assert.equal(video.plays,0);
-  assert.equal(observers[0].targets.size,0);
-  cleanup();observe(target,video,true);await flush();assert.equal(video.plays,1);
-  video.paused=true;video.dispatchEvent(new Event('canplay'));await flush();assert.equal(video.plays,2);
+
+test('an obsolete interrupted play cannot disturb a recycled player', () => environment(async ({observers, observe}) => {
+  const target = {}, video = new Video(); let reject;
+  video.play = function () {
+    this.plays++; this.paused = false;
+    return this.plays === 1 ? new Promise((_, no) => { reject = no; }) : Promise.resolve();
+  };
+  observe(target, video);
+  const viewport = observers[0];
+  viewport.send(target, 1); viewport.send(target, 0); viewport.send(target, 1);
+  reject(Object.assign(new Error(), { name: 'AbortError' })); await flush();
+  assert.equal(video.plays, 2); assert.equal(video.paused, false);
 }));
-test('an obsolete pending play cannot pause a remounted player', () => environment(async ({observe}) => {
-  const target={},video=new Video();let resolve;
-  video.play=function(){this.plays++;this.paused=false;return this.plays===1?new Promise(yes=>resolve=yes):Promise.resolve();};
-  const cleanup=observe(target,video,true);cleanup();observe(target,video,true);
-  resolve();await flush();assert.equal(video.paused,false);
+
+test('explicit List and Folder selection does not grant slots to hidden copies', () => environment(async ({observers, observe}) => {
+  const target = {}, video = new Video();
+  const cleanup = observe(target, video, false);
+  video.dispatchEvent(new Event('canplay')); assert.equal(video.plays, 0);
+  assert.equal(observers[0].targets.size, 0); assert.equal(video.src, '');
+  cleanup(); observe(target, video, true); await flush(); assert.equal(video.plays, 1);
+  video.paused = true; video.dispatchEvent(new Event('canplay')); await flush(); assert.equal(video.plays, 2);
 }));
-test('offscreen repeats do not each buffer the same movie, and the owner transfers on recycling', () => environment(async ({observe,observers}) => {
-  const a={},b={},first=new Video(),second=new Video();
-  const cleanup=observe(a,first);observe(b,second);
-  assert.equal(first.preload,'metadata');assert.equal(second.preload,'none');
-  const [playback,preload]=observers;
-  preload.send(a,true);preload.send(b,true);
-  assert.equal(first.preload,'auto');assert.equal(second.preload,'none');
-  cleanup();assert.equal(second.preload,'auto');
-  playback.send(b,true);await flush();assert.equal(second.paused,false);
-  assert.equal(second.loads,0);
-}));
+
+test('buffering exposes retry after five seconds without discarding slow downloads', async t => {
+  t.mock.timers.enable({apis:['setTimeout']});
+  await environment(async ({observe}) => {
+    const el = {}, video = new Video(), manual = [];
+    observe(el, video, true, value => manual.push(value)); await flush();
+    video.dispatchEvent(new Event('waiting'));
+    t.mock.timers.tick(4000);
+    video.currentTime = 0.5; video.dispatchEvent(new Event('timeupdate'));
+    t.mock.timers.tick(1000); assert.equal(manual.at(-1), false);
+    video.dispatchEvent(new Event('waiting')); t.mock.timers.tick(5000);
+    assert.equal(manual.at(-1), true); assert.equal(video.loads, 0);
+    video.currentTime = 0.8; video.dispatchEvent(new Event('timeupdate'));
+    assert.equal(manual.at(-1), false);
+    video.dispatchEvent(new Event('stalled')); t.mock.timers.tick(5000);
+    requestProjectPlayback(el);
+    assert.equal(video.loads, 1); assert.equal(video.plays, 2);
+    assert.equal(manual.at(-1), false);
+  });
+});

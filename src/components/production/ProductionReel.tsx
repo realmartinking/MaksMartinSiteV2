@@ -160,7 +160,7 @@ export function ProductionReel() {
           return (
             <div key={index} data-reel-card={index} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.rollPlane}>
               <ProjectEntrance index={slot} enabled={entering}>
-                <GridTile project={project} reserveSpace className="w-full" />
+                <GridTile project={project} active={index === center} className="w-full" />
                 <p className={styles.caption}>{project.name}. {project.type?.split(' / ')[0]}</p>
               </ProjectEntrance>
             </div>

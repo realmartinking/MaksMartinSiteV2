@@ -183,7 +183,7 @@ export function ProductionFolder() {
               onPointerEnter={() => hover(index)} onPointerMove={() => hover(index)} onPointerLeave={() => setHovered(current => current === index ? null : current)}
               onFocus={() => setHovered(index)} onBlur={() => setHovered(current => current === index ? null : current)} onClick={() => choose.current(index)}>
               <div className={styles.folderMediaClip}>
-                <div className={styles.folderMediaContent}><GridTile project={project} reserveSpace className="w-full" /></div>
+                <div className={styles.folderMediaContent}><GridTile project={project} active={index === (selected ?? center)} className="w-full" /></div>
               </div>
             </button>
           </ProjectEntrance>

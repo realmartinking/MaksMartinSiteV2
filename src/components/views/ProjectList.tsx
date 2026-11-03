@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { PROJECTS, type Project } from '@/lib/projects';
 import { ViewportEntrance } from '@/components/effects/ViewportEntrance';
-import { ProjectVideo } from '@/components/grid/ProjectVideo';
+import { GridTile } from '@/components/grid/GridTile';
 import { useScrollAwareHover } from '@/lib/useScrollAwareHover';
 
 export function ProjectList({ projects = PROJECTS, infinite = true }: { projects?: Project[]; infinite?: boolean }) {
@@ -11,13 +11,13 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [cycles, setCycles] = useState(infinite ? 2 : 1);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [hoverPreview, setHoverPreview] = useState(false);
   const hoverRoot = useRef<HTMLDivElement>(null);
   useScrollAwareHover(hoverRoot, '.project-list-title', element => setHoveredId(element?.dataset.projectId ?? null));
 
   useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 768px)');
-    const resetPreview = () => { setIsDesktop(desktop.matches); setExpandedId(null); setHoveredId(null); };
+    const desktop = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)');
+    const resetPreview = () => { setHoverPreview(desktop.matches); setExpandedId(null); setHoveredId(null); };
     resetPreview();
     desktop.addEventListener('change', resetPreview);
     return () => desktop.removeEventListener('change', resetPreview);
@@ -61,31 +61,21 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
                     'transition-[filter,opacity] duration-300 ease-out',
                   ].join(' ')}
                   onClick={() => {
-                    if (window.matchMedia('(max-width: 767px)').matches) setExpandedId(isExpanded ? null : key);
+                    if (!hoverPreview) setExpandedId(isExpanded ? null : key);
                   }}
-                  aria-expanded={isExpanded}
+                  aria-expanded={hoverPreview ? undefined : isExpanded}
                 >
                   {p.name}
                 </button>
 
                 {/* Mobile inline expand */}
                 <div
-                  className="md:hidden grid pointer-events-auto transition-[grid-template-rows] duration-300 ease-out"
+                  className="grid pointer-events-auto transition-[grid-template-rows] duration-300 ease-out"
                   style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
                 >
                   <div className="overflow-hidden">
                     <div className="py-3 px-4">
-                      {isExpanded && (
-                        p.videoSrc ? (
-                          <ProjectVideo project={p} active />
-                        ) : (
-                          <img
-                            src={p.imageSrc}
-                            alt={p.name}
-                            className="w-full h-auto"
-                          />
-                        )
-                      )}
+                      {isExpanded && <GridTile project={p} active />}
                     </div>
                   </div>
                 </div>
@@ -97,35 +87,18 @@ export function ProjectList({ projects = PROJECTS, infinite = true }: { projects
 
       <div ref={sentinelRef} className="h-1" />
 
-      {/* Fixed bottom-right preview panel (desktop only) */}
-      <div className="hidden md:block fixed bottom-2 right-3 z-30 w-full max-w-[24vw] pointer-events-none">
-        {projects.map((p) => (
-          p.videoSrc ? (
+      {hoverPreview && (
+        <div className="fixed bottom-2 right-3 z-30 w-full max-w-[24vw] pointer-events-none">
+          {projects.map((p) => (
             <div
               key={p.id}
-              className={[
-                'absolute bottom-0 right-0 w-full h-auto',
-                'transition-opacity duration-200 ease-out',
-                hoveredId === p.id ? 'opacity-100' : 'opacity-0',
-              ].join(' ')}
+              className={`absolute bottom-0 right-0 w-full transition-opacity duration-200 ease-out ${hoveredId === p.id ? 'opacity-100' : 'opacity-0'}`}
             >
-              <ProjectVideo project={p} active={isDesktop && hoveredId === p.id} />
+              <GridTile project={p} active={hoveredId === p.id} />
             </div>
-          ) : (
-            <img
-              key={p.id}
-              src={p.imageSrc}
-              alt={p.name}
-              loading="lazy"
-              className={[
-                'absolute bottom-0 right-0 w-full h-auto',
-                'transition-opacity duration-200 ease-out',
-                hoveredId === p.id ? 'opacity-100' : 'opacity-0',
-              ].join(' ')}
-            />
-          )
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
