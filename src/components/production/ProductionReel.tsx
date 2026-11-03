@@ -17,6 +17,7 @@ export function ProductionReel() {
   const [entering, setEntering] = useState(true);
   const planes = useRef(new Map<number, HTMLDivElement>());
   const root = useRef<HTMLElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
   const target = useRef(0);
   const stride = useRef(0);
   const move = useRef<(value: number) => void>(() => {});
@@ -36,15 +37,17 @@ export function ProductionReel() {
         plane.style.opacity = `${1 - amount * 0.45}`;
         plane.style.zIndex = `${100 - Math.round(Math.abs(distance) * 10)}`;
       });
+      stage.current?.setAttribute('data-positioned', '');
     };
     const measure = () => {
-      height = innerHeight;
+      height = stage.current?.clientHeight ?? innerHeight;
       const first = planes.current.values().next().value;
       stride.current = rollStride(height, (first?.offsetWidth ?? innerWidth * 0.535) * 9 / 16);
       paint();
     };
     measure();
     const observer = new ResizeObserver(measure);
+    observer.observe(stage.current!);
     planes.current.forEach((plane) => observer.observe(plane));
     let windowCenter = center;
     const unsubscribe = position.on('change', (value) => {
@@ -154,13 +157,13 @@ export function ProductionReel() {
 
   return (
     <main ref={root} className={styles.reel} aria-label="Production Roll" data-reel-position={center}>
-      <div className={styles.reelStage}>
+      <div ref={stage} className={styles.reelStage}>
         {slots.map((index, slot) => {
           const project = PRODUCTION_ROLL_PROJECTS[wrapProject(index, PRODUCTION_ROLL_PROJECTS.length)];
           return (
-            <div key={index} data-reel-card={index} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.rollPlane}>
+            <div key={index} data-reel-card={index} data-center-card={index === center ? '' : undefined} ref={(element) => { if (element) planes.current.set(index, element); else planes.current.delete(index); }} className={styles.rollPlane}>
               <ProjectEntrance index={slot} enabled={entering}>
-                <GridTile project={project} active={index === center} className="w-full" />
+                <GridTile project={project} eagerPoster={Math.abs(index - center) <= 3} active={index === center} className="w-full" />
                 <p className={styles.caption}>{project.name}. {project.type?.split(' / ')[0]}</p>
               </ProjectEntrance>
             </div>

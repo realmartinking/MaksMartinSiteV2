@@ -39,3 +39,20 @@ The encoded loops contain 354, 120, 597 and 240 frames respectively: 14.75 s, 5 
 Local browser checks verified all eight List titles and Gallery sources, the corrected Roll captions, playback of the new 1920×1080 videos, and Roll wrapping from index 7 to index 8 / Value while retaining seven DOM planes. Folder selection keeps the chosen layer at `filter: none; transform: none`; neighboring content reaches `blur(5px)` with a measured scale of 1.12111 at 1422×800. White and yellow edges no longer show the prior dark fringe. Escape restores all 21 inner layers to `none` for both properties. Sixteen motion/entrance tests include coverage of the blur padding throughout opening and eight-project wrapping. Browser rendering checks use the in-app Chromium browser; direct Safari verification remains outside this run.
 
 The revised edit was compared against the mapped source frame for all 240 output frames after decoding at 64×36 RGB: mean absolute channel difference 0.156/255, worst frame 0.310/255. This is a timing/foreign-frame check, not a full-resolution perceptual quality score. The 30-frame contact sheet confirms continuous apple and scarf scenes.
+
+## Phone previews
+
+The eight desktop masters remain in `public/projects/`. Production uses a separate 854 × 480 H.264 Main, 8-bit 4:2:0 MP4 on phones, with the stream index before the video data. The phone files retain the full edits except for the first 0.50 seconds of black in Value. The campaign is sampled at 30 fps on phones; its desktop master remains 60 fps. Rebuild the eight loops and their matching posters from the checked-in masters with `python3 scripts/prepare-mobile-production.py --ffmpeg /path/to/ffmpeg`.
+
+| Project | Desktop MP4, bytes | Phone MP4, bytes | Phone poster, bytes |
+| --- | ---: | ---: | ---: |
+| Value | 526,958 | 382,313 | 3,388 |
+| Raif Vision Conference | 572,566 | 262,101 | 6,664 |
+| Forma Houseboat | 1,078,646 | 636,740 | 13,632 |
+| Новогоднее OLV Манеры | 555,868 | 508,691 | 29,984 |
+| Fashion Summer Awards 2026 | 11,826,307 | 1,429,446 | 27,156 |
+| Fashion TV | 2,351,086 | 307,407 | 12,100 |
+| РК Манеры | 9,552,546 | 1,205,506 | 25,994 |
+| Манеры OLV | 8,108,886 | 1,129,526 | 32,216 |
+
+The eight phone loops occupy 5.86 MB in total. Folder and Roll provide their first poster in the server HTML. Gallery provides all eight posters, totalling 151 KB. The selected video gets the same poster directly on its native player until the first frame paints.

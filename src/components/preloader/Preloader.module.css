@@ -37,6 +37,7 @@
 }
 
 .progress::after { content: counter(intro-percent) '%'; }
+.mobileProgress { display: none; }
 
 @keyframes count {
   from { --mm-intro-percent: 0; }
@@ -50,4 +51,27 @@
 
 @media (prefers-reduced-motion: reduce) {
   .intro { display: none; }
+}
+
+/* The mobile intro paints on its own opaque layer. The HTML script enables
+   it only when it can advance the counter, with CSS as the final escape. */
+@media (hover: none) and (pointer: coarse) {
+  .intro { display: none; animation: none; }
+
+  .intro[data-mobile-intro] {
+    display: flex;
+    z-index: 9999;
+    isolation: isolate;
+    pointer-events: auto;
+    touch-action: none;
+    animation: release-mobile 0s 2.6s forwards;
+  }
+
+  .progress { counter-reset: none; animation: none; }
+  .progress::after { content: none; }
+  .mobileProgress { display: inline; }
+}
+
+@keyframes release-mobile {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
 }

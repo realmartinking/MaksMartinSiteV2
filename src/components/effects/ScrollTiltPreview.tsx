@@ -2,16 +2,17 @@
 
 import { useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { cubicBezier } from 'framer-motion';
+import { MOBILE_LAYOUT_QUERY } from '@/lib/productionNavigation';
 import { subscribeScrollFrame } from '@/lib/scrollFrame';
 
 const enterEase = cubicBezier(0.22, 1, 0.36, 1);
 const exitEase = cubicBezier(0, 0, 0.58, 1);
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
-const getColumns = () => window.matchMedia('(min-width: 1024px)').matches
+const getColumns = () => window.matchMedia(MOBILE_LAYOUT_QUERY).matches || window.matchMedia('(min-width: 1024px)').matches
   ? 3 : window.matchMedia('(min-width: 640px)').matches ? 2 : 1;
 const getServerColumns = () => 3;
 function subscribeColumns(update: () => void) {
-  const queries = [640, 1024].map((width) => window.matchMedia(`(min-width: ${width}px)`));
+  const queries = [MOBILE_LAYOUT_QUERY, '(min-width: 640px)', '(min-width: 1024px)'].map(query => window.matchMedia(query));
   queries.forEach((query) => query.addEventListener('change', update));
   return () => queries.forEach((query) => query.removeEventListener('change', update));
 }
@@ -40,7 +41,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     }));
     if (!rows.length) return;
 
-    const desktop = window.matchMedia('(min-width: 768px)');
+    const compact = window.matchMedia(MOBILE_LAYOUT_QUERY);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const active = new Set<Row>();
     let viewport = window.innerHeight;
@@ -83,12 +84,12 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     };
 
     const paint = () => {
-      if (document.hidden) return;
+      if (document.hidden || compact.matches) return;
       if (needsMeasure) measure();
       const scrollTop = window.scrollY;
       const start = scrollTop - overscan;
       const end = scrollTop + viewport + overscan;
-      const enabled = desktop.matches && !reduced.matches;
+      const enabled = !reduced.matches;
 
       // Sorted row anchors keep per-frame work bounded as the infinite feed grows.
       let lo = 0, hi = rows.length;
@@ -145,7 +146,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
     window.addEventListener('resize', scheduleMeasure);
     window.addEventListener('pageshow', scheduleMeasure);
     document.addEventListener('visibilitychange', onVisibility);
-    desktop.addEventListener('change', scheduleMeasure);
+    compact.addEventListener('change', scheduleMeasure);
     reduced.addEventListener('change', schedule);
     return () => {
       cancelAnimationFrame(frame);
@@ -154,7 +155,7 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
       window.removeEventListener('resize', scheduleMeasure);
       window.removeEventListener('pageshow', scheduleMeasure);
       document.removeEventListener('visibilitychange', onVisibility);
-      desktop.removeEventListener('change', scheduleMeasure);
+      compact.removeEventListener('change', scheduleMeasure);
       reduced.removeEventListener('change', schedule);
     };
   }, [columns, rowCount]);
@@ -167,8 +168,8 @@ export function ScrollTiltPreview({ children }: { children: ReactNode[] }) {
       data-scroll-tilt="row"
       style={{ perspective: 1000, perspectiveOrigin: 'center' }}
     >
-      <div style={{
-        display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+      <div className="scroll-tilt-plane" style={{
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         columnGap: 'var(--grid-gap)', alignItems: 'start', transformOrigin: 'center center',
       }}>
         {children.slice(row * columns, (row + 1) * columns)}

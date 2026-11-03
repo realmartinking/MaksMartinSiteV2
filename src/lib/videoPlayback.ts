@@ -4,6 +4,7 @@ type Entry = {
   element: Element;
   video: HTMLVideoElement;
   source: string;
+  poster?: string;
   ratio: number;
   manual: boolean;
   attached: boolean;
@@ -29,6 +30,7 @@ function release(entry: Entry) {
   entry.blocked = false;
   entry.video.pause();
   entry.video.removeAttribute('src');
+  entry.video.removeAttribute('poster');
   entry.video.load();
 }
 
@@ -36,6 +38,7 @@ function play(entry: Entry, retryAbort = true) {
   const video = entry.video;
   if (!entry.attached) {
     entry.attached = true;
+    if (entry.poster) video.poster = entry.poster;
     video.src = entry.source;
   }
   if (entry.pending || entry.blocked || !video.paused) return;
@@ -87,7 +90,7 @@ export function requestProjectPlayback(element: Element) {
 
 export function observeVideoPlayback(
   element: Element, video: HTMLVideoElement, source: string, active: boolean | undefined,
-  onManual: (show: boolean) => void,
+  onManual: (show: boolean) => void, poster?: string,
 ) {
   if (!observer) {
     observer = new IntersectionObserver(changes => {
@@ -111,7 +114,7 @@ export function observeVideoPlayback(
   video.defaultMuted = true;
   video.muted = true;
   video.playsInline = true;
-  const entry: Entry = { element, video, source, ratio: active ? 1 : 0, manual: false,
+  const entry: Entry = { element, video, source, poster, ratio: active ? 1 : 0, manual: false,
     attached: false, attempt: 0, pending: false, blocked: false, stalled: false, onManual };
   entries.set(element, entry);
   const ready = () => { if (entry.attached) play(entry); };

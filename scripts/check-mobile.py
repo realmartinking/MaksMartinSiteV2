@@ -12,6 +12,9 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import expect, sync_playwright
 
+from check_intro import mobile_intro
+from check_navigation_wait import slow_navigation
+
 
 PORTRAIT = {"width": 430, "height": 740}
 LANDSCAPE = {"width": 932, "height": 430}
@@ -68,6 +71,9 @@ def preview(page):
 
 def navigation(page, base, session):
     page.goto(base + "/grid", wait_until="domcontentloaded")
+    # Playback can start behind the intentional, opaque intro; swipe only when
+    # the visitor would see the page. mobile_intro checks the gate separately.
+    expect(page.locator("[data-mobile-intro]")).not_to_be_visible(timeout=4000)
     logo = page.locator('header [data-emblem][data-motion-theme] img:visible')
     expect(logo).to_be_visible()
     assert logo.evaluate("""async img => {
@@ -93,16 +99,17 @@ def navigation(page, base, session):
         page.wait_for_function(
             "before => document.querySelector('[data-reel-position]')?.dataset.reelPosition !== before", arg=before
         )
-    # An actual tap at the centre of the screen must open the card underneath.
+    # The projected cards overlap; their bounding centres can lie behind the
+    # neighbour drawn in front. Tap the actual visible face at a screen coordinate.
     target = page.wait_for_function("""() => {
-        for (const button of document.querySelectorAll('main button[aria-label^="Preview "]')) {
-            const b = button.getBoundingClientRect(), x = b.x + b.width/2, y = b.y + b.height/2;
-            if (y > innerHeight*.36 && y < innerHeight*.75 && button.contains(document.elementFromPoint(x,y)))
-                return {x, y};
+        for (const ratio of [.5, .6, .4]) {
+            const x = innerWidth/2, y = innerHeight*ratio;
+            const button = document.elementFromPoint(x,y)?.closest('main button[aria-label^="Preview "]');
+            if (button) return {x, y, name:button.getAttribute('aria-label')};
         }
     }""").json_value()
     page.touchscreen.tap(target["x"], target["y"])
-    expect(folder.locator('button[aria-expanded="true"]')).to_have_count(1)
+    expect(folder.locator('button[aria-expanded="true"]')).to_have_attribute("aria-label", target["name"])
     nav(page, "List", "/production/list")
     preview(page)
     nav(page, "Gallery", "/production/gallery")
@@ -115,16 +122,19 @@ def navigation(page, base, session):
     nav(page, "List", "/list")
     page.set_viewport_size(LANDSCAPE)
     preview(page)
-    expect(page.get_by_role("link", name="Production", exact=True)).to_have_attribute("href", "/production/roll")
+    expect(page.get_by_role("link", name="Production", exact=True)).to_have_attribute("href", "/production/folder")
     page.set_viewport_size(PORTRAIT)
     preview(page)
 
 
 def cold_first_tap(page, base):
-    # Hold all application JavaScript: the SSR header must already receive a
-    # real tap rather than waiting on hydration, the counter or video decoding.
+    # Hold application JavaScript: the finite mobile intro must release and
+    # leave real server-rendered project content and working navigation.
     page.route(re.compile(r"/_next/static/.*\.js(?:[?].*)?$"), lambda route: route.abort())
     page.goto(base + "/grid", wait_until="domcontentloaded")
+    expect(page.locator("[data-mobile-intro]")).not_to_be_visible(timeout=4000)
+    expect(page.locator("main [data-hover-card]").first).to_be_visible()
+    expect(page.locator("main").get_by_text("Loading projects…", exact=True)).not_to_be_visible()
     small_targets = page.locator("header nav a:visible").evaluate_all("""links => links.filter(a => {
         const {width, height} = a.getBoundingClientRect();
         return width < 44 || height < 44;
@@ -159,6 +169,14 @@ def media_after_scroll(page, base):
     requested = []
     page.on("request", lambda request: requested.append(urlparse(request.url).path))
     page.goto(base + "/grid", wait_until="domcontentloaded")
+    cards = page.locator('[data-hover-card]')
+    expect(cards.first).to_be_visible()
+    bounds = cards.evaluate_all("""els => els.slice(0,18).map(el => {
+        const {width, top} = el.getBoundingClientRect();
+        return [width, top];
+    })""")
+    assert len(bounds) == 18 and all(0.85 * PORTRAIT["width"] <= width <= PORTRAIT["width"] for width, _ in bounds)
+    assert all(lower[1] > upper[1] for upper, lower in zip(bounds, bounds[1:])), "Portrait Grid must be a single column"
     first = page.locator('main video[aria-label="High Bay"]').first
     expect(first).to_have_attribute("src", "/projects/hightbay.mp4")
     assert not any("lumio" in path for path in requested), "Lumio loaded before scrolling"
@@ -224,7 +242,7 @@ def main():
             profile = dict(pw.devices["iPhone 14 Pro Max"], viewport=PORTRAIT)
             profile.pop("default_browser_type", None)
             try:
-                for check in (cold_first_tap, navigation, media_after_scroll, blocked_autoplay):
+                for check in (mobile_intro, cold_first_tap, navigation, slow_navigation, media_after_scroll, blocked_autoplay):
                     context = browser.new_context(**profile)
                     page = context.new_page()
                     page.set_default_timeout(10000)

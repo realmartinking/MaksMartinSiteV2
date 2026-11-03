@@ -255,3 +255,28 @@
 @media (prefers-reduced-motion: reduce) {
   .project-entrance, .project-entrance[data-entrance="waiting"] { animation: none; opacity: 1; }
 }
+
+.scroll-tilt-plane { display: grid; }
+
+@media (max-width: 768px), (max-width: 1000px) and (pointer: coarse) {
+  :root {
+    --mobile-inset-left: max(12px, env(safe-area-inset-left, 0px));
+    --mobile-inset-right: max(12px, env(safe-area-inset-right, 0px));
+    --mobile-header-height: calc(136px + env(safe-area-inset-top, 0px));
+    --grid-padding-top: calc(var(--mobile-header-height) + 14px);
+    scroll-padding-top: var(--grid-padding-top);
+  }
+  .info-page { padding-top: var(--grid-padding-top); }
+  .project-entrance, .project-entrance[data-entrance="waiting"] {
+    animation: none;
+    opacity: 1;
+  }
+  .mobile-flat-grid { grid-template-columns: minmax(0, 1fr); }
+  .mobile-flat-grid [data-scroll-tilt='row'], .mobile-flat-grid [data-scroll-tilt='row'] > div { display: contents; }
+}
+@media (min-width: 640px) and (max-width: 768px), (min-width: 640px) and (max-width: 1000px) and (pointer: coarse) {
+  .mobile-flat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (orientation: landscape) and (max-height: 540px) and (max-width: 1000px) and (pointer: coarse) {
+  :root { --mobile-header-height: calc(92px + env(safe-area-inset-top, 0px)); }
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { NavigationLink } from './NavigationLink';
 import { usePathname } from 'next/navigation';
 import { ThemeSwitch } from '@/components/theme/ThemeSwitch';
 import { Emblem } from '@/components/lockup/Emblem';
@@ -48,13 +48,14 @@ export function Chrome() {
   const pathname = usePathname();
   const isProduction = pathname.startsWith('/production');
   const views = isProduction ? PRODUCTION_VIEWS : VIEWS;
-  const isActive = (href: string) => pathname === href || (href === '/grid' && pathname === '/');
-  const isBranding = pathname === '/' || VIEWS.some(({ href }) => pathname === href);
+  const isGrid = pathname === '/' || pathname === '/grid' || pathname === '/grid/classic';
+  const isActive = (href: string) => pathname === href || (href === '/grid' && isGrid);
+  const isBranding = isGrid || VIEWS.some(({ href }) => pathname === href);
 
   return (
     <>
       <header className={styles.header}>
-        <Link href="/grid" className={styles.brand} aria-label="Maks Martin — home">
+        <NavigationLink href="/grid" className={styles.brand} aria-label="Maks Martin — home">
           <div
             data-edit-id="lockup-emblem"
             className={styles.emblem}
@@ -68,30 +69,30 @@ export function Chrome() {
           <span data-edit-id="lockup-name" className={styles.wordmark} style={elementStyle('lockup-name', 'var(--lockup-name-size)')}>
             MaksMartin
           </span>
-        </Link>
+        </NavigationLink>
 
         <nav className={styles.sections} aria-label="Studio sections">
-          <Link href="/grid" className={isBranding ? styles.active : undefined} aria-current={isBranding ? 'page' : undefined}>
+          <NavigationLink href="/grid" className={isBranding ? styles.active : undefined} aria-current={isBranding ? 'page' : undefined}>
             Branding
-          </Link>
-          <Link href="/production/folder" className={`${styles.productionMobile} ${isProduction ? styles.active : ''}`} aria-current={isProduction ? 'page' : undefined}>Production</Link>
-          <Link href="/production/roll" className={`${styles.productionDesktop} ${isProduction ? styles.active : ''}`} aria-current={isProduction ? 'page' : undefined}>Production</Link>
+          </NavigationLink>
+          <NavigationLink href="/production/folder" className={`${styles.productionMobile} ${isProduction ? styles.active : ''}`} aria-current={isProduction ? 'page' : undefined}>Production</NavigationLink>
+          <NavigationLink href="/production/roll" className={`${styles.productionDesktop} ${isProduction ? styles.active : ''}`} aria-current={isProduction ? 'page' : undefined}>Production</NavigationLink>
           {UPCOMING.map((label) => (
             <button key={label} type="button" className={styles.upcoming} aria-disabled="true" aria-label={`${label} — coming soon`}>
               <span className={styles.upcomingLabel} aria-hidden="true">{label}</span>
               <span className={styles.soon} aria-hidden="true">Soon</span>
             </button>
           ))}
-          <Link href="/info" data-edit-id="lockup-contacts" className={isActive('/info') ? styles.active : undefined} aria-current={isActive('/info') ? 'page' : undefined} style={elementStyle('lockup-contacts')}>
+          <NavigationLink href="/info" data-edit-id="lockup-contacts" className={isActive('/info') ? styles.active : undefined} aria-current={isActive('/info') ? 'page' : undefined} style={elementStyle('lockup-contacts')}>
             Info
-          </Link>
+          </NavigationLink>
         </nav>
 
         <nav data-edit-id="view-switcher" className={`${styles.views} ${isProduction ? styles.productionViews : ''}`} aria-label="Project view" style={elementStyle('view-switcher', 'var(--view-font-size)', '22.5px')}>
           {views.map(({ href, label }) => (
-            <Link key={href} href={href} className={isActive(href) ? styles.active : undefined} aria-current={isActive(href) ? 'page' : undefined}>
+            <NavigationLink key={href} href={href} className={isActive(href) ? styles.active : undefined} aria-current={isActive(href) ? 'page' : undefined}>
               {label}
-            </Link>
+            </NavigationLink>
           ))}
         </nav>
       </header>

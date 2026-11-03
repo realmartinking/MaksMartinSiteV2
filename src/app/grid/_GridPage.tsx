@@ -35,12 +35,12 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
       <div
         ref={hoverRoot}
         data-project-grid
-        className="
-          project-hover-grid grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[53px]
+        className={`
+          ${motionPreview ? 'mobile-flat-grid' : ''} project-hover-grid grid grid-cols-12 gap-y-[20px] sm:gap-y-[30px] lg:gap-y-[53px]
           pb-20
           [&_.group_video]:[transition:filter_300ms_ease,transform_300ms_ease]
           [&_.group_img]:[transition:filter_300ms_ease,transform_300ms_ease]
-        "
+        `}
         style={{
           columnGap: 'var(--grid-gap)',
           paddingLeft: 'var(--grid-padding-x)',
@@ -67,7 +67,7 @@ export default function GridPage({ motionPreview = false }: { motionPreview?: bo
         ))}
 
         {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="col-span-12 h-1" />
+        <div ref={sentinelRef} className="h-1" style={{ gridColumn: '1 / -1' }} />
       </div>
     </main>
   );
