@@ -17,7 +17,7 @@
   display: flex;
   pointer-events: auto;
   touch-action: none;
-  animation: backdrop 3000ms linear both;
+  animation: escape 0s 3.8s forwards;
 }
 
 .group {
@@ -51,12 +51,17 @@
   25.9259%, 74.0741% { opacity: 1; filter: blur(0); transform: translateY(0); animation-timing-function: cubic-bezier(.215,.61,.355,1); }
   96.2963%, 100% { opacity: 0; filter: blur(10px); transform: translateY(-20px); }
 }
-@keyframes backdrop {
-  0%, 89.999% { opacity: 1; visibility: visible; pointer-events: auto; }
-  90% { opacity: 1; visibility: visible; pointer-events: none; animation-timing-function: cubic-bezier(.215,.61,.355,1); }
-  100% { opacity: 0; visibility: hidden; pointer-events: none; }
+@keyframes escape {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
 }
-.intro[data-intro-releasing] { pointer-events: none; }
+.intro[data-intro-releasing] {
+  pointer-events: none;
+  animation: backdrop 300ms cubic-bezier(.215,.61,.355,1) both;
+}
+@keyframes backdrop {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .intro[data-mobile-intro], .intro[data-desktop-intro] { display: none; animation: none; }

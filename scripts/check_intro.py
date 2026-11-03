@@ -6,12 +6,47 @@ def mobile_intro(page, base):
     # Sample the *painted* state, including intervals when the number is already
     # at 100. Progress text alone misses the original blur, lift and outer fade.
     page.add_init_script("""(() => {
-      const trace = window.introTrace = {frames:[], started:0, released:0};
+      const trace = window.introTrace = {frames:[], started:0, released:0, fade:null};
+      // The app itself starts the final fade. Inspect its actual CSS animation
+      // at two known instants, instead of hoping a CI compositor delivers a
+      // sampled frame in this 300ms interval. Restore its clock immediately.
+      function probeFade(gate) {
+        const info = document.querySelector('header a[href="/info"]');
+        const style = getComputedStyle(gate);
+        const animations = gate.getAnimations().filter(a=>a.effect?.target===gate);
+        const durations = animations.map(a=>a.effect.getTiming().duration);
+        const probe = trace.fade = {durations, samples:[], name:style.animationName,
+          percent:gate.querySelector('[data-mobile-progress]')?.textContent,
+          root:document.documentElement.dataset.intro, at:performance.now()};
+        const fade = animations.find(a => a.effect.getTiming().duration===300);
+        if (!info || !fade) return;
+        const time=fade.currentTime, start=fade.startTime, state=fade.playState;
+        try {
+          fade.pause();
+          const b=info.getBoundingClientRect(), x=b.x+b.width/2, y=b.y+b.height/2;
+          for (const ms of [30, 200]) {
+            fade.currentTime=ms;
+            const hit=document.elementFromPoint(x,y);
+            probe.samples.push({ms, opacity:+style.opacity, visibility:style.visibility,
+              pointer:style.pointerEvents, receives:info.contains(hit), hit:hit?.tagName});
+          }
+        } finally {
+          fade.currentTime=time ?? 0;
+          if (state!=='paused') {
+            fade.play();
+            if (start!==null) fade.startTime=start;
+          }
+        }
+      }
       // A busy browser may paint its first frame well after the gate opened.
       // Time its actual lifetime separately from the sampled animation frames.
       const lifecycle = new MutationObserver(records => {
         for (const r of records) {
           if (!r.target.hasAttribute('data-intro-overlay')) continue;
+          if (r.attributeName==='data-intro-releasing') {
+            if (r.target.hasAttribute('data-intro-releasing') && !trace.fade) probeFade(r.target);
+            continue;
+          }
           if (r.target.hasAttribute('data-mobile-intro')) {
             if (!trace.started) trace.started = performance.now();
           } else if (trace.started) {
@@ -20,7 +55,7 @@ def mobile_intro(page, base):
           }
         }
       });
-      lifecycle.observe(document, {subtree:true, attributes:true, attributeFilter:['data-mobile-intro']});
+      lifecycle.observe(document, {subtree:true, attributes:true, attributeFilter:['data-mobile-intro','data-intro-releasing']});
       let last = -Infinity;
       function sample(t) {
         const overlay = document.querySelector('[data-intro-overlay]'),
@@ -69,8 +104,15 @@ def mobile_intro(page, base):
             condition, "missing original entrance")
         assert any(f["n"]==100 and f["blur"]>2 and f["lift"] < -3 and f["a"]<.85 for f in frames), (
             condition, "missing original exit")
-        assert any(f["n"]==100 and not f["cover"] and f["opacity"]<.99 for f in frames), (
-            condition, "links remain blocked during the artwork's final fade")
+        fade = trace["fade"] or {}
+        samples = fade.get("samples", [])
+        assert (fade.get("root") == "ready" and fade.get("percent") == "100%"
+                and len(samples) == 2 and 0 < samples[1]["opacity"] < samples[0]["opacity"] < 1
+                and all(f["receives"] and f["pointer"] == "none" and f["visibility"] == "visible"
+                        for f in samples)), (
+            condition, "the real release must fade visibly and pass taps to Info",
+            {"start": trace["started"], "finish": trace["released"], "fade": fade,
+             "last_frames": [(f["t"],f["n"],f["opacity"],f["cover"],f["releasing"]) for f in frames[-4:]]})
         receives_tap = page.locator('header a[href="/info"]').evaluate("""a => {
           const r=a.getBoundingClientRect();
           return a.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));
