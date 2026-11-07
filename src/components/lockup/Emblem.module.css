@@ -16,6 +16,15 @@
   height: 100%;
   display: block;
 }
+.desktop canvas { visibility: hidden; }
+:global(.dark) .desktop[data-frame-theme="dark"],
+:global(.light) .desktop[data-frame-theme="light"] {
+  background-image: none;
+}
+:global(.dark) .desktop[data-frame-theme="dark"] canvas,
+:global(.light) .desktop[data-frame-theme="light"] canvas {
+  visibility: visible;
+}
 :global(.dark) .emblem[data-motion-theme="dark"],
 :global(.light) .emblem[data-motion-theme="light"] {
   background-image: none;

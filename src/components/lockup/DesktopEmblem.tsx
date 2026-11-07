@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import styles from './Emblem.module.css';
 
 // Uint8ClampedArray preserves the original alpha rounding for every RGB sum.
 const DARK_ALPHA = Uint8ClampedArray.from({ length: 766 }, (_, sum) => Math.min(255, (sum / 3) * 1.5));
@@ -29,8 +30,7 @@ interface EmblemProps {
  * Работает поверх любого фона (плитки, картинки, цветные блоки).
  */
 export function DesktopEmblem({ height = 200, fill = false, className = '' }: EmblemProps) {
-  const lightVideoRef = useRef<HTMLVideoElement | null>(null);
-  const darkVideoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const positionRef = useRef(0);
@@ -43,13 +43,14 @@ export function DesktopEmblem({ height = 200, fill = false, className = '' }: Em
     const container = containerRef.current;
     const dark = resolvedTheme === undefined
       ? document.documentElement.classList.contains('dark') : resolvedTheme === 'dark';
-    const video = dark ? darkVideoRef.current : lightVideoRef.current;
-    const inactive = dark ? lightVideoRef.current : darkVideoRef.current;
+    const video = videoRef.current;
     if (!canvas || !container || !video) return;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
-    inactive?.pause();
+    const theme = dark ? 'dark' : 'light';
+    container.removeAttribute('data-frame-theme');
+    const painted = () => container.setAttribute('data-frame-theme', theme);
     const alpha = dark ? DARK_ALPHA : LIGHT_ALPHA;
     const videoFrames = typeof video.requestVideoFrameCallback === 'function';
     let stopped = false;
@@ -67,6 +68,7 @@ export function DesktopEmblem({ height = 200, fill = false, className = '' }: Em
       const cached = sourceFrame === undefined ? undefined : frames.get(sourceFrame);
       if (cached) {
         ctx.putImageData(cached, 0, 0);
+        painted();
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -78,6 +80,7 @@ export function DesktopEmblem({ height = 200, fill = false, className = '' }: Em
           data[i + 3] = alpha[data[i] + data[i + 1] + data[i + 2]];
         }
         ctx.putImageData(pixels, 0, 0);
+        painted();
         // Keep the entire loop or none of it: partial LRU caching would thrash.
         const loopBytes = Math.ceil(video.duration * SOURCE_FPS) * pixels.data.byteLength;
         if (sourceFrame !== undefined && loopBytes <= FRAME_CACHE_BYTES) frames.set(sourceFrame, pixels);
@@ -143,21 +146,33 @@ export function DesktopEmblem({ height = 200, fill = false, className = '' }: Em
       queueFrame();
     };
     const onReady = () => { syncPosition(); draw(true); };
+    const resume = () => {
+      if (!stopped && !document.hidden && video.paused) play();
+    };
     const onVisibility = () => {
       if (document.hidden) pause();
       else { updateSize(); play(); }
     };
 
-    updateSize();
-    draw(true);
-    play();
     const observer = new ResizeObserver(updateSize);
     observer.observe(container);
     window.addEventListener('resize', updateSize);
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pageshow', onVisibility);
+    document.addEventListener('pointerup', resume);
+    document.addEventListener('keydown', resume);
     video.addEventListener('loadedmetadata', onReady);
     video.addEventListener('loadeddata', onReady);
     video.addEventListener('seeked', onReady);
+    // Fetch only the current theme. Both former preload="auto" sources competed
+    // with the visible projects on a slow connection, even though one was idle.
+    video.muted = true;
+    video.defaultMuted = true;
+    const source = dark ? '/MaksMartinLogoBlack.mp4' : '/MaksMartinLogo.mp4';
+    if (video.getAttribute('src') !== source) video.src = source;
+    updateSize();
+    draw(true);
+    play();
     return () => {
       stopped = true;
       positionRef.current = video.currentTime;
@@ -166,6 +181,9 @@ export function DesktopEmblem({ height = 200, fill = false, className = '' }: Em
       observer.disconnect();
       window.removeEventListener('resize', updateSize);
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pageshow', onVisibility);
+      document.removeEventListener('pointerup', resume);
+      document.removeEventListener('keydown', resume);
       video.removeEventListener('loadedmetadata', onReady);
       video.removeEventListener('loadeddata', onReady);
       video.removeEventListener('seeked', onReady);
@@ -179,48 +197,28 @@ export function DesktopEmblem({ height = 200, fill = false, className = '' }: Em
   return (
     <div
       ref={containerRef}
-      className={`relative ${className}`}
+      className={`${styles.emblem} ${styles.desktop} ${className}`}
       style={containerStyle}
       aria-hidden="true"
     >
-      {/* Скрытые источники видео */}
+      {/* One decoder and only the active theme's original source. Keep it inside
+          the visible emblem bounds: offscreen media can be suspended by Safari. */}
       <video
-        ref={lightVideoRef}
+        ref={videoRef}
         muted
         loop
         playsInline
-        preload="auto"
+        preload="none"
         style={{
           position: 'absolute',
-          left: '-99999px',
-          top: '-99999px',
+          left: 0,
+          top: 0,
           width: '1px',
           height: '1px',
           opacity: 0,
           pointerEvents: 'none',
         }}
-      >
-        <source src="/MaksMartinLogo.mp4" type="video/mp4" />
-      </video>
-
-      <video
-        ref={darkVideoRef}
-        muted
-        loop
-        playsInline
-        preload="auto"
-        style={{
-          position: 'absolute',
-          left: '-99999px',
-          top: '-99999px',
-          width: '1px',
-          height: '1px',
-          opacity: 0,
-          pointerEvents: 'none',
-        }}
-      >
-        <source src="/MaksMartinLogoBlack.mp4" type="video/mp4" />
-      </video>
+      />
 
       {/* Видимый canvas с прозрачным фоном */}
       <canvas

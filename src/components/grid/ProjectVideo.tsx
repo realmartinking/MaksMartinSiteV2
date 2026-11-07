@@ -17,11 +17,17 @@ export function ProjectVideo({ project, fill = false, active, priority = false, 
 }) {
   const root = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+  const playback = useRef<ReturnType<typeof observeVideoPlayback> | null>(null);
+  const selection = useRef(active);
   const [control, setControl] = useState<'none' | 'button' | 'indicator' | 'poster'>('none');
   const [width, height] = project.mediaSize ?? [16, 9];
   useEffect(() => observeVideoFrame(video.current!, value => {
     root.current?.setAttribute('data-frame-ready', String(value));
   }, project.posterUntil), [project.videoSrc, project.posterUntil]);
+  useEffect(() => {
+    selection.current = active;
+    playback.current?.setActive(active);
+  }, [active]);
   useEffect(() => {
     if (!project.videoSrc) return;
     const element = root.current!;
@@ -31,11 +37,10 @@ export function ProjectVideo({ project, fill = false, active, priority = false, 
     interactiveParent?.addEventListener('click', retry);
     const fullVideo = project.videoSrc;
     const mobile = project.mobilePreviewBase ? window.matchMedia(MOBILE_PREVIEW_MEDIA) : undefined;
-    let stop: (() => void) | undefined;
     const attach = () => {
-      stop?.();
+      playback.current?.dispose();
       const small = mobile?.matches ? project.mobilePreviewBase : undefined;
-      stop = observeVideoPlayback(element, video.current!, small ? `${small}.mp4` : fullVideo, active,
+      playback.current = observeVideoPlayback(element, video.current!, small ? `${small}.mp4` : fullVideo, selection.current,
         (show, deferred) => {
           if (!show) setControl('none');
           else if (deferred) setControl(interactiveParent ? 'none' : 'poster');
@@ -48,9 +53,10 @@ export function ProjectVideo({ project, fill = false, active, priority = false, 
     return () => {
       mobile?.removeEventListener('change', attach);
       interactiveParent?.removeEventListener('click', retry);
-      stop?.();
+      playback.current?.dispose();
+      playback.current = null;
     };
-  }, [project.videoSrc, project.mobilePreviewBase, project.posterSrc, active]);
+  }, [project.videoSrc, project.mobilePreviewBase, project.posterSrc]);
   const playIcon = <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path d="M4 2 14 8 4 14Z" fill="currentColor" /></svg>;
   return <div ref={root} className={styles.media} data-frame-ready="false"
     style={fill ? { width: '100%', height: '100%' } : { aspectRatio: `${width} / ${height}` }}>
